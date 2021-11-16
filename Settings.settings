@@ -1,0 +1,15 @@
+﻿<?xml version='1.0' encoding='utf-8'?>
+<SettingsFile xmlns="http://schemas.microsoft.com/VisualStudio/2004/01/settings" CurrentProfile="(Default)" GeneratedClassNamespace="Timesheet" GeneratedClassName="Settings">
+  <Profiles />
+  <Settings>
+    <Setting Name="ApiKey" Type="System.String" Scope="User">
+      <Value Profile="(Default)">NTZjNzgzNDUtMjc5ZC00OWM5LTlkNTktNDBiNWI4NGFmNmE5</Value>
+    </Setting>
+    <Setting Name="CollectionURI" Type="(Web Service URL)" Scope="User">
+      <Value Profile="(Default)">http://ztfs-2017.fintech.ru:8080/tfs/Fintech</Value>
+    </Setting>
+    <Setting Name="teamProjectName" Type="System.String" Scope="User">
+      <Value Profile="(Default)">Mir</Value>
+    </Setting>
+  </Settings>
+</SettingsFile>

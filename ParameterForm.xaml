@@ -1,0 +1,41 @@
+﻿<Window
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:TSApp"
+        xmlns:syncfusion="http://schemas.syncfusion.com/wpf" xmlns:Properties="clr-namespace:TSApp.Properties" xmlns:Timesheet="clr-namespace:TSApp" xmlns:ViewModel="clr-namespace:TSApp.ViewModel" x:Class="TSApp.ParameterForm"
+        mc:Ignorable="d"
+        Title="ParameterForm" Height="450" Width="800">
+    <Window.DataContext>
+        <ViewModel:ParameterModel/>
+    </Window.DataContext>
+    <Grid>
+        <Grid.DataContext>
+            <ViewModel:ParameterModel/>
+        </Grid.DataContext>
+
+        <syncfusion:PropertyGrid x:Name="propertyGrid" HorizontalAlignment="Left" VerticalAlignment="Top" Height="266" Width="773" Margin="10,104,0,0" SelectedObject="{Binding Mode=OneWay}">
+            <syncfusion:PropertyGrid.DataContext>
+                <Timesheet:Settings/>
+            </syncfusion:PropertyGrid.DataContext>
+        </syncfusion:PropertyGrid>
+        <Label x:Name="label" Content="Подключение к TFS:" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="10,10,0,0" Height="29" Width="134"/>
+        <Button x:Name="btnTestTFSConnection" HorizontalAlignment="Left" VerticalAlignment="Top" Width="185" Margin="144,13,0,0" Height="26" Content="{Binding BtnTfsLabel}"/>
+        <Label x:Name="label_Copy" Content="Подключение к Clokify:" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="429,10,0,0" Height="29" Width="139"/>
+        <Button x:Name="btnTestTFSConnection_Copy" Content="{Binding BtnClokiLabel}" HorizontalAlignment="Left" VerticalAlignment="Top" Width="185" Margin="598,13,0,0" Height="26"/>
+        <Button x:Name="button" Content="Сохранить" HorizontalAlignment="Left" VerticalAlignment="Top" Width="135" Margin="648,375,0,0" Height="36"/>
+        <Button x:Name="button1" Content="Закрыть" HorizontalAlignment="Left" Margin="10,375,0,0" VerticalAlignment="Top" Width="143" Height="36"/>
+        <Label x:Name="label1" Content="{Binding TxtTfsErrorLabel}" HorizontalAlignment="Left" Margin="10,44,0,0" VerticalAlignment="Top" Width="319">
+            <Label.DataContext>
+                <ViewModel:ParameterModel/>
+            </Label.DataContext>
+        </Label>
+        <Label x:Name="label1_Copy" Content="{Binding TxtClokiErrorLabel}" HorizontalAlignment="Right" Margin="0,44,20.333,0" VerticalAlignment="Top" Width="335">
+            <Label.DataContext>
+                <ViewModel:ParameterModel/>
+            </Label.DataContext>
+        </Label>
+
+    </Grid>
+</Window>

@@ -1,0 +1,59 @@
+﻿<Window
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:TSApp"
+        xmlns:syncfusion="http://schemas.syncfusion.com/wpf" xmlns:ViewModel="clr-namespace:TSApp.ViewModel" x:Name="window" x:Class="TSApp.MainWindow"
+        mc:Ignorable="d"
+        Title="MainWindow" Height="639.067" Width="1389.145" Loaded="Window_Loaded">
+    <Window.DataContext>
+        <ViewModel:MainFormModel/>
+    </Window.DataContext>
+    <Canvas HorizontalAlignment="Left" VerticalAlignment="Top" Width="1389" Margin="0,0,-6.333,-779" Height="{Binding Width, ElementName=window}">
+        <syncfusion:SfDataGrid x:Name="mainGrid" 
+                               ItemsSource="{Binding GridEntries}"
+                               ShowColumnWhenGrouped="False" 
+                               Height="497" Width="1371" Canvas.Top="68" 
+                               AutoGenerateColumns="False" 
+                               Canvas.Left="10"
+                               AutoExpandGroups="True" FontSize="16" FontFamily="Segoe UI Symbol" AddNewRowPosition="Bottom" RowHeight="28"
+                               SelectionUnit="Cell"
+                               NavigationMode="Cell"
+                               AllowFrozenGroupHeaders="False"
+                               >
+            <syncfusion:SfDataGrid.UnBoundRows>
+                <syncfusion:GridUnBoundRow/>
+            </syncfusion:SfDataGrid.UnBoundRows>
+            <syncfusion:SfDataGrid.Columns>
+                <syncfusion:GridTextColumn GroupMode="Value" AllowGrouping="True" MappingName ="State"  HeaderText="State"/>
+                <syncfusion:GridNumericColumn MappingName ="Id"  NumberDecimalDigits="0" HeaderText="Id" IsHidden="True" />
+                <syncfusion:GridTextColumn MappingName ="Title" Width="300" HeaderText=""/>
+                <syncfusion:GridNumericColumn AllowEditing="True" MappingName ="CompletedWorkDaily[1]"  Width="40" NumberDecimalDigits="1" HeaderText="Пн"/>
+                <syncfusion:GridTextColumn AllowEditing="True" MappingName ="CommentDaily[1]"  Width="100" HeaderText="Комментарий"/>
+                <syncfusion:GridNumericColumn AllowEditing="True" MappingName ="CompletedWorkDaily[2]" Width="40" NumberDecimalDigits="1" HeaderText="Вт"/>
+                <syncfusion:GridTextColumn AllowEditing="True" MappingName ="CommentDaily[2]"  Width="100" HeaderText="Комментарий"/>
+                <syncfusion:GridNumericColumn AllowEditing="True" MappingName ="CompletedWorkDaily[3]" Width="40" NumberDecimalDigits="1" HeaderText="Ср"/>
+                <syncfusion:GridTextColumn AllowEditing="True" MappingName ="CommentDaily[3]"  Width="100" HeaderText="Комментарий"/>
+                <syncfusion:GridNumericColumn AllowEditing="True" MappingName ="CompletedWorkDaily[4]" Width="40" NumberDecimalDigits="1" HeaderText="Чт"/>
+                <syncfusion:GridTextColumn AllowEditing="True" MappingName ="CommentDaily[4]"  Width="100" HeaderText="Комментарий"/>
+                <syncfusion:GridNumericColumn AllowEditing="True" MappingName ="CompletedWorkDaily[5]"  Width="40" NumberDecimalDigits="1" HeaderText="Пт"/>
+                <syncfusion:GridTextColumn AllowEditing="True" MappingName ="CommentDaily[5]"  Width="100" HeaderText="Комментарий"/>
+                <syncfusion:GridNumericColumn AllowEditing="True" MappingName ="CompletedWorkDaily[6]" Width="40" NumberDecimalDigits="1" HeaderText="СБ"/>
+                <syncfusion:GridTextColumn AllowEditing="True" MappingName ="CommentDaily[6]"  Width="100" HeaderText="Комментарий"/>
+                <syncfusion:GridNumericColumn AllowEditing="True" MappingName ="CompletedWorkDaily[0]"  Width="40" NumberDecimalDigits="1" HeaderText="ВС"/>
+                <syncfusion:GridTextColumn AllowEditing="True" MappingName ="CommentDaily[0]"  Width="100" HeaderText="Комментарий"/>
+            </syncfusion:SfDataGrid.Columns>
+            <syncfusion:SfDataGrid.GroupColumnDescriptions  >
+                <syncfusion:GroupColumnDescription ColumnName="State"  />
+            </syncfusion:SfDataGrid.GroupColumnDescriptions>
+            <syncfusion:SfDataGrid.DataContext>
+                <ViewModel:WorkItemViewModel/>
+            </syncfusion:SfDataGrid.DataContext>
+        </syncfusion:SfDataGrid>
+        <StatusBar x:Name="statusBar" Height="40" VerticalAlignment="Bottom" Width="{Binding Width, ElementName=window}" Canvas.Top="570">
+            <Button x:Name="button" Content="{Binding BtnCnxnStatusText, Mode=OneWay}" Height="30" Width="141" Click="button_Click"/>
+        </StatusBar>
+        <Button x:Name="btnLoad" Content="Button" Canvas.Left="10" Canvas.Top="10" Width="75" Height="33" Click="btnLoad_Click"/>
+    </Canvas>
+</Window>
