@@ -11,8 +11,7 @@
         <ViewModel:MainFormModel/>
     </Window.DataContext>
     <Canvas HorizontalAlignment="Left" VerticalAlignment="Top" Width="1389" Margin="0,0,-6.333,-779" Height="{Binding Width, ElementName=window}">
-        <syncfusion:SfDataGrid x:Name="mainGrid" 
-                               ItemsSource="{Binding GridEntries}"
+        <local:SfDataGridExt x:Name="mainGrid" 
                                ShowColumnWhenGrouped="False" 
                                Height="497" Width="1371" Canvas.Top="68" 
                                AutoGenerateColumns="False" 
@@ -20,37 +19,45 @@
                                AutoExpandGroups="True" FontSize="16" FontFamily="Segoe UI Symbol" AddNewRowPosition="Bottom" RowHeight="28"
                                SelectionUnit="Cell"
                                NavigationMode="Cell"
-                               AllowFrozenGroupHeaders="False"
+                               AllowFrozenGroupHeaders="False" EditTrigger="OnTap" AddNewRowInitiating="mainGrid_AddNewRowInitiating"
                                >
+            <syncfusion:SfDataGrid.DataContext>
+                <ViewModel:WorkItemViewModel/>
+            </syncfusion:SfDataGrid.DataContext>
             <syncfusion:SfDataGrid.UnBoundRows>
-                <syncfusion:GridUnBoundRow/>
+                <syncfusion:GridUnBoundRow Position="Top"/>
             </syncfusion:SfDataGrid.UnBoundRows>
             <syncfusion:SfDataGrid.Columns>
-                <syncfusion:GridTextColumn GroupMode="Value" AllowGrouping="True" MappingName ="State"  HeaderText="State"/>
+                <syncfusion:GridTextColumn GroupMode="Default" AllowGrouping="True" MappingName ="State"  HeaderText="State"/>
                 <syncfusion:GridNumericColumn MappingName ="Id"  NumberDecimalDigits="0" HeaderText="Id" IsHidden="True" />
-                <syncfusion:GridTextColumn MappingName ="Title" Width="300" HeaderText=""/>
-                <syncfusion:GridNumericColumn AllowEditing="True" MappingName ="CompletedWorkDaily[1]"  Width="40" NumberDecimalDigits="1" HeaderText="Пн"/>
+                <syncfusion:GridTextColumn MappingName ="Title" Width="300" HeaderText="" AllowEditing="True"/>
+                <syncfusion:GridTextColumn MappingName ="CompletedWorkMon" HeaderText="Пн" 
+                                           AllowEditing="True" Width="40" TextAlignment="Right"
+                                           />
                 <syncfusion:GridTextColumn AllowEditing="True" MappingName ="CommentDaily[1]"  Width="100" HeaderText="Комментарий"/>
-                <syncfusion:GridNumericColumn AllowEditing="True" MappingName ="CompletedWorkDaily[2]" Width="40" NumberDecimalDigits="1" HeaderText="Вт"/>
+                <syncfusion:GridTextColumn MappingName ="CompletedWorkTue" HeaderText="Вт"
+                                           AllowEditing="True" Width="40" TextAlignment="Right"/>
                 <syncfusion:GridTextColumn AllowEditing="True" MappingName ="CommentDaily[2]"  Width="100" HeaderText="Комментарий"/>
-                <syncfusion:GridNumericColumn AllowEditing="True" MappingName ="CompletedWorkDaily[3]" Width="40" NumberDecimalDigits="1" HeaderText="Ср"/>
+                <syncfusion:GridTextColumn MappingName ="CompletedWorkWed" HeaderText="Ср"
+                                           AllowEditing="True" Width="40" TextAlignment="Right"/>
                 <syncfusion:GridTextColumn AllowEditing="True" MappingName ="CommentDaily[3]"  Width="100" HeaderText="Комментарий"/>
-                <syncfusion:GridNumericColumn AllowEditing="True" MappingName ="CompletedWorkDaily[4]" Width="40" NumberDecimalDigits="1" HeaderText="Чт"/>
+                <syncfusion:GridTextColumn MappingName ="CompletedWorkThu" HeaderText="Чт"
+                                           AllowEditing="True" Width="40" TextAlignment="Right"/>
                 <syncfusion:GridTextColumn AllowEditing="True" MappingName ="CommentDaily[4]"  Width="100" HeaderText="Комментарий"/>
-                <syncfusion:GridNumericColumn AllowEditing="True" MappingName ="CompletedWorkDaily[5]"  Width="40" NumberDecimalDigits="1" HeaderText="Пт"/>
+                <syncfusion:GridTextColumn MappingName ="CompletedWorkFri" HeaderText="Пт"
+                                           AllowEditing="True" Width="40" TextAlignment="Right"/>
                 <syncfusion:GridTextColumn AllowEditing="True" MappingName ="CommentDaily[5]"  Width="100" HeaderText="Комментарий"/>
-                <syncfusion:GridNumericColumn AllowEditing="True" MappingName ="CompletedWorkDaily[6]" Width="40" NumberDecimalDigits="1" HeaderText="СБ"/>
+                <syncfusion:GridTextColumn MappingName ="CompletedWorkSun" HeaderText="СБ"
+                                           AllowEditing="True" Width="40" TextAlignment="Right"/>
                 <syncfusion:GridTextColumn AllowEditing="True" MappingName ="CommentDaily[6]"  Width="100" HeaderText="Комментарий"/>
-                <syncfusion:GridNumericColumn AllowEditing="True" MappingName ="CompletedWorkDaily[0]"  Width="40" NumberDecimalDigits="1" HeaderText="ВС"/>
+                <syncfusion:GridTextColumn MappingName ="CompletedWorkSat" HeaderText="ВС"
+                                           AllowEditing="True" Width="40" TextAlignment="Right"/>
                 <syncfusion:GridTextColumn AllowEditing="True" MappingName ="CommentDaily[0]"  Width="100" HeaderText="Комментарий"/>
             </syncfusion:SfDataGrid.Columns>
             <syncfusion:SfDataGrid.GroupColumnDescriptions  >
                 <syncfusion:GroupColumnDescription ColumnName="State"  />
             </syncfusion:SfDataGrid.GroupColumnDescriptions>
-            <syncfusion:SfDataGrid.DataContext>
-                <ViewModel:WorkItemViewModel/>
-            </syncfusion:SfDataGrid.DataContext>
-        </syncfusion:SfDataGrid>
+        </local:SfDataGridExt>
         <StatusBar x:Name="statusBar" Height="40" VerticalAlignment="Bottom" Width="{Binding Width, ElementName=window}" Canvas.Top="570">
             <Button x:Name="button" Content="{Binding BtnCnxnStatusText, Mode=OneWay}" Height="30" Width="141" Click="button_Click"/>
         </StatusBar>

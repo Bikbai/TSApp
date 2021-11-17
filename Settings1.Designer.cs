@@ -59,5 +59,17 @@ namespace TSApp {
                 this["teamProjectName"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("10:00:00")]
+        public global::System.TimeSpan defaultWorkDayStart {
+            get {
+                return ((global::System.TimeSpan)(this["defaultWorkDayStart"]));
+            }
+            set {
+                this["defaultWorkDayStart"] = value;
+            }
+        }
     }
 }

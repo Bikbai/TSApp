@@ -55,7 +55,7 @@ namespace TSApp
                 double val = 0;
                 if (value[0] == '+' || value[0] == '-')
                 {
-                    val = ParserUtility.GetDouble(value.Substring(1), 0);
+                   // val = ParserUtility.GetDouble(value.Substring(1), 0);
                     if (value[0] == '-')
                         val = -1 * val;
                     deltaMode = true;
@@ -63,7 +63,7 @@ namespace TSApp
                 else
                 {
                     deltaMode = false;
-                    val = ParserUtility.GetDouble(value, 0);
+                 //   val = ParserUtility.GetDouble(value, 0);
                 }
                 if (val == 0)
                     return;

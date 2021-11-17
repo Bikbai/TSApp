@@ -23,13 +23,22 @@ namespace TSApp
     public partial class MainWindow : Window
     {
         private MainFormModel mdl = new MainFormModel();
+        private WorkItemViewModel WorkItemViewModel = new WorkItemViewModel();
         public MainWindow()
         {
             InitializeComponent();
             this.DataContext = mdl;
             mdl.connection.OnInitComplete += Connection_OnInitComplete;
+            mainGrid.DataContext = WorkItemViewModel.GridEntries;
+            mainGrid.ItemsSource = WorkItemViewModel.GridEntries;
             mainGrid.QueryUnBoundRow += MainGrid_QueryUnBoundRow;
             mainGrid.QueryCoveredRange += MainGrid_QueryCoveredRange;
+            WorkItemViewModel.PropertyChanged += WorkItemViewModel_PropertyChanged;
+        }
+
+        private void WorkItemViewModel_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
+        {
+            var x = e.PropertyName;
         }
 
         private void MainGrid_QueryCoveredRange(object sender, GridQueryCoveredRangeEventArgs e)
@@ -49,21 +58,28 @@ namespace TSApp
 
         private void MainGrid_QueryUnBoundRow(object sender, Syncfusion.UI.Xaml.Grid.GridUnBoundRowEventsArgs e)
         {
+            int index = e.RowColumnIndex.ColumnIndex;
             if (e.UnBoundAction == UnBoundActions.QueryData)
             {
-                if (e.RowColumnIndex.ColumnIndex == 3)
+                if (index == 3)
                 {
-                    e.Value = "Начало рабочего дня:";
+                    e.CellTemplate = App.Current.Resources["UnBoundRowCellTemplate"] as DataTemplate;
+                    //e.Value = "Начало рабочего дня:";
+                    e.Handled = true;                    
+                }
+                // суббота и воскресенье - нерабочие дни =)
+                else if (index >= 4 && index % 2==0 && index/2 < 7 )
+                {
+                    int d = index/2 - 2;
+                    e.Value = WorkItemViewModel.GetWorkDayStart ((DayOfWeek)d);
                     e.Handled = true;
                 }
 
-                else if (e.RowColumnIndex.ColumnIndex == 2)
-                {
-                    e.Value = 10;
-                    e.Handled = true;
-                }
-
-            }    
+            }
+            if (e.UnBoundAction == UnBoundActions.CommitData)
+            {
+                var editedValue = e.Value;
+            }
 
         }
 
@@ -91,6 +107,16 @@ namespace TSApp
         {
             await mdl.gridModel.Populate().ConfigureAwait(true);
             this.mainGrid.UpdateLayout();
+        }
+
+        private void mainGrid_TextInput(object sender, TextCompositionEventArgs e)
+        {
+
+        }
+
+        private void mainGrid_AddNewRowInitiating(object sender, AddNewRowInitiatingEventArgs e)
+        {
+            var data = e.NewObject as RowItem; 
         }
     }
 }

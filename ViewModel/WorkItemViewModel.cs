@@ -8,20 +8,53 @@ using Microsoft.Toolkit.Mvvm.ComponentModel;
 
 namespace TSApp.ViewModel
 {
-    public class GridEntry : ObservableObject
+    public class GridEntry : ObservableObject, ICloneable
     {
         private readonly string state; //State
         private readonly int id; //Id
-        private readonly string title; //Название        
-        private Dictionary<DayOfWeek, double> completedWorkDaily;
-        private Dictionary<DayOfWeek, string> commentDaily;
+        private string title; //Название
+                              // потрачено времени по дням недели
+        private double completedWorkMon = 1;
+        private double completedWorkTue = 2;
+        private double completedWorkWed = 3;
+        private double completedWorkThu = 4;
+        private double completedWorkFri = 5;
+        private double completedWorkSun = 6;
+        private double completedWorkSat = 7;
+        private string[] commentDaily;
         private int weekNumber;
-
         public string State => state;
         public int Id => id;
-        public string Title => title;
-        public Dictionary<DayOfWeek, double> CompletedWorkDaily { get => completedWorkDaily; set => completedWorkDaily = value; }
-        public Dictionary<DayOfWeek, string> CommentDaily { get => commentDaily; set => commentDaily = value; }
+        public string Title {get => title; set => title = value;}
+        public string[] CommentDaily { get => commentDaily; set => commentDaily = value; }
+        public string CompletedWorkMon { get => completedWorkMon.ToString(); set => completedWorkMon = CalcEntry(value, completedWorkMon); }
+        public string CompletedWorkTue { get => completedWorkTue.ToString(); set => completedWorkTue = CalcEntry(value, completedWorkTue); }
+        public string CompletedWorkWed { get => completedWorkWed.ToString(); set => completedWorkWed = CalcEntry(value, completedWorkTue); }
+        public string CompletedWorkThu { get => completedWorkThu.ToString(); set => completedWorkThu = CalcEntry(value, completedWorkTue); }
+        public string CompletedWorkFri { get => completedWorkFri.ToString(); set => completedWorkFri = CalcEntry(value, completedWorkTue); }
+        public string CompletedWorkSun { get => completedWorkSun.ToString(); set => completedWorkSun = CalcEntry(value, completedWorkTue); }
+        public string CompletedWorkSat { get => completedWorkSat.ToString(); set => completedWorkSat = CalcEntry(value, completedWorkTue); }
+
+        GridEntry _clone;
+        enum CMD : int { incr, decr, replace };
+        private double CalcEntry(string inputValue, double value)
+        {
+            bool successEntry = true;
+            CMD cmd = CMD.replace;
+            double val = 0;
+            if (inputValue[0] == '+')
+                cmd = CMD.incr;
+            else if (inputValue[0] == '-')
+                cmd = CMD.decr;
+            if (cmd == CMD.replace)
+            {
+                val = ParserUtility.GetDouble(inputValue, 0, out successEntry);
+                return successEntry ? val : value;
+            }
+            val = ParserUtility.GetDouble(inputValue.Substring(1, inputValue.Length-1), 0, out successEntry);
+            val = value + val*(cmd == CMD.decr ? -1 : 1);
+            return val < 0 ? 0 : val;
+        }
 
         public GridEntry(string State)
         {
@@ -29,16 +62,14 @@ namespace TSApp.ViewModel
             id = new Random(1000).Next();
             title = "Test item";
             weekNumber = 22;
-            completedWorkDaily = new Dictionary<DayOfWeek, double>() {
-                { DayOfWeek.Monday, 1 },
-                { DayOfWeek.Tuesday, 2 },
-                { DayOfWeek.Wednesday, 3 },
-                { DayOfWeek.Thursday, 4 },
-                { DayOfWeek.Friday, 5 },
-                { DayOfWeek.Saturday, 6 },
-                { DayOfWeek.Sunday, 7 },
-            };
-            commentDaily = new Dictionary<DayOfWeek, string>();
+            commentDaily = new string[7];
+        }
+
+        public object Clone()
+        {
+            if (_clone == null)
+                return this.MemberwiseClone();
+            return _clone;
         }
     }
 
@@ -47,8 +78,14 @@ namespace TSApp.ViewModel
         public List<GridEntry> _gridEntries;
         private List<TFSWorkItem> _workItems;
         private List<TimeEntry> _timeEntries;
+        private TimeSpan[] _defaultWorkdayStart = new TimeSpan[7];
         public WorkItemViewModel()
         {
+            for (int i = 0; i < 7; i++) {
+                if (Settings.Default.defaultWorkDayStart == null)
+                    throw new NotSupportedException("Settings.Default.defaultWorkDayStart is null");
+                _defaultWorkdayStart[i] = Settings.Default.defaultWorkDayStart;
+            }
             _gridEntries = new List<GridEntry>();
             _gridEntries.Add(new GridEntry("Active"));
             _gridEntries.Add(new GridEntry("Active"));
@@ -59,5 +96,13 @@ namespace TSApp.ViewModel
         public List<GridEntry> GridEntries { get => _gridEntries; set => SetProperty(ref _gridEntries, value); }
         public List<TFSWorkItem> WorkItems { get => _workItems; set => SetProperty(ref _workItems, value); }
         public List<TimeEntry> TimeEntries { get => _timeEntries; set => SetProperty(ref _timeEntries, value); }
+        public TimeSpan GetWorkDayStart(DayOfWeek i)
+        {
+            return _defaultWorkdayStart[(int)i];
+        }
+        public void SetWorkDayStart(DayOfWeek i, TimeSpan value)
+        {
+            _defaultWorkdayStart[(int)i] = value;
+        }
     }
 }
