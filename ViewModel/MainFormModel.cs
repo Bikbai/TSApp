@@ -1,16 +1,10 @@
 ﻿using Microsoft.Toolkit.Mvvm.ComponentModel;
-using System;
-using System.Collections.Generic;
-using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace TSApp.ViewModel
 {
-    class MainFormModel : ObservableObject
+    public class MainFormModel : ObservableObject
     {
-        public WIDataSource gridModel;
+        public WorkItemViewModel gridModel;
         public ServerConnection connection;
         private string btnCnxnStatusText = "";
         private string btnCnxnStatusForeColor = "";
@@ -23,7 +17,7 @@ namespace TSApp.ViewModel
             connection = new ServerConnection(Settings.Default);
             connection.OnInitComplete += Connection_OnInitComplete;
             var connectionTask = connection.Init();
-            gridModel = new WIDataSource(connection);
+            gridModel = new WorkItemViewModel();
         }
 
         private void Connection_OnInitComplete(OnInitCompleteEventArgs args)

@@ -199,10 +199,11 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="Bahaviors\Comparers.cs" />
     <Compile Include="Views\ParameterForm.xaml.cs">
       <DependentUpon>ParameterForm.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Utility\ParserUtility.cs" />
+    <Compile Include="Utility\Helpers.cs" />
     <Compile Include="ProjectConstants\StaticData.cs" />
     <Compile Include="Model\ServerConnection.cs" />
     <Compile Include="Settings.cs" />

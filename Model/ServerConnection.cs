@@ -14,6 +14,8 @@ using Microsoft.VisualStudio.Services.WebApi;
 using TSApp.ProjectConstans;
 using RestSharp;
 using Microsoft.Toolkit.Mvvm.ComponentModel;
+using Microsoft.TeamFoundation.Work.WebApi;
+using Microsoft.TeamFoundation.Core.WebApi.Types;
 
 namespace TSApp
 {
@@ -168,10 +170,11 @@ namespace TSApp
             else return false;
         }
 
-        public async Task<IRestResponse<List<TimeEntryDtoImpl>>> FindAllTimeEntriesForUser(int TFSworkItemId, DateTime queryFrom) 
+        public async Task<IRestResponse<List<TimeEntryDtoImpl>>> FindAllTimeEntriesForUser(int? TFSworkItemId, DateTime queryFrom) 
         {
+            string query = TFSworkItemId == null ? null : TFSworkItemId.ToString();
             var ret = await clockify.FindAllTimeEntriesForUserAsync(StaticData.WorkspaceId, StaticData.UserId,
-                                                           TFSworkItemId.ToString(),  
+                                                           query,  
                                                            queryFrom,  null,
                                                            StaticData.ProjectId);
             //Thread.Sleep(100);
@@ -331,5 +334,6 @@ namespace TSApp
             OnQueryCompleteInvoke();
             return workItems;
         }
+
     }
 }

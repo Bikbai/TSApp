@@ -38,6 +38,11 @@ namespace TSApp
                 this.start = te.TimeInterval.Start;
                 this.end = te.TimeInterval.End;
             }
+            int idx = 0;
+            idx = te.Description.IndexOf('.');
+            if (idx < 7 && idx > 0) 
+                if (int.TryParse(te.Description.Substring(0, idx), out idx))
+                    taskId = idx.ToString();
         }
 
         public string TaskId { get => taskId; set => taskId = value; }

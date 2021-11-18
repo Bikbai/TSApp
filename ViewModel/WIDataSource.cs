@@ -11,8 +11,8 @@ namespace TSApp
 {
     public class WIDataSource : ObservableCollection<RowItem>
     {
-        private ServerConnection tdClient;        
-        
+        private ServerConnection tdClient;
+
         public WIDataSource(ServerConnection Client)
         {
             tdClient = Client;

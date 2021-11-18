@@ -1,18 +1,9 @@
-﻿using Syncfusion.UI.Xaml.Grid;
+﻿using Syncfusion.Data;
+using Syncfusion.UI.Xaml.Grid;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
 using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
+using TSApp.Bahaviors;
 using TSApp.ViewModel;
 
 namespace TSApp
@@ -26,52 +17,48 @@ namespace TSApp
         private WorkItemViewModel WorkItemViewModel = new WorkItemViewModel();
         public MainWindow()
         {
-            InitializeComponent();
+            InitializeComponent();            
             this.DataContext = mdl;
             mdl.connection.OnInitComplete += Connection_OnInitComplete;
-            mainGrid.DataContext = WorkItemViewModel.GridEntries;
-            mainGrid.ItemsSource = WorkItemViewModel.GridEntries;
+            mainGrid.ItemsSource = mdl.gridModel.GridEntries;
             mainGrid.QueryUnBoundRow += MainGrid_QueryUnBoundRow;
             mainGrid.QueryCoveredRange += MainGrid_QueryCoveredRange;
-            WorkItemViewModel.PropertyChanged += WorkItemViewModel_PropertyChanged;
+            mainGrid.SortComparers.Add(new SortComparer() { Comparer = new CustomStateComparer(), PropertyName = "State" });
         }
 
-        private void WorkItemViewModel_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
-        {
-            var x = e.PropertyName;
-        }
-
+        #region grid painting
+        // схлопываем ячейки первой строки
         private void MainGrid_QueryCoveredRange(object sender, GridQueryCoveredRangeEventArgs e)
         {
             var x = e.RowColumnIndex.ColumnIndex;
-            if (e.RowColumnIndex.ColumnIndex < 4)
+            if (e.RowColumnIndex.ColumnIndex < 3)
             {
                 e.Handled = true;
                 return;
             }
-            if (x % 2 == 0)
+            if (x % 2 != 0)
             {
                 e.Range = new CoveredCellInfo(x, x+1, 1, 1);
                 e.Handled = true;
             }
         }
-
+        // рисуем первую строку
         private void MainGrid_QueryUnBoundRow(object sender, Syncfusion.UI.Xaml.Grid.GridUnBoundRowEventsArgs e)
         {
             int index = e.RowColumnIndex.ColumnIndex;
             if (e.UnBoundAction == UnBoundActions.QueryData)
             {
-                if (index == 3)
+                if (index == 2)
                 {
                     e.CellTemplate = App.Current.Resources["UnBoundRowCellTemplate"] as DataTemplate;
-                    //e.Value = "Начало рабочего дня:";
+                    e.Value = "Начало рабочего дня:";
                     e.Handled = true;                    
                 }
                 // суббота и воскресенье - нерабочие дни =)
-                else if (index >= 4 && index % 2==0 && index/2 < 7 )
+                else if (index >= 3 && index % 2 != 0 && index/2 < 7 )
                 {
-                    int d = index/2 - 2;
-                    e.Value = WorkItemViewModel.GetWorkDayStart ((DayOfWeek)d);
+                    int d = index/2 - 1;
+                    e.Value = WorkItemViewModel.GetWorkDayStart((DayOfWeek)d);
                     e.Handled = true;
                 }
 
@@ -82,6 +69,7 @@ namespace TSApp
             }
 
         }
+        #endregion
 
         private void Connection_OnInitComplete(OnInitCompleteEventArgs args)
         {
@@ -89,6 +77,10 @@ namespace TSApp
             {
                 ParameterForm f = new ParameterForm();
                 f.ShowDialog();
+            }
+
+            if (mdl.connection.TfsReady)
+            {
             }
         }
 
@@ -105,7 +97,8 @@ namespace TSApp
 
         private async void btnLoad_Click(object sender, RoutedEventArgs e)
         {
-            await mdl.gridModel.Populate().ConfigureAwait(true);
+            await mdl.gridModel.PopulateClokiData(mdl.connection);
+            await mdl.gridModel.Populate(mdl.connection);
             this.mainGrid.UpdateLayout();
         }
 
@@ -116,7 +109,12 @@ namespace TSApp
 
         private void mainGrid_AddNewRowInitiating(object sender, AddNewRowInitiatingEventArgs e)
         {
-            var data = e.NewObject as RowItem; 
+            e.NewObject = new GridEntry("Clokify");
+        }
+
+        private void button1_Click(object sender, RoutedEventArgs e)
+        {
+
         }
     }
 }
