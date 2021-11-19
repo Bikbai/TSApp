@@ -52,6 +52,30 @@ namespace TSApp
         {
             return GetWeekNumber(DateTime.Now);
         }
+
+        public static DateTime WeekBoundaries(int weekNum, bool start)
+        {
+            // copy-paste
+            // https://stackoverflow.com/questions/662379/calculate-date-from-week-number
+            //
+            DateTime jan1 = new DateTime(DateTime.Now.Year, 1, 1);
+            int daysOffset = DayOfWeek.Thursday - jan1.DayOfWeek;
+
+            DateTime firstThursday = jan1.AddDays(daysOffset);
+            int firstWeek = GetWeekNumber(firstThursday);
+
+            // As we're adding days to a date in Week 1,
+            // we need to subtract 1 in order to get the right date for week #1
+            if (firstWeek == 1)
+            {
+                weekNum -= 1;
+            }
+
+            var result = firstThursday.AddDays(weekNum * 7);
+
+            // Subtract 3 days from Thursday to get Monday, which is the first weekday in ISO8601
+            return start? result.AddDays(-3): result.AddDays(4);
+        }
     
     
     }

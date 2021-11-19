@@ -9,26 +9,39 @@
         x:Name="window" x:Class="TSApp.MainWindow"
         mc:Ignorable="d"
         Title="MainWindow" Height="891.067" Width="2107.671" Loaded="Window_Loaded">
-    <Canvas x:Name="canvas" HorizontalAlignment="Left" VerticalAlignment="Top" Width="{Binding Width, ElementName=window}" Margin="0,0,-6.333,-779" Height="{Binding Width, ElementName=window}">
-        <Grid Height="747" Canvas.Left="10" Canvas.Top="68" Width="{Binding Width, ElementName=canvas}">
+    <Canvas x:Name="canvas" HorizontalAlignment="Left" 
+            Width="{Binding Width, ElementName=window}" 
+            VerticalAlignment="Top">
+        <Grid Height="747" Canvas.Top="68" Width="{Binding Width, ElementName=canvas}">
             <local:SfDataGridExt x:Name="mainGrid" 
                 ShowColumnWhenGrouped="False" 
                 AutoGenerateColumns="False"
-                AutoExpandGroups="True" FontSize="16" FontFamily="Segoe UI Symbol" AddNewRowPosition="Bottom" RowHeight="28"
+                AutoExpandGroups="True" FontSize="16" FontFamily="Segoe UI Symbol" 
+                                 AddNewRowPosition="Bottom" RowHeight="28"
                 SelectionUnit="Cell"
                 NavigationMode="Cell"
-                AllowFrozenGroupHeaders="False" EditTrigger="OnTap" AddNewRowInitiating="mainGrid_AddNewRowInitiating" Margin="0,0,-718,-260" ScrollViewer.CanContentScroll="True">
+                AllowFrozenGroupHeaders="False" 
+                EditTrigger="OnTap" 
+                                 AddNewRowInitiating="mainGrid_AddNewRowInitiating" 
+                                 Margin="10,10,10,10" 
+                                 ItemsSourceChanged="mainGrid_ItemsSourceChanged" ScrollViewer.VerticalScrollBarVisibility="Visible" CurrentCellBeginEdit="mainGrid_CurrentCellBeginEdit">
                 <local:SfDataGridExt.UnBoundRows>
-                    <syncfusion:GridUnBoundRow Position="Top"/>
+                    <syncfusion:GridUnBoundRow Position="Top" x:Name="WorkHours"/>
+                    <syncfusion:GridUnBoundRow Position="Bottom" x:Name="Totals"/>
                 </local:SfDataGridExt.UnBoundRows>
                 <local:SfDataGridExt.Columns>
-                    <syncfusion:GridTextColumn MappingName ="State"  HeaderText="Статус (тип)" 
+                    <syncfusion:GridTextColumn MappingName ="State" HeaderText="Статус (тип)" 
                         GroupMode="Default" AllowGrouping="True"/>
                     <syncfusion:GridTextColumn MappingName ="Title" HeaderText="" 
                         Width="700" AllowEditing="True"/>
-
+                    <syncfusion:GridTextColumn MappingName ="State" HeaderText="Dummy" IsHidden="True" 
+                        AllowEditing="False" Width="0" TextAlignment="Right"/>
+                    
+                    <syncfusion:GridTextColumn MappingName ="Stats" HeaderText="OE (CW)" 
+                        AllowEditing="False" Width="60" TextAlignment="Right"/>
                     <syncfusion:GridTextColumn MappingName ="CompletedWorkMon" HeaderText="Пн" 
                         AllowEditing="True" Width="40" TextAlignment="Right"/>
+
                     <syncfusion:GridTextColumn MappingName ="CommentDaily[1]"  HeaderText="Комментарий"
                         AllowEditing="True" Width="100"/>
 
@@ -64,7 +77,32 @@
         <StatusBar x:Name="statusBar" Height="40" VerticalAlignment="Bottom" Width="{Binding Width, ElementName=window}" Canvas.Top="820">
             <Button x:Name="button" Content="{Binding BtnCnxnStatusText, Mode=OneWay}" Height="30" Width="141" Click="button_Click"/>
         </StatusBar>
-        <Button x:Name="btnLoad" Content="Button" Canvas.Left="10" Canvas.Top="10" Width="75" Height="33" Click="btnLoad_Click"/>
+        <Button x:Name="btnLoad" Content="Обновить" Canvas.Left="12" Canvas.Top="10" 
+                Width="75" Height="40" Click="btnLoad_Click"/>
         <Button x:Name="button1" Content="Button" Width="75" Canvas.Left="114" Canvas.Top="22" Click="button1_Click"/>
+        <Grid x:Name="grid" Height="40" Canvas.Left="316" Canvas.Top="10" Width="576">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+            <Label x:Name="label" Content="{Binding LblCurrentWeek, Mode=OneWay}" 
+                   HorizontalAlignment="Center" Margin="0,0,0,0" 
+                   VerticalAlignment="Top" Height="{Binding Height, ElementName=grid}"
+                   Width="Auto" 
+                   Grid.Column="1" FontSize="20"/>
+            <Button x:Name="decreaseWeekNum" 
+                    Content="&lt;" 
+                    HorizontalAlignment="Left" Margin="0,0,0,0" 
+                    VerticalAlignment="Top" Width="41" 
+                    Height="{Binding Height, ElementName=grid}"
+                    Grid.Column="0">
+            </Button>
+            <Button x:Name="button2" Content=">" 
+                    Grid.Column="2" 
+                    HorizontalAlignment="Left" Margin="0,0,0,0" 
+                    VerticalAlignment="Top" Width="41"
+                    Height="{Binding Height, ElementName=grid}"/>
+        </Grid>
     </Canvas>
 </Window>

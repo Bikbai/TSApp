@@ -13,8 +13,8 @@ namespace TSApp
         private string taskId = String.Empty;
         private string description;
         private TimeSpan workTime;
-        private DateTimeOffset? start;
-        private DateTimeOffset? end;
+        private DateTimeOffset start;
+        private DateTimeOffset end;
 
         public TimeEntry(string description, DateTimeOffset start, DateTimeOffset end)
         {
@@ -35,8 +35,8 @@ namespace TSApp
             this.description = te.Description;
             if (te.TimeInterval.End != null) { 
                 workTime = (DateTimeOffset)te.TimeInterval.End - (DateTimeOffset)te.TimeInterval.Start;
-                this.start = te.TimeInterval.Start;
-                this.end = te.TimeInterval.End;
+                this.start = (DateTimeOffset)te.TimeInterval.Start;
+                this.end = (DateTimeOffset)te.TimeInterval.End;
             }
             int idx = 0;
             idx = te.Description.IndexOf('.');
@@ -50,8 +50,8 @@ namespace TSApp
         // сам период придётся ребилдить каждый раз, когда закидываем часы в клоки
         // ибо он считается как функция (начало дня, позиция, WorkTime), см. метод TimeEntryRequest
         public TimeSpan WorkTime { get => workTime; set => workTime = value; }
-        public DateTimeOffset? Start { get => start; set => start = value; }
-        public DateTimeOffset? End { get => end; set => end = value; }
+        public DateTimeOffset Start { get => start; set => start = value; }
+        public DateTimeOffset End { get => end; set => end = value; }
         public string Id { get => id; }
         public string UserId { get => userId; set => userId = value; }
         public string WorkspaceId { get => workspaceId; set => workspaceId = value; }

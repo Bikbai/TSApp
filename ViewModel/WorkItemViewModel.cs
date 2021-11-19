@@ -20,7 +20,9 @@ namespace TSApp.ViewModel
         private string state; //State
         private int id; //Id
         private string title; //Название                              
-        private double[] workDaily = {0,0,0,0,0,0,0};
+        private double originalEstimate = 10;
+        private double completedWork = 7.5;
+        private double[] workDaily = {0,0,0,0,0,0,0}; // учтённая трудоемкость по дням недели
         private string[] commentDaily;  // комментарии по дням недели
         private int weekNumber;
 
@@ -47,6 +49,11 @@ namespace TSApp.ViewModel
         public string CompletedWorkFri { get => workDaily[4].ToString(); set => workDaily[4] = CalcEntry(value, workDaily[4]); }
         public string CompletedWorkSun { get => workDaily[5].ToString(); set => workDaily[5] = CalcEntry(value, workDaily[5]); }
         public string CompletedWorkSat { get => workDaily[6].ToString(); set => workDaily[6] = CalcEntry(value, workDaily[6]); }
+        public int WeekNumber { get => weekNumber; set => weekNumber = value; }
+        public double OriginalEstimate { get => originalEstimate; set => originalEstimate = value; }
+        public double CompletedWork { get => completedWork; set => completedWork = value; }
+        public string Stats { get => TimeSpan.FromHours(completedWork).ToString(@"hh\:mm"); }
+
         #endregion
 
         #region Constructors
@@ -61,11 +68,24 @@ namespace TSApp.ViewModel
         public GridEntry(TFSWorkItem item, int week)
         {
             id = item.Id;
+            completedWork = item.CompletedWork;
             state = item.State;
             title = item.Title;
-            weekNumber = week;
+            WeekNumber = week;
         }
         #endregion
+
+        public void AddWorkByDay(int workDay, double work)
+        {
+            if (workDay > 7 || work < 0)
+                throw new NotSupportedException("AddWorkByDay: workday = " + workDay);
+            SetProperty(ref workDaily[workDay], workDaily[workDay] + work);
+        }
+
+        public double WorkByDay(int workDay)
+        {
+            return workDaily[workDay];
+        }
 
         // функция расчёта нового значения, в зависимости от команды вида
         // -число - вычесть
@@ -74,6 +94,7 @@ namespace TSApp.ViewModel
         // отслеживает создание новой версии
         private double CalcEntry(string inputValue, double value)
         {
+            double retval = 0;
             if (_clone == null)
                 _clone = (GridEntry)Clone();
 
@@ -125,7 +146,7 @@ namespace TSApp.ViewModel
             DateTime start = ((DateTimeOffset)te.Start).DateTime;
             if (start == null)
                 return;
-            if (Helpers.GetWeekNumber(start) == weekNumber)
+            if (Helpers.GetWeekNumber(start) == WeekNumber)
             {
                 workDaily[(int)start.DayOfWeek] += te.WorkTime.Hours;
             }
@@ -134,23 +155,27 @@ namespace TSApp.ViewModel
 
     public class WorkItemViewModel : ObservableObject
     {
+        private int currentWeekNumber = 0;
         public BindingList<GridEntry> _gridEntries = new BindingList<GridEntry>();
         private List<TFSWorkItem> _workItems = new List<TFSWorkItem>();
         private List<TimeEntry> _timeEntries = new List<TimeEntry>();
         private TimeSpan[] _defaultWorkdayStart = new TimeSpan[7];
-        public WorkItemViewModel()
+        public WorkItemViewModel(int? WeekNumber)
         {
-
             for (int i = 0; i < 7; i++) {
                 if (Settings.Default.defaultWorkDayStart == null)
                     throw new NotSupportedException("Settings.Default.defaultWorkDayStart is null");
                 _defaultWorkdayStart[i] = Settings.Default.defaultWorkDayStart;
             }
+            if (WeekNumber == null)
+                currentWeekNumber = Helpers.CurrentWeekNumber();
         }
 
         public BindingList<GridEntry> GridEntries { get => _gridEntries; set => SetProperty(ref _gridEntries, value); }
         public List<TFSWorkItem> WorkItems { get => _workItems; set => SetProperty(ref _workItems, value); }
         public List<TimeEntry> TimeEntries { get => _timeEntries; set => SetProperty(ref _timeEntries, value); }
+        public int CurrentWeekNumber { get => currentWeekNumber; set => currentWeekNumber = value; }
+
         public TimeSpan GetWorkDayStart(DayOfWeek i)
         {
             return _defaultWorkdayStart[(int)i];
@@ -160,30 +185,36 @@ namespace TSApp.ViewModel
             _defaultWorkdayStart[(int)i] = value;
         }
 
-        public async Task<bool> Populate(ServerConnection cn)
+        public async Task<bool> FetchTfsData(ServerConnection cn)
         {
             var x = await cn.QueryMyTasks();
             Dictionary<object, TimeSpan> workDaily = new Dictionary<object, TimeSpan>();
             foreach (var item in x)
             {
-                var tItem = new TFSWorkItem(item);
-                var ge = new GridEntry(tItem, Helpers.CurrentWeekNumber());
-                GridEntries.Add(ge);
-                _workItems.Add(tItem);
-//                var w = await GetClokifyTE(cn, ge, workDaily);
+                _workItems.Add(new TFSWorkItem(item));
             }
+            PopulateGrid();
             return true;
         } 
         
-        public async Task<bool> PopulateClokiData(ServerConnection cn)
+        private void PopulateGrid()
+        {
+            foreach(var i in _workItems)
+            {
+                var ge = new GridEntry(i, currentWeekNumber);
+                GridEntries.Add(ge);
+            }
+        }
+
+        public async Task<bool> FetchClokiData(ServerConnection cn)
         {
             var x = await cn.FindAllTimeEntriesForUser(null, DateTime.Today.AddDays(-30));
             
             if (x == null || x.Data == null)
                 return false;
-            TimeEntryDtoImpl dto = null;
-            foreach (var d in x.Data)
+            foreach (TimeEntryDtoImpl d in x.Data)
             {
+                // задачи без конца и начала пропускаем
                 if (d.TimeInterval.End == null || d.TimeInterval.Start == null)
                     continue;
                 _timeEntries.Add(new TimeEntry(d));
@@ -191,32 +222,33 @@ namespace TSApp.ViewModel
             return true;
         }
 
-        private async Task<bool> GetClokifyTE(ServerConnection cn, GridEntry ge, Dictionary<object, TimeSpan> workDaily)
+        public double GetTotalWork(int workDay)
         {
-            TimeSpan hours = TimeSpan.Zero;
-            DateTimeOffset calday = DateTime.Today;
-
-            DateTime startOfWeek = DateTime.Today.AddDays(-1 * (int)(DateTime.Today.DayOfWeek));
-
-            var x = await cn.FindAllTimeEntriesForUser(ge.Id, DateTime.Today.AddDays(-30));
-
-            if (x == null || x.Data == null)
-                return false;
-
-            TimeEntryDtoImpl dto = null;
-            foreach (var d in x.Data)
+            double retval = 0;
+            foreach(var w in _gridEntries)
             {
-                // задачи без конца пропускаем
-                if (d.TimeInterval.End == null || d.TimeInterval.Start == null)
-                    continue;
-                var start = (DateTimeOffset)d.TimeInterval.Start;
-                var end = (DateTimeOffset)d.TimeInterval.End;
-                var key = new { calday = start.Date, id = ge.Id};
-                if (workDaily.TryGetValue(key, out var value))
-                    workDaily[key] = end.Subtract(start) + value;
-                else workDaily.Add(key, end.Subtract(start));
+                retval += w.WorkByDay(workDay);
             }
-            return true;
+            return retval;
+        }
+
+        public void FillCurrentWork ()
+        {
+            // шуршим по всем timeEntry для каждой задачи  
+            foreach (var t in _gridEntries)
+            {
+                var teList = _timeEntries.Where(p => p.TaskId == t.Id.ToString());
+                //и собираем затраченное время по дням недели
+                
+                foreach (var te in teList)
+                {
+                    if (te.Start >= Helpers.WeekBoundaries(CurrentWeekNumber, true) &&
+                        te.Start <= Helpers.WeekBoundaries(CurrentWeekNumber, false))
+                    {
+                        t.AddWorkByDay((int)te.Start.DateTime.DayOfWeek - 1, te.WorkTime.Hours);
+                    }
+                }
+            }
         }
     }
 }

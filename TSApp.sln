@@ -5,6 +5,8 @@ VisualStudioVersion = 16.0.31911.196
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TSApp", "TSApp.csproj", "{178B30FB-070A-47C4-9840-EEE5F0D9EE2F}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Prototyping", "..\Prototyping\Prototyping.csproj", "{0FEED2AB-8489-45BA-BAD9-728AEEA9BF0E}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -15,6 +17,10 @@ Global
 		{178B30FB-070A-47C4-9840-EEE5F0D9EE2F}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{178B30FB-070A-47C4-9840-EEE5F0D9EE2F}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{178B30FB-070A-47C4-9840-EEE5F0D9EE2F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0FEED2AB-8489-45BA-BAD9-728AEEA9BF0E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0FEED2AB-8489-45BA-BAD9-728AEEA9BF0E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0FEED2AB-8489-45BA-BAD9-728AEEA9BF0E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0FEED2AB-8489-45BA-BAD9-728AEEA9BF0E}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

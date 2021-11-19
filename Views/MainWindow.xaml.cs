@@ -1,5 +1,6 @@
 ﻿using Syncfusion.Data;
 using Syncfusion.UI.Xaml.Grid;
+using Syncfusion.UI.Xaml.Grid.Helpers;
 using System;
 using System.Windows;
 using System.Windows.Input;
@@ -14,16 +15,22 @@ namespace TSApp
     public partial class MainWindow : Window
     {
         private MainFormModel mdl = new MainFormModel();
-        private WorkItemViewModel WorkItemViewModel = new WorkItemViewModel();
         public MainWindow()
         {
-            InitializeComponent();            
-            this.DataContext = mdl;
+            InitializeComponent();
+            DataContext = mdl;
             mdl.connection.OnInitComplete += Connection_OnInitComplete;
             mainGrid.ItemsSource = mdl.gridModel.GridEntries;
             mainGrid.QueryUnBoundRow += MainGrid_QueryUnBoundRow;
             mainGrid.QueryCoveredRange += MainGrid_QueryCoveredRange;
             mainGrid.SortComparers.Add(new SortComparer() { Comparer = new CustomStateComparer(), PropertyName = "State" });
+            mdl.gridModel.GridEntries.ListChanged += GridEntries_ListChanged;
+        }
+
+        private void GridEntries_ListChanged(object sender, System.ComponentModel.ListChangedEventArgs e)
+        {
+            mainGrid.InValidateUnBoundRow(mainGrid.UnBoundRows[1]);
+            mainGrid.GetVisualContainer().InvalidateMeasureInfo(); ;
         }
 
         #region grid painting
@@ -31,7 +38,7 @@ namespace TSApp
         private void MainGrid_QueryCoveredRange(object sender, GridQueryCoveredRangeEventArgs e)
         {
             var x = e.RowColumnIndex.ColumnIndex;
-            if (e.RowColumnIndex.ColumnIndex < 3)
+            if (e.RowColumnIndex.ColumnIndex < 5)
             {
                 e.Handled = true;
                 return;
@@ -42,24 +49,42 @@ namespace TSApp
                 e.Handled = true;
             }
         }
-        // рисуем первую строку
+        // рисуем первую и последнюю строку
         private void MainGrid_QueryUnBoundRow(object sender, Syncfusion.UI.Xaml.Grid.GridUnBoundRowEventsArgs e)
         {
             int index = e.RowColumnIndex.ColumnIndex;
+            int rowindex = e.RowColumnIndex.RowIndex;
             if (e.UnBoundAction == UnBoundActions.QueryData)
             {
-                if (index == 2)
+                if (rowindex == 1)
                 {
-                    e.CellTemplate = App.Current.Resources["UnBoundRowCellTemplate"] as DataTemplate;
-                    e.Value = "Начало рабочего дня:";
-                    e.Handled = true;                    
-                }
-                // суббота и воскресенье - нерабочие дни =)
-                else if (index >= 3 && index % 2 != 0 && index/2 < 7 )
+                    if (index == 2)
+                    {
+                        e.CellTemplate = App.Current.Resources["TopCellTemplate"] as DataTemplate;
+                        //e.Value = "asdfasdfasdfasdf";
+                        e.Handled = true;
+                    }
+                    // суббота и воскресенье - нерабочие дни =)
+                    else if (index >= 5 && index % 2 != 0 && index < 14)
+                    {
+                        int d = index / 2 - 2;
+                        e.Value = mdl.gridModel.GetWorkDayStart((DayOfWeek)d);
+                        e.Handled = true;
+                    }
+                } 
+                else
                 {
-                    int d = index/2 - 1;
-                    e.Value = WorkItemViewModel.GetWorkDayStart((DayOfWeek)d);
-                    e.Handled = true;
+                    if (index == 2)
+                    {
+                        e.CellTemplate = App.Current.Resources["BottomCellTemplate"] as DataTemplate;
+                        e.Handled = true;
+                    }
+                    else if (index >= 5 && index % 2 != 0 && index < 14)
+                    {
+                        int d = index / 2 - 2;
+                        e.Value = mdl.gridModel.GetTotalWork(d);
+                        e.Handled = true;
+                    }
                 }
 
             }
@@ -97,8 +122,8 @@ namespace TSApp
 
         private async void btnLoad_Click(object sender, RoutedEventArgs e)
         {
-            await mdl.gridModel.PopulateClokiData(mdl.connection);
-            await mdl.gridModel.Populate(mdl.connection);
+            await mdl.gridModel.FetchTfsData(mdl.connection);
+            await mdl.gridModel.FetchClokiData(mdl.connection);            
             this.mainGrid.UpdateLayout();
         }
 
@@ -115,6 +140,23 @@ namespace TSApp
         private void button1_Click(object sender, RoutedEventArgs e)
         {
 
+        }
+
+        private void mainGrid_ItemsSourceChanged(object sender, GridItemsSourceChangedEventArgs e)
+        {
+
+            VisualContainer container = this.mainGrid.GetVisualContainer();
+            container.InvalidateMeasureInfo();
+        }
+
+        private void mainGrid_CurrentCellBeginEdit(object sender, CurrentCellBeginEditEventArgs e)
+        {
+            var unboundRow = mainGrid.GetUnBoundRow(e.RowColumnIndex.RowIndex);
+
+            if (unboundRow == null) 
+                return;
+            if (unboundRow != null && e.RowColumnIndex.ColumnIndex < 4)
+                e.Cancel = true;
         }
     }
 }

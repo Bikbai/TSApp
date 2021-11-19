@@ -5,18 +5,19 @@
              xmlns:syncfusion="http://schemas.syncfusion.com/wpf" x:Class="TSApp.App"
              StartupUri="./Views/MainWindow.xaml">
     <Application.Resources>
-        <DataTemplate x:Key="UnBoundRowCellTemplate">
-            <Grid>
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="300"/>
-                </Grid.ColumnDefinitions>
+        <DataTemplate x:Key="TopCellTemplate">
                 <TextBlock 
-                   Grid.Column="0" Text="Начало рабочей недели:" 
-                   VerticalAlignment="Center"  
-                   HorizontalAlignment="Right" 
-                   Margin="0,0,10,0"
+                    Width="690"
+                    Text="Начало рабочего дня:"
+                    TextAlignment="Right" IsEnabled="False" Margin="0,0,10,0"
                    />
-            </Grid>
         </DataTemplate>
+        <DataTemplate x:Key="BottomCellTemplate">
+                <TextBlock
+                    Width="690"
+                    Text="Итого:"
+                    TextAlignment="Right" FontWeight="Bold"
+                   />
+        </DataTemplate>        
     </Application.Resources>
 </Application>
