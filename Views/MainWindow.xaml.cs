@@ -6,7 +6,6 @@ using System.Windows;
 using System.Windows.Input;
 using TSApp.Bahaviors;
 using TSApp.ViewModel;
-using TSApp.Views;
 
 namespace TSApp
 {
@@ -25,12 +24,8 @@ namespace TSApp
             mainGrid.QueryUnBoundRow += MainGrid_QueryUnBoundRow;
             mainGrid.QueryCoveredRange += MainGrid_QueryCoveredRange;
             mainGrid.SortComparers.Add(new SortComparer() { Comparer = new CustomStateComparer(), PropertyName = "State" });
-            mdl.gridModel.GridEntries.ListChanged += GridEntries_ListChanged;
         }
 
-        private void GridEntries_ListChanged(object sender, System.ComponentModel.ListChangedEventArgs e)
-        {
-        }
 
         #region grid painting
         // схлопываем ячейки первой строки
@@ -137,6 +132,7 @@ namespace TSApp
 
             if (unboundRow == null) 
                 return;
+            // последняя строка - не редактируется
             if (unboundRow != null && e.RowColumnIndex.ColumnIndex < 4)
                 e.Cancel = true;
         }
