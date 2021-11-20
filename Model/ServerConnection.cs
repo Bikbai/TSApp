@@ -170,7 +170,7 @@ namespace TSApp
             else return false;
         }
 
-        public async Task<IRestResponse<List<TimeEntryDtoImpl>>> FindAllTimeEntriesForUser(int? TFSworkItemId, DateTime queryFrom) 
+        public async Task<IRestResponse<List<TimeEntryDtoImpl>>> FindAllTimeEntriesForUser(int? TFSworkItemId, DateTime? queryFrom) 
         {
             string query = TFSworkItemId == null ? null : TFSworkItemId.ToString();
             var ret = await clockify.FindAllTimeEntriesForUserAsync(StaticData.WorkspaceId, StaticData.UserId,

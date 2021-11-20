@@ -38,7 +38,7 @@ namespace TSApp
         {
             this.Clear();
             // синхронно запрашиваем TFS
-            var wi = tdClient.QueryMyTasks().Result;
+            var wi = await tdClient.QueryMyTasks();
             int idx = 0;
             foreach (var i in wi)
             {
@@ -50,12 +50,6 @@ namespace TSApp
                 
             }
             return;
-            foreach (var item in this)
-            {
-                await FetchClokiDataAsync(item);
-            }
-
-            OnCollectionChanged(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset, null));            
         }
 
         private void Item_EntryValidated(EntryValidatedEventArgs e)

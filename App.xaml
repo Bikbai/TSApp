@@ -13,11 +13,18 @@
                    />
         </DataTemplate>
         <DataTemplate x:Key="BottomCellTemplate">
-                <TextBlock
+            <TextBlock
                     Width="690"
                     Text="Итого:"
                     TextAlignment="Right" FontWeight="Bold"
                    />
-        </DataTemplate>        
+        </DataTemplate>
+        <DataTemplate x:Key="totalWork">
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                <TextBlock FontWeight="Bold" Text="{Binding Path=CompletedWork}"/>
+                <TextBlock FontWeight="Bold" Text="/"/>
+                <TextBlock FontWeight="Bold" Text="{Binding Path=TotalWork}"/>
+            </StackPanel>
+        </DataTemplate>
     </Application.Resources>
 </Application>

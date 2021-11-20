@@ -25,14 +25,15 @@ namespace TSApp.ViewModel
 
         private async void Connection_OnInitComplete(OnInitCompleteEventArgs args)
         {
+            if (connection == null)
+                return;
             switch (args.result.Status)
             {
                 case CONN_RESULT.OK:
                     BtnCnxnStatusText = "Успешно подключен";
-                    var y = await gridModel.FetchTfsData(connection);
+                    var y = await gridModel.FetchTfsData(connection);                    
+                    var work = await gridModel.FillCurrentWork(connection);
                     var x = await gridModel.FetchClokiData(connection);
-                    gridModel.FillCurrentWork();
-                    
                     break;
                 case CONN_RESULT.CONNECTING:
                     BtnCnxnStatusText = "В процессе подключения";

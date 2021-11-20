@@ -6,6 +6,7 @@ using System.Windows;
 using System.Windows.Input;
 using TSApp.Bahaviors;
 using TSApp.ViewModel;
+using TSApp.Views;
 
 namespace TSApp
 {
@@ -29,8 +30,6 @@ namespace TSApp
 
         private void GridEntries_ListChanged(object sender, System.ComponentModel.ListChangedEventArgs e)
         {
-            mainGrid.InValidateUnBoundRow(mainGrid.UnBoundRows[1]);
-            mainGrid.GetVisualContainer().InvalidateMeasureInfo(); ;
         }
 
         #region grid painting
@@ -61,14 +60,13 @@ namespace TSApp
                     if (index == 2)
                     {
                         e.CellTemplate = App.Current.Resources["TopCellTemplate"] as DataTemplate;
-                        //e.Value = "asdfasdfasdfasdf";
                         e.Handled = true;
                     }
                     // суббота и воскресенье - нерабочие дни =)
                     else if (index >= 5 && index % 2 != 0 && index < 14)
                     {
                         int d = index / 2 - 2;
-                        e.Value = mdl.gridModel.GetWorkDayStart((DayOfWeek)d);
+                        e.Value = mdl.gridModel.GetWorkDayStart((DayOfWeek)d).ToString(@"hh\:mm");
                         e.Handled = true;
                     }
                 } 
@@ -122,14 +120,6 @@ namespace TSApp
 
         private async void btnLoad_Click(object sender, RoutedEventArgs e)
         {
-            await mdl.gridModel.FetchTfsData(mdl.connection);
-            await mdl.gridModel.FetchClokiData(mdl.connection);            
-            this.mainGrid.UpdateLayout();
-        }
-
-        private void mainGrid_TextInput(object sender, TextCompositionEventArgs e)
-        {
-
         }
 
         private void mainGrid_AddNewRowInitiating(object sender, AddNewRowInitiatingEventArgs e)
@@ -139,14 +129,6 @@ namespace TSApp
 
         private void button1_Click(object sender, RoutedEventArgs e)
         {
-
-        }
-
-        private void mainGrid_ItemsSourceChanged(object sender, GridItemsSourceChangedEventArgs e)
-        {
-
-            VisualContainer container = this.mainGrid.GetVisualContainer();
-            container.InvalidateMeasureInfo();
         }
 
         private void mainGrid_CurrentCellBeginEdit(object sender, CurrentCellBeginEditEventArgs e)

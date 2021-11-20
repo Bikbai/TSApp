@@ -13,18 +13,22 @@
             Width="{Binding Width, ElementName=window}" 
             VerticalAlignment="Top">
         <Grid Height="747" Canvas.Top="68" Width="{Binding Width, ElementName=canvas}">
-            <local:SfDataGridExt x:Name="mainGrid" 
-                ShowColumnWhenGrouped="False" 
+            <local:SfDataGridExt 
+                x:Name="mainGrid"
+                ShowColumnWhenGrouped="False"
                 AutoGenerateColumns="False"
-                AutoExpandGroups="True" FontSize="16" FontFamily="Segoe UI Symbol" 
-                                 AddNewRowPosition="Bottom" RowHeight="28"
+                AutoExpandGroups="True" 
+                FontSize="16" FontFamily="Segoe UI Symbol"
+                AddNewRowPosition="Bottom"
+                RowHeight="30"
                 SelectionUnit="Cell"
                 NavigationMode="Cell"
-                AllowFrozenGroupHeaders="False" 
-                EditTrigger="OnTap" 
-                                 AddNewRowInitiating="mainGrid_AddNewRowInitiating" 
-                                 Margin="10,10,10,10" 
-                                 ItemsSourceChanged="mainGrid_ItemsSourceChanged" ScrollViewer.VerticalScrollBarVisibility="Visible" CurrentCellBeginEdit="mainGrid_CurrentCellBeginEdit">
+                AllowFrozenGroupHeaders="False"
+                EditTrigger="OnTap"
+                AddNewRowInitiating="mainGrid_AddNewRowInitiating"
+                Margin="10,10,10,10"
+                ScrollViewer.VerticalScrollBarVisibility="Visible"
+                CurrentCellBeginEdit="mainGrid_CurrentCellBeginEdit" AllowSorting="False">
                 <local:SfDataGridExt.UnBoundRows>
                     <syncfusion:GridUnBoundRow Position="Top" x:Name="WorkHours"/>
                     <syncfusion:GridUnBoundRow Position="Bottom" x:Name="Totals"/>
@@ -33,45 +37,51 @@
                     <syncfusion:GridTextColumn MappingName ="State" HeaderText="Статус (тип)" 
                         GroupMode="Default" AllowGrouping="True"/>
                     <syncfusion:GridTextColumn MappingName ="Title" HeaderText="" 
-                        Width="700" AllowEditing="True"/>
+                        Width="700" AllowEditing="False"/>
                     <syncfusion:GridTextColumn MappingName ="State" HeaderText="Dummy" IsHidden="True" 
                         AllowEditing="False" Width="0" TextAlignment="Right"/>
                     
-                    <syncfusion:GridTextColumn MappingName ="Stats" HeaderText="OE (CW)" 
-                        AllowEditing="False" Width="60" TextAlignment="Right"/>
+                    <syncfusion:GridTextColumn MappingName ="." HeaderText="OE (CW)" 
+                        AllowEditing="False" Width="60" TextAlignment="Right" IsHidden="True"/>
                     <syncfusion:GridTextColumn MappingName ="CompletedWorkMon" HeaderText="Пн" 
-                        AllowEditing="True" Width="40" TextAlignment="Right"/>
+                        AllowEditing="True" Width="60" TextAlignment="Right"/>
 
-                    <syncfusion:GridTextColumn MappingName ="CommentDaily[1]"  HeaderText="Комментарий"
+                    <syncfusion:GridTextColumn MappingName ="CommentDaily[0]"  HeaderText="Комментарий"
                         AllowEditing="True" Width="100"/>
 
                     <syncfusion:GridTextColumn MappingName ="CompletedWorkTue" HeaderText="Вт"
-                        AllowEditing="True" Width="40" TextAlignment="Right"/>
-                    <syncfusion:GridTextColumn AllowEditing="True" MappingName ="CommentDaily[2]"  Width="100" HeaderText="Комментарий"/>
+                        AllowEditing="True" Width="60" TextAlignment="Right"/>
+                    <syncfusion:GridTextColumn AllowEditing="True" MappingName ="CommentDaily[1]"  Width="100" HeaderText="Комментарий"/>
 
                     <syncfusion:GridTextColumn MappingName ="CompletedWorkWed" HeaderText="Ср"
-                        AllowEditing="True" Width="40" TextAlignment="Right"/>
-                    <syncfusion:GridTextColumn AllowEditing="True" MappingName ="CommentDaily[3]"  Width="100" HeaderText="Комментарий"/>
+                        AllowEditing="True" Width="60" TextAlignment="Right"/>
+                    <syncfusion:GridTextColumn AllowEditing="True" MappingName ="CommentDaily[2]"  Width="100" HeaderText="Комментарий"/>
 
                     <syncfusion:GridTextColumn MappingName ="CompletedWorkThu" HeaderText="Чт"
-                        AllowEditing="True" Width="40" TextAlignment="Right"/>
-                    <syncfusion:GridTextColumn AllowEditing="True" MappingName ="CommentDaily[4]"  Width="100" HeaderText="Комментарий"/>
+                        AllowEditing="True" Width="60" TextAlignment="Right"/>
+                    <syncfusion:GridTextColumn AllowEditing="True" MappingName ="CommentDaily[3]"  Width="100" HeaderText="Комментарий"/>
 
                     <syncfusion:GridTextColumn MappingName ="CompletedWorkFri" HeaderText="Пт"
-                        AllowEditing="True" Width="40" TextAlignment="Right"/>
-                    <syncfusion:GridTextColumn AllowEditing="True" MappingName ="CommentDaily[5]"  Width="100" HeaderText="Комментарий"/>
+                        AllowEditing="True" Width="60" TextAlignment="Right"/>
+                    <syncfusion:GridTextColumn AllowEditing="True" MappingName ="CommentDaily[4]"  Width="100" HeaderText="Комментарий"/>
 
                     <syncfusion:GridTextColumn MappingName ="CompletedWorkSun" HeaderText="СБ"
-                        AllowEditing="True" Width="40" TextAlignment="Right"/>
-                    <syncfusion:GridTextColumn AllowEditing="True" MappingName ="CommentDaily[6]"  Width="100" HeaderText="Комментарий"/>
+                        AllowEditing="True" Width="60" TextAlignment="Right"/>
+                    <syncfusion:GridTextColumn AllowEditing="True" MappingName ="CommentDaily[5]"  Width="100" HeaderText="Комментарий"/>
 
                     <syncfusion:GridTextColumn MappingName ="CompletedWorkSat" HeaderText="ВС"
-                        AllowEditing="True" Width="40" TextAlignment="Right"/>
-                    <syncfusion:GridTextColumn MappingName ="CommentDaily[0]" HeaderText="Комментарий" AllowEditing="True"  Width="100"/>
+                        AllowEditing="True" Width="60" TextAlignment="Right"/>
+                    <syncfusion:GridTextColumn MappingName ="CommentDaily[6]" HeaderText="Комментарий" AllowEditing="True"  Width="100"/>
+                    <syncfusion:GridTemplateColumn HeaderText="Суммарно"
+                        AllowEditing="False" Width="80" TextAlignment="Right" CellTemplate="{DynamicResource totalWork}"/>
                 </local:SfDataGridExt.Columns>
                 <local:SfDataGridExt.GroupColumnDescriptions  >
                     <syncfusion:GroupColumnDescription ColumnName="State" SortGroupRecords="True"  />
                 </local:SfDataGridExt.GroupColumnDescriptions>
+                <syncfusion:SfDataGrid.SortColumnDescriptions>
+                    <syncfusion:SortColumnDescription ColumnName="State" SortDirection="Ascending" />
+                    <syncfusion:SortColumnDescription ColumnName="Title" SortDirection="Ascending" />
+                </syncfusion:SfDataGrid.SortColumnDescriptions>
             </local:SfDataGridExt>
         </Grid>
         <StatusBar x:Name="statusBar" Height="40" VerticalAlignment="Bottom" Width="{Binding Width, ElementName=window}" Canvas.Top="820">

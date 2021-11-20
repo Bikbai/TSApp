@@ -21,9 +21,13 @@ namespace TSApp.ViewModel
         private int id; //Id
         private string title; //Название                              
         private double originalEstimate = 10;
-        private double completedWork = 7.5;
-        private double[] workDaily = {0,0,0,0,0,0,0}; // учтённая трудоемкость по дням недели
-        private string[] commentDaily;  // комментарии по дням недели
+        // учтено в TFS, в часах
+        private double completedWork = 0;
+        // учтено по дням в Клоки
+        private TimeSpan[] workDaily = { new TimeSpan(0), new TimeSpan(0), new TimeSpan(0), new TimeSpan(0), new TimeSpan(0), new TimeSpan(0), new TimeSpan(0) }; // учтённая трудоемкость по дням недели
+        // учтено по клоки, в часах
+        private double totalWork = 0;
+        private ObservableCollection<string> commentDaily = new ObservableCollection<string> {"c0", "c1", "c2", "c3", "c4", "c5", "c6"};  // комментарии по дням недели
         private int weekNumber;
 
         GridEntry _clone;
@@ -40,29 +44,27 @@ namespace TSApp.ViewModel
             } 
         }
         public int Id {get => id; set => id = value;}
-        public string Title {get => title; set => title = value;}
-        public string[] CommentDaily { get => commentDaily; set => commentDaily = value; }
-        public string CompletedWorkMon { get => workDaily[0].ToString(); set => workDaily[0] = CalcEntry(value, workDaily[0]); }
-        public string CompletedWorkTue { get => workDaily[1].ToString(); set => workDaily[1] = CalcEntry(value, workDaily[1]); }
-        public string CompletedWorkWed { get => workDaily[2].ToString(); set => workDaily[2] = CalcEntry(value, workDaily[2]); }
-        public string CompletedWorkThu { get => workDaily[3].ToString(); set => workDaily[3] = CalcEntry(value, workDaily[3]); }
-        public string CompletedWorkFri { get => workDaily[4].ToString(); set => workDaily[4] = CalcEntry(value, workDaily[4]); }
-        public string CompletedWorkSun { get => workDaily[5].ToString(); set => workDaily[5] = CalcEntry(value, workDaily[5]); }
-        public string CompletedWorkSat { get => workDaily[6].ToString(); set => workDaily[6] = CalcEntry(value, workDaily[6]); }
+        public string Title {get => id.ToString() + '.' + title; set => title = value;}
+        public ObservableCollection<string> CommentDaily { get => commentDaily; set => commentDaily = value; }
+        public string CompletedWorkMon { get => workDaily[0].TotalHours.ToString("0.00"); set => ParseEntry(value, 0); }
+        public string CompletedWorkTue { get => workDaily[1].TotalHours.ToString("0.00"); set => ParseEntry(value, 1); }
+        public string CompletedWorkWed { get => workDaily[2].TotalHours.ToString("0.00"); set => ParseEntry(value, 2); }
+        public string CompletedWorkThu { get => workDaily[3].TotalHours.ToString("0.00"); set => ParseEntry(value, 3); }
+        public string CompletedWorkFri { get => workDaily[4].TotalHours.ToString("0.00"); set => ParseEntry(value, 4); }
+        public string CompletedWorkSun { get => workDaily[5].TotalHours.ToString("0.00"); set => ParseEntry(value, 5); }
+        public string CompletedWorkSat { get => workDaily[6].TotalHours.ToString("0.00"); set => ParseEntry(value, 6); }
         public int WeekNumber { get => weekNumber; set => weekNumber = value; }
         public double OriginalEstimate { get => originalEstimate; set => originalEstimate = value; }
-        public double CompletedWork { get => completedWork; set => completedWork = value; }
-        public string Stats { get => TimeSpan.FromHours(completedWork).ToString(@"hh\:mm"); }
+        public double CompletedWork { get => Math.Round(completedWork, 2); }
+        public string Stats { get => completedWork.ToString("0.00"); }
 
+        public double TotalWork { get => Math.Round(totalWork, 2); set => SetProperty(ref totalWork, value); }
         #endregion
 
         #region Constructors
         public GridEntry(string state)
         {
             this.State = state;
-            id = new Random(1000).Next();
-            title = "Test item";
-            commentDaily = new string[7];
         }
 
         public GridEntry(TFSWorkItem item, int week)
@@ -79,12 +81,13 @@ namespace TSApp.ViewModel
         {
             if (workDay > 7 || work < 0)
                 throw new NotSupportedException("AddWorkByDay: workday = " + workDay);
-            SetProperty(ref workDaily[workDay], workDaily[workDay] + work);
+            SetProperty(ref workDaily[workDay], workDaily[workDay] + TimeSpan.FromHours(work));
+            TotalWork = Helpers.TimespanSum(workDaily);
         }
 
         public double WorkByDay(int workDay)
         {
-            return workDaily[workDay];
+            return workDaily[workDay].TotalHours;
         }
 
         // функция расчёта нового значения, в зависимости от команды вида
@@ -92,12 +95,17 @@ namespace TSApp.ViewModel
         // +число - добавить
         // число - присвоение
         // отслеживает создание новой версии
-        private double CalcEntry(string inputValue, double value)
+        private void ParseEntry(string inputValue, int dayOfWeek)
         {
-            double retval = 0;
+            
+            if (dayOfWeek > 6)
+                throw new NotSupportedException("ParseEntry: dayOfWeek = " + dayOfWeek);
             if (_clone == null)
                 _clone = (GridEntry)Clone();
 
+            // текущее значение
+            double currentValue = workDaily[dayOfWeek].TotalHours;
+            // вычисляем введённую команду
             CMD cmd = CMD.replace;
             double val = 0;
             if (inputValue[0] == '+')
@@ -113,11 +121,18 @@ namespace TSApp.ViewModel
             if (cmd == CMD.replace)
             {
                 val = Helpers.GetDouble(inputValue, 0, out successEntry);
-                return successEntry ? val : value;
+                if (successEntry)
+                    SetProperty(ref workDaily[dayOfWeek], TimeSpan.FromHours(val));
+                TotalWork = Helpers.TimespanSum(workDaily);
+                return;
             }
             val = Helpers.GetDouble(inputValue.Substring(1, inputValue.Length-1), 0, out successEntry);
-            val = value + val * (cmd == CMD.decr ? -1 : 1);
-            return val < 0 ? 0 : val;
+            if (!successEntry)
+                return;
+            currentValue = currentValue + val * (cmd == CMD.decr ? -1 : 1);
+            //            SetProperty(ref workDaily[dayOfWeek], currentValue < 0 ? TimeSpan.FromHours(0) : TimeSpan.FromHours(currentValue));
+            workDaily[dayOfWeek] = currentValue < 0 ? TimeSpan.FromHours(0) : TimeSpan.FromHours(currentValue);
+            TotalWork = Helpers.TimespanSum(workDaily);
         }
 
         public object Clone()
@@ -148,7 +163,7 @@ namespace TSApp.ViewModel
                 return;
             if (Helpers.GetWeekNumber(start) == WeekNumber)
             {
-                workDaily[(int)start.DayOfWeek] += te.WorkTime.Hours;
+                workDaily[(int)start.DayOfWeek] += te.WorkTime;
             }
         }
     }
@@ -160,15 +175,29 @@ namespace TSApp.ViewModel
         private List<TFSWorkItem> _workItems = new List<TFSWorkItem>();
         private List<TimeEntry> _timeEntries = new List<TimeEntry>();
         private TimeSpan[] _defaultWorkdayStart = new TimeSpan[7];
+
+        public WorkItemViewModel()
+        {
+            Init();
+            currentWeekNumber = Helpers.CurrentWeekNumber();
+        }
+
         public WorkItemViewModel(int? WeekNumber)
         {
-            for (int i = 0; i < 7; i++) {
+            Init();
+            if (WeekNumber == null)
+                currentWeekNumber = Helpers.CurrentWeekNumber();
+        }
+
+        private void Init()
+        {
+            for (int i = 0; i < 7; i++)
+            {
                 if (Settings.Default.defaultWorkDayStart == null)
                     throw new NotSupportedException("Settings.Default.defaultWorkDayStart is null");
                 _defaultWorkdayStart[i] = Settings.Default.defaultWorkDayStart;
             }
-            if (WeekNumber == null)
-                currentWeekNumber = Helpers.CurrentWeekNumber();
+
         }
 
         public BindingList<GridEntry> GridEntries { get => _gridEntries; set => SetProperty(ref _gridEntries, value); }
@@ -202,8 +231,15 @@ namespace TSApp.ViewModel
             foreach(var i in _workItems)
             {
                 var ge = new GridEntry(i, currentWeekNumber);
+                ge.PropertyChanged += Ge_PropertyChanged;
                 GridEntries.Add(ge);
             }
+        }
+
+        private void Ge_PropertyChanged(object sender, PropertyChangedEventArgs e)
+        {
+            if (e.PropertyName == "CompletedWorkMon")
+                return;
         }
 
         public async Task<bool> FetchClokiData(ServerConnection cn)
@@ -217,7 +253,10 @@ namespace TSApp.ViewModel
                 // задачи без конца и начала пропускаем
                 if (d.TimeInterval.End == null || d.TimeInterval.Start == null)
                     continue;
-                _timeEntries.Add(new TimeEntry(d));
+                // парсим название задачи. Добавляем те, которые без задачи
+                var te = new TimeEntry(d);
+                if (te.Id == null)
+                    _timeEntries.Add(new TimeEntry(d));
             }
             return true;
         }
@@ -232,23 +271,36 @@ namespace TSApp.ViewModel
             return retval;
         }
 
-        public void FillCurrentWork ()
+        public async Task<bool> FillCurrentWork (ServerConnection cn)
         {
+            if (_gridEntries == null)
+                return false;
             // шуршим по всем timeEntry для каждой задачи  
             foreach (var t in _gridEntries)
             {
-                var teList = _timeEntries.Where(p => p.TaskId == t.Id.ToString());
+                var teList = await cn.FindAllTimeEntriesForUser(t.Id, null).ConfigureAwait(true);
+                if (!teList.IsSuccessful)
+                    return false;
                 //и собираем затраченное время по дням недели
                 
-                foreach (var te in teList)
+                foreach (var te in teList.Data)
                 {
-                    if (te.Start >= Helpers.WeekBoundaries(CurrentWeekNumber, true) &&
-                        te.Start <= Helpers.WeekBoundaries(CurrentWeekNumber, false))
+                    // скипуем не начатые и не законченные задачи
+                    if (te.TimeInterval.Start == null || te.TimeInterval.End == null)
+                        continue;
+                    // учитываем задачи, которые попали в текущую неделю
+                    DateTime start = ((DateTimeOffset)te.TimeInterval.Start).DateTime;
+                    DateTime end = ((DateTimeOffset)te.TimeInterval.End).DateTime;
+                    if (start >= Helpers.WeekBoundaries(CurrentWeekNumber, true) &&
+                        start <= Helpers.WeekBoundaries(CurrentWeekNumber, false))
                     {
-                        t.AddWorkByDay((int)te.Start.DateTime.DayOfWeek - 1, te.WorkTime.Hours);
+                        t.AddWorkByDay((int)start.DayOfWeek - 1, end.Subtract(start).TotalHours);
                     }
+                    _timeEntries.Add(new TimeEntry(te));
                 }
             }
+
+            return true;
         }
     }
 }

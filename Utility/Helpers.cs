@@ -5,6 +5,15 @@ namespace TSApp
 {
     public static class Helpers
     {
+        public static double TimespanSum(TimeSpan[] timeSpans)
+        {
+            double retval = 0;
+            foreach (var t in timeSpans)
+            {
+                retval += t.TotalHours;
+            }
+            return retval;
+        }
         public static double GetDouble(string value, double defaultValue, out bool success)
         {
             double result;
