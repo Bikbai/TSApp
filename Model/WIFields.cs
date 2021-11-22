@@ -9,7 +9,8 @@
         public static string CompletedWork => "Microsoft.VSTS.Scheduling.CompletedWork";
         public static string State => "System.State";
         public static string ActivateDate => "Microsoft.VSTS.Common.ActivatedDate";
+        public static string Comment => "System.Comment";
 
-        
+
     }
 }

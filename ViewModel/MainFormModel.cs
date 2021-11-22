@@ -23,6 +23,11 @@ namespace TSApp.ViewModel
             gridModel = new WorkItemViewModel(null);
         }
 
+        public async void Publish()
+        {
+           var x = await gridModel.Publish(connection);
+        }
+
         private async void Connection_OnInitComplete(OnInitCompleteEventArgs args)
         {
             if (connection == null)

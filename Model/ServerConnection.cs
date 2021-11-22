@@ -235,41 +235,24 @@ namespace TSApp
             return true;
         }
 
-        public void Query() {
+        public async Task<bool> TestPatch(int id, JsonPatchDocument patch) {
             WorkItemTrackingHttpClient witClient = tfsConnection.GetClient<WorkItemTrackingHttpClient>();
-            var wi = witClient.GetWorkItemAsync(6458).Result;
+            var wi = witClient.GetWorkItemAsync(id).Result;
+            CommentCreate newComment = new CommentCreate();
+            newComment.Text = "Test comment";
 
-            foreach (var field in wi.Fields) {
-                Console.WriteLine("Key = {0}, Value = {1}", field.Key, field.Value) ;
-            }
-            JsonPatchDocument patchDocument = new JsonPatchDocument();
-
-            patchDocument.Add(
-                new JsonPatchOperation()
-                {
-                    Operation = Operation.Replace,
-                    Path = "/fields/Microsoft.VSTS.Scheduling.CompletedWork",
-                    Value = 10
-                }
-            );
-
-            patchDocument.Add(
-                new JsonPatchOperation()
-                {
-                    Operation = Operation.Replace,
-                    Path = "/fields/Microsoft.VSTS.Scheduling.RemainingWork",
-                    Value = 90
-                }
-            );
             try
             {
-                WorkItem result = witClient.UpdateWorkItemAsync(patchDocument, 6458).Result;
-
-                Console.WriteLine("Bug Successfully Created: Bug #{0}", result.Id);
+                var c = witClient.GetCommentsAsync(id).Result;
+//                witClient.DeleteCommentAsync(teamProjectName, id, c.Comments.ElementAt(0).Id);
+//                var x = await witClient.AddCommentAsync(newComment, teamProjectName , id);
+//                WorkItem result = await witClient.UpdateWorkItemAsync(patch, id);
+                return true;
             }
             catch (AggregateException ex)
             {
                 Console.WriteLine("Error creating bug: {0}", ex.InnerException.Message);
+                return false;
             }
 
         }

@@ -2,6 +2,7 @@
 using Syncfusion.UI.Xaml.Grid;
 using Syncfusion.UI.Xaml.Grid.Helpers;
 using System;
+using System.Text;
 using System.Windows;
 using System.Windows.Input;
 using TSApp.Bahaviors;
@@ -113,7 +114,7 @@ namespace TSApp
             f.ShowDialog();
         }
 
-        private async void btnLoad_Click(object sender, RoutedEventArgs e)
+        private void btnLoad_Click(object sender, RoutedEventArgs e)
         {
         }
 
@@ -124,6 +125,7 @@ namespace TSApp
 
         private void button1_Click(object sender, RoutedEventArgs e)
         {
+            mdl.Publish();
         }
 
         private void mainGrid_CurrentCellBeginEdit(object sender, CurrentCellBeginEditEventArgs e)
