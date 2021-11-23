@@ -3,8 +3,10 @@ using Syncfusion.UI.Xaml.Grid;
 using Syncfusion.UI.Xaml.Grid.Helpers;
 using System;
 using System.Text;
+using System.Threading;
 using System.Windows;
 using System.Windows.Input;
+using System.Windows.Threading;
 using TSApp.Bahaviors;
 using TSApp.ViewModel;
 
@@ -116,6 +118,7 @@ namespace TSApp
 
         private void btnLoad_Click(object sender, RoutedEventArgs e)
         {
+
         }
 
         private void mainGrid_AddNewRowInitiating(object sender, AddNewRowInitiatingEventArgs e)
@@ -125,7 +128,46 @@ namespace TSApp
 
         private void button1_Click(object sender, RoutedEventArgs e)
         {
-            mdl.Publish();
+            if (mdl != null && mdl.gridModel != null & mdl.gridModel.GetChangedCount() != 0)
+            {
+                this.mdl.gridModel.ItemPublished += GridModel_ItemPublished;
+                this.longTaskProgress.Visibility = Visibility.Visible;
+                this.longTaskProgress.Maximum = mdl.gridModel.GetChangedCount()*10;
+                longTaskProgress.Value = 0;
+                mdl.Publish();
+            }            
+        }
+        private void GridModel_ItemPublished(bool finished)
+        {
+            if (finished)
+            {
+                Application.Current.Dispatcher.BeginInvoke(DispatcherPriority.Background,
+                            new Action(() =>
+                            {
+                            this.longTaskProgress.Visibility = Visibility.Hidden;
+                                if ((string)tmpLabel.Content == "/")
+                                    tmpLabel.Content = ".";
+                                else
+                                    tmpLabel.Content = "/";
+                            }
+                            ));
+                
+                this.mdl.gridModel.ItemPublished -= GridModel_ItemPublished;
+            }
+            else
+            {
+                Application.Current.Dispatcher.BeginInvoke(
+                            DispatcherPriority.Background,
+                            new Action(() => { 
+                                this.longTaskProgress.Value += 10;
+                                if ((string)tmpLabel.Content == "/")
+                                    tmpLabel.Content = ".";
+                                else
+                                    tmpLabel.Content = "/";
+                            }
+                            ));
+                    
+            }
         }
 
         private void mainGrid_CurrentCellBeginEdit(object sender, CurrentCellBeginEditEventArgs e)
@@ -137,6 +179,11 @@ namespace TSApp
             // последняя строка - не редактируется
             if (unboundRow != null && e.RowColumnIndex.ColumnIndex < 4)
                 e.Cancel = true;
+        }
+
+        private void button3_Click(object sender, RoutedEventArgs e)
+        {
+
         }
     }
 }

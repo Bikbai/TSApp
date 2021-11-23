@@ -23,9 +23,9 @@ namespace TSApp.ViewModel
             gridModel = new WorkItemViewModel(null);
         }
 
-        public async void Publish()
+        public void Publish()
         {
-           var x = await gridModel.Publish(connection);
+           var x = gridModel.Publish(connection);
         }
 
         private async void Connection_OnInitComplete(OnInitCompleteEventArgs args)
@@ -37,7 +37,7 @@ namespace TSApp.ViewModel
                 case CONN_RESULT.OK:
                     BtnCnxnStatusText = "Успешно подключен";
                     var y = await gridModel.FetchTfsData(connection);                    
-                    var work = await gridModel.FillCurrentWork(connection);
+                    var work = await gridModel.FillCurrentWork(connection);                    
                     var x = await gridModel.FetchClokiData(connection);
                     break;
                 case CONN_RESULT.CONNECTING:

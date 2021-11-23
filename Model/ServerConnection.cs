@@ -16,6 +16,7 @@ using RestSharp;
 using Microsoft.Toolkit.Mvvm.ComponentModel;
 using Microsoft.TeamFoundation.Work.WebApi;
 using Microsoft.TeamFoundation.Core.WebApi.Types;
+using System.Threading;
 
 namespace TSApp
 {
@@ -181,25 +182,9 @@ namespace TSApp
             return ret;
         }
 
-        public bool UpdateClokifyData(WIDataSource data)
+        public bool PublishClokifyData(TimeEntry te)
         {
-            /*
-            foreach (var task in data)
-            {
-                if (!task.IsChanged)
-                    continue;
-                if (task.ClockifyId == String.Empty)
-                {
-                    var t = MakeEntry(task);
-                }
-                else
-                {
-                    var t = UpdateEntry(task);
-                }
-                task.IsChanged = false;
-            }
-            OnQueryCompleteInvoke();
-            */
+
             return true;
         }
 
@@ -235,18 +220,11 @@ namespace TSApp
             return true;
         }
 
-        public async Task<bool> TestPatch(int id, JsonPatchDocument patch) {
+        public async Task<bool> UpdateTFSEntry(int id, JsonPatchDocument patch) {
             WorkItemTrackingHttpClient witClient = tfsConnection.GetClient<WorkItemTrackingHttpClient>();
-            var wi = witClient.GetWorkItemAsync(id).Result;
-            CommentCreate newComment = new CommentCreate();
-            newComment.Text = "Test comment";
-
             try
             {
-                var c = witClient.GetCommentsAsync(id).Result;
-//                witClient.DeleteCommentAsync(teamProjectName, id, c.Comments.ElementAt(0).Id);
-//                var x = await witClient.AddCommentAsync(newComment, teamProjectName , id);
-//                WorkItem result = await witClient.UpdateWorkItemAsync(patch, id);
+                WorkItem result = await witClient.UpdateWorkItemAsync(patch, id);
                 return true;
             }
             catch (AggregateException ex)

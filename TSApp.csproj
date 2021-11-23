@@ -200,8 +200,10 @@
       <SubType>Designer</SubType>
     </ApplicationDefinition>
     <Compile Include="Bahaviors\Comparers.cs" />
+    <Compile Include="Utility\TimeSpanConverter.cs" />
     <Compile Include="ViewModel\EntryType.cs" />
     <Compile Include="ViewModel\GridEntry.cs" />
+    <Compile Include="ViewModel\ProgressBarVM.cs" />
     <Compile Include="Views\ParameterForm.xaml.cs">
       <DependentUpon>ParameterForm.xaml</DependentUpon>
     </Compile>

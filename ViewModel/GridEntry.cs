@@ -18,10 +18,11 @@ namespace TSApp.ViewModel
         private double completedWork = 0;
         // учтено по дням в Клоки
         private TimeSpan[] workDaily = { new TimeSpan(0), new TimeSpan(0), new TimeSpan(0), new TimeSpan(0), new TimeSpan(0), new TimeSpan(0), new TimeSpan(0) }; // учтённая трудоемкость по дням недели
-        // учтено по клоки, в часах
-        private double totalWork = 0;
-        private ObservableCollection<string> commentDaily = new ObservableCollection<string> {"c0", "c1", "c2", "c3", "c4", "c5", "c6"};  // комментарии по дням недели
+        // учтено по клоки, в часах во всех остальных периодах, чохом
+        private TimeSpan restTotalWork = TimeSpan.Zero;
+        private ObservableCollection<string> commentDaily = new ObservableCollection<string> { "c0", "c1", "c2", "c3", "c4", "c5", "c6" };  // комментарии по дням недели
         private int weekNumber;
+        private TFSWorkItem _workItem = new TFSWorkItem();
         public EntryType Type { get; set; } // тип строки
 
         GridEntry _clone;
@@ -29,16 +30,19 @@ namespace TSApp.ViewModel
         #endregion
 
         #region properties
-        public string State { get {
+        public string State
+        {
+            get
+            {
                 return state;
             }
             set
             {
                 SetProperty(ref state, value);
-            } 
+            }
         }
-        public int Id {get => id; set => id = value;}
-        public string Title {get => id.ToString() + '.' + title; set => title = value;}
+        public int Id { get => id; set => id = value; }
+        public string Title { get => id.ToString() + '.' + title; set => title = value; }
         public ObservableCollection<string> CommentDaily { get => commentDaily; set => commentDaily = value; }
         public string CompletedWorkMon { get => workDaily[0].TotalHours.ToString("0.00"); set => ParseEntry(value, 0); }
         public string CompletedWorkTue { get => workDaily[1].TotalHours.ToString("0.00"); set => ParseEntry(value, 1); }
@@ -51,33 +55,38 @@ namespace TSApp.ViewModel
         public double OriginalEstimate { get => originalEstimate; set => originalEstimate = value; }
         public double CompletedWork { get => Math.Round(completedWork, 2); }
         public string Stats { get => completedWork.ToString("0.00"); }
-
-        public double TotalWork { get => Math.Round(totalWork, 2); set => SetProperty(ref totalWork, value); }
+        // итого, посчитанное из суммы текущей недели и предыдущих
+        public TimeSpan TotalWork { get => RestTotalWork + Helpers.TimespanSum(workDaily); set { } }
         public bool IsChanged { get => _clone == null ? false : true; }
+        public TimeSpan RestTotalWork { get => restTotalWork; set { SetProperty(ref restTotalWork, value); OnPropertyChanged("TotalWork");} }
         #endregion
 
         #region Constructors
         public GridEntry(string state)
         {
+            Type = EntryType.timeEntry;
             this.State = state;
         }
 
         public GridEntry(TFSWorkItem item, int week)
         {
+            Type = EntryType.workItem;
             id = item.Id;
             completedWork = item.CompletedWork;
             state = item.State;
             title = item.Title;
             WeekNumber = week;
+            _workItem = item;
         }
         #endregion
 
+        // добавляем рабочие часы, уже учтённые в клокифае к общему времени плюс
+        // в текущей неделе - в указанный день
         public void AddWorkByDay(int workDay, double work)
         {
             if (workDay > 7 || work < 0)
                 throw new NotSupportedException("AddWorkByDay: workday = " + workDay);
             SetProperty(ref workDaily[workDay], workDaily[workDay] + TimeSpan.FromHours(work));
-            TotalWork = Helpers.TimespanSum(workDaily);
         }
 
         public TimeSpan WorkByDay(int workDay)
@@ -92,7 +101,7 @@ namespace TSApp.ViewModel
         // отслеживает создание новой версии
         private void ParseEntry(string inputValue, int dayOfWeek)
         {
-            
+
             if (dayOfWeek > 6)
                 throw new NotSupportedException("ParseEntry: dayOfWeek = " + dayOfWeek);
             if (_clone == null)
@@ -118,16 +127,16 @@ namespace TSApp.ViewModel
                 val = Helpers.GetDouble(inputValue, 0, out successEntry);
                 if (successEntry)
                     workDaily[dayOfWeek] = TimeSpan.FromHours(val);
-                TotalWork = Helpers.TimespanSum(workDaily);
+                OnPropertyChanged("TotalWork");
                 return;
             }
-            val = Helpers.GetDouble(inputValue.Substring(1, inputValue.Length-1), 0, out successEntry);
+            val = Helpers.GetDouble(inputValue.Substring(1, inputValue.Length - 1), 0, out successEntry);
             if (!successEntry)
                 return;
             currentValue = currentValue + val * (cmd == CMD.decr ? -1 : 1);
             //            SetProperty(ref workDaily[dayOfWeek], currentValue < 0 ? TimeSpan.FromHours(0) : TimeSpan.FromHours(currentValue));
             workDaily[dayOfWeek] = currentValue < 0 ? TimeSpan.FromHours(0) : TimeSpan.FromHours(currentValue);
-            TotalWork = Helpers.TimespanSum(workDaily);
+            OnPropertyChanged("TotalWork");
         }
 
         public object Clone()
@@ -151,42 +160,36 @@ namespace TSApp.ViewModel
             return _clone;
         }
 
-        public void AddClokifyHours(TimeEntry te)
-        {            
-            DateTime start = ((DateTimeOffset)te.Start).DateTime;
-            if (start == null)
-                return;
-            if (Helpers.GetWeekNumber(start) == WeekNumber)
-            {
-                workDaily[(int)start.DayOfWeek] += te.WorkTime;
-            }
-        }
-
         public JsonPatchDocument GetUpdateData()
         {
             JsonPatchDocument result = new JsonPatchDocument();
-            TimeSpan totals = TimeSpan.FromHours(_clone.TotalWork);
+            TimeSpan totals = _clone.TotalWork;
             for (int i = 0; i < workDaily.Length; i++)
             {
-                if (workDaily[i] != _clone.WorkByDay(i)) 
+                // если модифицировано время в таймшите
+                if (workDaily[i] != _clone.WorkByDay(i))
                 {
-                    totals += workDaily[i] - _clone.WorkByDay(i);                    
-                    result.Add(new JsonPatchOperation()
-                    {
-                        Operation = Operation.Add,
-                        Path = "/fields/" + WIFields.Comment,
-                        Value = "Изменение выполненной работы, итерация " + weekNumber + " день: " + i + "часов: " + workDaily[i].TotalHours
-                    }
-                    ) ;
+                    totals += workDaily[i] - _clone.WorkByDay(i);
+                    // тут должен был быть комментарий, но он не работает.
                 }
             }
             result.Add(new JsonPatchOperation()
             {
                 Operation = Operation.Replace,
                 Path = "/fields/" + WIFields.CompletedWork,
-                Value = Math.Round(totals.TotalHours, 2).ToString()
+                Value = Math.Round(totals.TotalHours, 2).ToString("0.00", System.Globalization.CultureInfo.InvariantCulture)
             });
             return result;
+        }
+
+        private void PatchBuilder(JsonPatchDocument patch, Operation op, string field, string value)
+        {
+            patch.Add(new JsonPatchOperation()
+            {
+                Operation = op,
+                Path = "/fields/" + field,
+                Value = value
+            });
         }
     }
 }

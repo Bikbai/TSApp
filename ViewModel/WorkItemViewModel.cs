@@ -5,6 +5,7 @@ using System.Data;
 using System.Globalization;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using Clockify.Net.Models.TimeEntries;
 using Microsoft.TeamFoundation.WorkItemTracking.WebApi;
@@ -52,6 +53,10 @@ namespace TSApp.ViewModel
         public List<TimeEntry> TimeEntries { get => _timeEntries; set => SetProperty(ref _timeEntries, value); }
         public int CurrentWeekNumber { get => currentWeekNumber; set => currentWeekNumber = value; }
 
+        public int GetChangedCount() 
+        {
+            return _gridEntries.Count(item => item.IsChanged == true);
+        }
         public TimeSpan GetWorkDayStart(DayOfWeek i)
         {
             return _defaultWorkdayStart[(int)i];
@@ -61,34 +66,21 @@ namespace TSApp.ViewModel
             _defaultWorkdayStart[(int)i] = value;
         }
 
+        // извлекаем все задачи и наполняем грид и хранилище WI
         public async Task<bool> FetchTfsData(ServerConnection cn)
         {
             var x = await cn.QueryMyTasks();
             Dictionary<object, TimeSpan> workDaily = new Dictionary<object, TimeSpan>();
             foreach (var item in x)
             {
-                _workItems.Add(new TFSWorkItem(item));
+                var tItem = new TFSWorkItem(item);
+                _workItems.Add(tItem);
+                var ge = new GridEntry(tItem, currentWeekNumber);
+                GridEntries.Add(ge);
             }
-            PopulateGrid();
             return true;
         } 
         
-        private void PopulateGrid()
-        {
-            foreach(var i in _workItems)
-            {
-                var ge = new GridEntry(i, currentWeekNumber);
-                ge.PropertyChanged += Ge_PropertyChanged;
-                GridEntries.Add(ge);
-            }
-        }
-
-        private void Ge_PropertyChanged(object sender, PropertyChangedEventArgs e)
-        {
-            if (e.PropertyName == "CompletedWorkMon")
-                return;
-        }
-
         public async Task<bool> FetchClokiData(ServerConnection cn)
         {
             var x = await cn.FindAllTimeEntriesForUser(null, DateTime.Today.AddDays(-30));
@@ -130,6 +122,7 @@ namespace TSApp.ViewModel
                     return false;
                 //и собираем затраченное время по дням недели
                 
+                TimeSpan restWork = TimeSpan.Zero;
                 foreach (var te in teList.Data)
                 {
                     // скипуем не начатые и не законченные задачи
@@ -143,36 +136,52 @@ namespace TSApp.ViewModel
                     {
                         t.AddWorkByDay((int)start.DayOfWeek - 1, end.Subtract(start).TotalHours);
                     }
+                    else
+                    {
+                        restWork += end.Subtract(start);
+                    }
                     _timeEntries.Add(new TimeEntry(te));
                 }
+                t.RestTotalWork = restWork;
             }
 
             return true;
         }
         public async Task<bool> Publish(ServerConnection conn)
         {
-
+            List<Task> Workers = new List<Task>();
             bool x = false;
-            /*
+
             foreach (var w in _gridEntries)
             {
                 if  (w.IsChanged && w.Type == EntryType.workItem)
                 {
-                    x = await conn.TestPatch(w.Id, w.GetUpdateData());
+                    Workers.Add(conn.UpdateTFSEntry(w.Id, w.GetUpdateData()));
+                    // ищем все timeEntry
+                    List<TimeEntry> teList = _timeEntries.FindAll(t => t.Id == w.Id.ToString());
+                    if (teList.Count > 0)
+                        // TODO тут надо вычислить все TimeEntry и радостно пересоздать по новым значениям таймшита.
+                    Workers.Add(conn.PublishClokifyData(w.));
                 }
             }
-            */
-
-            JsonPatchDocument patcht = new JsonPatchDocument();
-            patcht.Add(new JsonPatchOperation()
+            while(Workers.Count > 0)
             {
-                Operation = Operation.Add,
-                Path = "/fields/" + WIFields.Comment,
-                Value = "Изменение выполненной работы, итерация " + 1 + " день: " + 10 + "часов: " + 10
-            });
-
-            x = await conn.TestPatch(11618, patcht);
+                var finishedTask = await Task.WhenAny(Workers);
+                Workers.Remove(finishedTask);
+                ItemPublishedInvoke(false);
+            }
+            ItemPublishedInvoke(true);
             return x;
         }
+
+        public delegate void ItemPublishedDelegate(bool finished);
+        public event ItemPublishedDelegate ItemPublished;
+
+        private void ItemPublishedInvoke(bool finished)
+        {
+            if (ItemPublished != null)
+                ItemPublished.Invoke(finished);
+        }
+
     }
 }

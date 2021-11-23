@@ -40,7 +40,7 @@
                         Width="700" AllowEditing="False"/>
                     <syncfusion:GridTextColumn MappingName ="State" HeaderText="Dummy" IsHidden="True" 
                         AllowEditing="False" Width="0" TextAlignment="Right"/>
-                    
+
                     <syncfusion:GridTextColumn MappingName ="." HeaderText="OE (CW)" 
                         AllowEditing="False" Width="60" TextAlignment="Right" IsHidden="True"/>
                     <syncfusion:GridTextColumn MappingName ="CompletedWorkMon" HeaderText="Пн" 
@@ -85,11 +85,20 @@
             </local:SfDataGridExt>
         </Grid>
         <StatusBar x:Name="statusBar" Height="40" VerticalAlignment="Bottom" Width="{Binding Width, ElementName=window}" Canvas.Top="820">
-            <Button x:Name="button" Content="{Binding BtnCnxnStatusText, Mode=OneWay}" Height="30" Width="141" Click="button_Click"/>
+            <StatusBarItem Height="40" VerticalAlignment="Center" Width="150">
+                <Button x:Name="button" Content="{Binding BtnCnxnStatusText, Mode=OneWay}" Height="30" Width="141" Click="button_Click"/>
+            </StatusBarItem>
+            <StatusBarItem Height="40" VerticalAlignment="Center" Width="200">
+                <ProgressBar x:Name="longTaskProgress" Height="30" Width="200" Visibility="Visible" Value="10">
+                </ProgressBar>
+            </StatusBarItem>
+            <StatusBarItem Height="40" VerticalAlignment="Center" Width="300">
+                 <Label x:Name="tmpLabel" Content="TestContent"/>
+            </StatusBarItem>
         </StatusBar>
         <Button x:Name="btnLoad" Content="Обновить" Canvas.Left="12" Canvas.Top="10" 
                 Width="75" Height="40" Click="btnLoad_Click"/>
-        <Button x:Name="button1" Content="Button" Width="75" Canvas.Left="114" Canvas.Top="22" Click="button1_Click"/>
+        <Button x:Name="button1" Content="Publish" Width="75" Canvas.Left="114" Canvas.Top="10" Click="button1_Click" Height="40"/>
         <Grid x:Name="grid" Height="40" Canvas.Left="316" Canvas.Top="10" Width="576">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="Auto"/>
@@ -114,5 +123,6 @@
                     VerticalAlignment="Top" Width="41"
                     Height="{Binding Height, ElementName=grid}"/>
         </Grid>
+        <Button x:Name="button3" Content="Button" Canvas.Left="1129" Canvas.Top="12" Height="38" Width="93" Click="button3_Click"/>
     </Canvas>
 </Window>
