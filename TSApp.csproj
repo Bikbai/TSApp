@@ -204,6 +204,8 @@
     <Compile Include="ViewModel\EntryType.cs" />
     <Compile Include="ViewModel\GridEntry.cs" />
     <Compile Include="ViewModel\ProgressBarVM.cs" />
+    <Compile Include="Model\TimeData.cs" />
+    <Compile Include="Model\WeekData.cs" />
     <Compile Include="Views\ParameterForm.xaml.cs">
       <DependentUpon>ParameterForm.xaml</DependentUpon>
     </Compile>

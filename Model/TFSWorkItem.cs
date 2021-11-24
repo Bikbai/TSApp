@@ -3,7 +3,7 @@ using System;
 using Microsoft.TeamFoundation.WorkItemTracking.WebApi.Models;
 using System.Collections.Generic;
 
-namespace TSApp
+namespace TSApp.Model
 {
     public class TFSWorkItem : ObservableObject, ICloneable
     {
@@ -26,7 +26,6 @@ namespace TSApp
         public double CompletedWork { get => completedWork; set => SetProperty(ref completedWork, value); }
         public List<TimeEntry> LinkedTimeEntry { get => linkedTimeEntries; set => SetProperty(ref linkedTimeEntries , value); }
         public WorkItem LinkedWorkItem { get => linkedWorkItem; set => SetProperty(ref linkedWorkItem , value); }
-
         public TFSWorkItem()
         {
             id = 100500;

@@ -1,22 +1,18 @@
-﻿using System;
-using Clockify.Net;
+﻿using Clockify.Net;
 using Clockify.Net.Models.TimeEntries;
-using System.Threading.Tasks;
-
 using Microsoft.TeamFoundation.WorkItemTracking.WebApi;
 using Microsoft.TeamFoundation.WorkItemTracking.WebApi.Models;
+using Microsoft.Toolkit.Mvvm.ComponentModel;
+using Microsoft.VisualStudio.Services.Common;
+using Microsoft.VisualStudio.Services.WebApi;
+using Microsoft.VisualStudio.Services.WebApi.Patch.Json;
+using RestSharp;
+using System;
 using System.Collections.Generic;
 using System.Linq;
-using Microsoft.VisualStudio.Services.Common;
-using Microsoft.VisualStudio.Services.WebApi.Patch.Json;
-using Microsoft.VisualStudio.Services.WebApi.Patch;
-using Microsoft.VisualStudio.Services.WebApi;
+using System.Threading.Tasks;
+using TSApp.Model;
 using TSApp.ProjectConstans;
-using RestSharp;
-using Microsoft.Toolkit.Mvvm.ComponentModel;
-using Microsoft.TeamFoundation.Work.WebApi;
-using Microsoft.TeamFoundation.Core.WebApi.Types;
-using System.Threading;
 
 namespace TSApp
 {

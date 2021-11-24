@@ -10,6 +10,8 @@ namespace TSApp.ViewModel
         private string btnCnxnStatusForeColor = "";
         private int presentedWeekNumber = Helpers.CurrentWeekNumber();
 
+        public int WeekNumber { get => presentedWeekNumber;}
+
         public string BtnCnxnStatusText { get => btnCnxnStatusText; set => SetProperty(ref btnCnxnStatusText, value); }
         public string BtnCnxnStatusForeColor { get => btnCnxnStatusForeColor; set => SetProperty(ref btnCnxnStatusForeColor,value); }
 
@@ -27,6 +29,14 @@ namespace TSApp.ViewModel
         {
            var x = gridModel.Publish(connection);
         }
+
+        public async void Reload()
+        {
+            var y = await gridModel.FetchTfsData(connection);
+            var work = await gridModel.FillCurrentWork(connection);
+            var x = await gridModel.FetchClokiData(connection);
+        }
+
 
         private async void Connection_OnInitComplete(OnInitCompleteEventArgs args)
         {

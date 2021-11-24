@@ -2,6 +2,7 @@
 using Syncfusion.UI.Xaml.Grid;
 using Syncfusion.UI.Xaml.Grid.Helpers;
 using System;
+using System.Diagnostics;
 using System.Text;
 using System.Threading;
 using System.Windows;
@@ -22,11 +23,17 @@ namespace TSApp
         {
             InitializeComponent();
             DataContext = mdl;
-            mdl.connection.OnInitComplete += Connection_OnInitComplete;
-            mainGrid.ItemsSource = mdl.gridModel.GridEntries;
+            mdl.connection.OnInitComplete += Connection_OnInitComplete;            
             mainGrid.QueryUnBoundRow += MainGrid_QueryUnBoundRow;
             mainGrid.QueryCoveredRange += MainGrid_QueryCoveredRange;
             mainGrid.SortComparers.Add(new SortComparer() { Comparer = new CustomStateComparer(), PropertyName = "State" });
+            mainGrid.ItemsSource = mdl.gridModel.GridEntries;
+            mainGrid.CurrentCellRequestNavigate += MainGrid_CurrentCellRequestNavigate;
+        }
+
+        private void MainGrid_CurrentCellRequestNavigate(object sender, CurrentCellRequestNavigateEventArgs e)
+        {
+            Process.Start(new ProcessStartInfo((e.RowData as GridEntry).Uri)); 
         }
 
 
@@ -118,12 +125,12 @@ namespace TSApp
 
         private void btnLoad_Click(object sender, RoutedEventArgs e)
         {
-
+            mdl.Reload();
         }
 
         private void mainGrid_AddNewRowInitiating(object sender, AddNewRowInitiatingEventArgs e)
         {
-            e.NewObject = new GridEntry("Clokify");
+            e.NewObject = new GridEntry(true, 10);
         }
 
         private void button1_Click(object sender, RoutedEventArgs e)

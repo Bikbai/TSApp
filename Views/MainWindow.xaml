@@ -36,7 +36,7 @@
                 <local:SfDataGridExt.Columns>
                     <syncfusion:GridTextColumn MappingName ="State" HeaderText="Статус (тип)" 
                         GroupMode="Default" AllowGrouping="True"/>
-                    <syncfusion:GridTextColumn MappingName ="Title" HeaderText="" 
+                    <syncfusion:GridHyperlinkColumn MappingName ="Title" HeaderText=""
                         Width="700" AllowEditing="False"/>
                     <syncfusion:GridTextColumn MappingName ="State" HeaderText="Dummy" IsHidden="True" 
                         AllowEditing="False" Width="0" TextAlignment="Right"/>
@@ -73,7 +73,7 @@
                         AllowEditing="True" Width="60" TextAlignment="Right"/>
                     <syncfusion:GridTextColumn MappingName ="CommentDaily[6]" HeaderText="Комментарий" AllowEditing="True"  Width="100"/>
                     <syncfusion:GridTemplateColumn HeaderText="Суммарно"
-                        AllowEditing="False" Width="80" TextAlignment="Right" CellTemplate="{DynamicResource totalWork}"/>
+                        AllowEditing="False" Width="120" TextAlignment="Right" CellTemplate="{DynamicResource totalWork}"/>
                 </local:SfDataGridExt.Columns>
                 <local:SfDataGridExt.GroupColumnDescriptions  >
                     <syncfusion:GroupColumnDescription ColumnName="State" SortGroupRecords="True"  />

@@ -3,7 +3,7 @@ using System;
 using System.ComponentModel;
 using System.Threading.Tasks;
 using TSApp.ProjectConstans;
-using TSApp;
+using TSApp.Model;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 

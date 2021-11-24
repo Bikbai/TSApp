@@ -2,7 +2,7 @@
 using Microsoft.Toolkit.Mvvm.ComponentModel;
 using Clockify.Net.Models.TimeEntries;
 
-namespace TSApp
+namespace TSApp.Model
 {
     public class TimeEntry : ObservableObject, ICloneable
     {
@@ -45,6 +45,7 @@ namespace TSApp
                     taskId = idx.ToString();
         }
 
+        public DateTime Calday { get => (DateTime)start.Date;}
         public string TaskId { get => taskId; set => taskId = value; }
         // необходимо для калькуляций Cloki (период) <-> TFS (потрачено часов)
         // сам период придётся ребилдить каждый раз, когда закидываем часы в клоки

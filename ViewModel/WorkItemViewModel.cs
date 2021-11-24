@@ -1,18 +1,11 @@
-﻿using System;
+﻿using Clockify.Net.Models.TimeEntries;
+using Microsoft.Toolkit.Mvvm.ComponentModel;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Data;
-using System.Globalization;
 using System.Linq;
-using System.Text;
-using System.Threading;
 using System.Threading.Tasks;
-using Clockify.Net.Models.TimeEntries;
-using Microsoft.TeamFoundation.WorkItemTracking.WebApi;
-using Microsoft.Toolkit.Mvvm.ComponentModel;
-using Microsoft.VisualStudio.Services.WebApi.Patch;
-using Microsoft.VisualStudio.Services.WebApi.Patch.Json;
-using Syncfusion.Data;
+using TSApp.Model;
 
 namespace TSApp.ViewModel
 {
@@ -69,6 +62,8 @@ namespace TSApp.ViewModel
         // извлекаем все задачи и наполняем грид и хранилище WI
         public async Task<bool> FetchTfsData(ServerConnection cn)
         {
+            _workItems.Clear();
+            GridEntries.Clear();
             var x = await cn.QueryMyTasks();
             Dictionary<object, TimeSpan> workDaily = new Dictionary<object, TimeSpan>();
             foreach (var item in x)
@@ -112,6 +107,7 @@ namespace TSApp.ViewModel
 
         public async Task<bool> FillCurrentWork (ServerConnection cn)
         {
+            _timeEntries.Clear();
             if (_gridEntries == null)
                 return false;
             // шуршим по всем timeEntry для каждой задачи  
@@ -134,17 +130,20 @@ namespace TSApp.ViewModel
                     if (start >= Helpers.WeekBoundaries(CurrentWeekNumber, true) &&
                         start <= Helpers.WeekBoundaries(CurrentWeekNumber, false))
                     {
-                        t.AddWorkByDay((int)start.DayOfWeek - 1, end.Subtract(start).TotalHours);
+                        t.InitClokiWork(t.Id,
+                            (int)start.DayOfWeek - 1, end.Subtract(start), new TimeEntry(te));
                     }
                     else
                     {
+                        // не в текущем периоде - в сумму чохом
                         restWork += end.Subtract(start);
                     }
                     _timeEntries.Add(new TimeEntry(te));
                 }
                 t.RestTotalWork = restWork;
             }
-
+            // апдейт грида
+            this.GridEntries.ResetBindings();
             return true;
         }
         public async Task<bool> Publish(ServerConnection conn)
@@ -158,10 +157,11 @@ namespace TSApp.ViewModel
                 {
                     Workers.Add(conn.UpdateTFSEntry(w.Id, w.GetUpdateData()));
                     // ищем все timeEntry
-                    List<TimeEntry> teList = _timeEntries.FindAll(t => t.Id == w.Id.ToString());
-                    if (teList.Count > 0)
+                    List<TimeEntry> teList = _timeEntries.FindAll(t => t.TaskId == w.Id.ToString());
+
+                    //if (teList.Count > 0)
                         // TODO тут надо вычислить все TimeEntry и радостно пересоздать по новым значениям таймшита.
-                    Workers.Add(conn.PublishClokifyData(w.));
+//                    Workers.Add(conn.PublishClokifyData(w.));
                 }
             }
             while(Workers.Count > 0)
