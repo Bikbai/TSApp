@@ -8,7 +8,9 @@ using System.Threading;
 using System.Windows;
 using System.Windows.Input;
 using System.Windows.Threading;
+using TSApp.Model;
 using TSApp.Bahaviors;
+using TSApp.ProjectConstans;
 using TSApp.ViewModel;
 
 namespace TSApp
@@ -21,9 +23,10 @@ namespace TSApp
         private MainFormModel mdl = new MainFormModel();
         public MainWindow()
         {
+            InitSettings();
             InitializeComponent();
             DataContext = mdl;
-            mdl.connection.OnInitComplete += Connection_OnInitComplete;            
+            mdl.connection.InitCompleted += Connection_OnInitComplete;            
             mainGrid.QueryUnBoundRow += MainGrid_QueryUnBoundRow;
             mainGrid.QueryCoveredRange += MainGrid_QueryCoveredRange;
             mainGrid.SortComparers.Add(new SortComparer() { Comparer = new CustomStateComparer(), PropertyName = "State" });
@@ -33,7 +36,7 @@ namespace TSApp
 
         private void MainGrid_CurrentCellRequestNavigate(object sender, CurrentCellRequestNavigateEventArgs e)
         {
-            Process.Start(new ProcessStartInfo((e.RowData as GridEntry).Uri)); 
+            Process.Start(new ProcessStartInfo("http://ztfs-2017:8080/tfs/Fintech/Mir/_workitems/edit/" + (e.RowData as GridEntry).Id)); 
         }
 
 
@@ -188,9 +191,24 @@ namespace TSApp
                 e.Cancel = true;
         }
 
-        private void button3_Click(object sender, RoutedEventArgs e)
+        private async void button3_Click(object sender, RoutedEventArgs e)
         {
+            foreach (var x in mdl.gridModel.GridEntries)
+            {
+                if (x.Id == 11618)
+                    return;
+            }
+            
 
+        }
+
+        private void InitSettings()
+        {
+            if (StaticData.weekTimeTable == null)
+                StaticData.weekTimeTable = new TimeSpan[7];
+            for (int i = 0; i < 7; i++)
+                StaticData.weekTimeTable[i] = TimeSpan.FromHours(10);
+            // TODO сделать сохранение и загрузку рабочего графика
         }
     }
 }

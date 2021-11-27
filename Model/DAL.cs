@@ -14,39 +14,9 @@ using System.Threading.Tasks;
 using TSApp.Model;
 using TSApp.ProjectConstans;
 
-namespace TSApp
+namespace TSApp.Model
 {
-    public enum CONN_RESULT { OK = 0, ERROR = 1, CONNECTING = 2}
-    public class OnInitCompleteEventArgs : EventArgs 
-    {
-        public ConnectResult result;
-        public OnInitCompleteEventArgs(string message)
-        {
-            result = new ConnectResult(CONN_RESULT.ERROR, message);
-        }
-        public OnInitCompleteEventArgs(CONN_RESULT state, string message)
-        {
-            result = new ConnectResult(CONN_RESULT.ERROR, message);
-            result.Status = state;
-        }
-
-    }
-
-    public class ConnectResult
-    {
-        private CONN_RESULT status;
-        private string errorMessage;
-
-        public ConnectResult(CONN_RESULT Status, string ErrorMessage)
-        {
-            status = Status; errorMessage = ErrorMessage;
-        }
-
-        public CONN_RESULT Status { get => status; set => status = value; }
-        public string ErrorMessage { get => errorMessage; set => errorMessage = value; }
-    }
-
-    public class ServerConnection : ObservableObject
+    public partial class DAL : ObservableObject
     {
         private bool clockifyReady = false;
         private bool tfsReady = false;
@@ -60,41 +30,17 @@ namespace TSApp
         public bool ClockifyReady { get => clockifyReady; set => SetProperty(ref clockifyReady, value); }
         public bool TfsReady { get => tfsReady; set => SetProperty(ref tfsReady,value); }
 
-        public ServerConnection(Settings s)
+        public DAL(Settings s)
         {
             Settings.Default.SettingsLoaded += SettingsLoaded;
             if (s == null)
-                OnInitCompleteInvoke(CONN_RESULT.ERROR, "Не настроены параметры подключения.");
+                OnInitCompleted(CONN_RESULT.ERROR, "Не настроены параметры подключения.");
         }
 
         private async void SettingsLoaded(object sender, System.Configuration.SettingsLoadedEventArgs e)
         {
             await this.Init();
         }
-
-        #region OnInitComplete
-        public delegate void OnInitCompleteDelegate(OnInitCompleteEventArgs args);
-
-        public event OnInitCompleteDelegate OnInitComplete;
-
-        private void OnInitCompleteInvoke(CONN_RESULT state, string msg)
-        {
-            if (OnInitComplete != null)
-                OnInitComplete.Invoke(new OnInitCompleteEventArgs(state, ""));
-        }
-        #endregion
-
-        #region OnQueryComplete
-        public delegate void OnQueryCompleteDelegate();
-
-        public event OnQueryCompleteDelegate OnQueryComplete;
-
-        private void OnQueryCompleteInvoke()
-        {
-            if (OnQueryComplete != null)
-                OnQueryComplete.Invoke();
-        }
-        #endregion
         
         public async Task<ConnectResult> PerformTFSConnect()
         {
@@ -128,7 +74,7 @@ namespace TSApp
                         var prj = await clockify.FindAllProjectsOnWorkspaceAsync(ws.Data[0].Id, null, "ФЦОД-М");
                         if (prj != null && prj.Data != null)
                         {
-                            StaticData.Init(prj.Data[0].Id, uid.Data.Id, ws.Data[0].Id, new DateTime(2021, 11, 11, 9, 0, 0));
+                            StaticData.Init(prj.Data[0].Id, uid.Data.Id, ws.Data[0].Id);
                             result.Status = CONN_RESULT.OK;
                         } else { result.ErrorMessage = prj.StatusDescription + " " + prj.Content; }
                     } else { result.ErrorMessage = ws.StatusDescription + " " + ws.Content; }
@@ -145,23 +91,23 @@ namespace TSApp
         }
         public async Task<bool> Init()
         {
-            OnInitCompleteInvoke(CONN_RESULT.CONNECTING, "");
+            OnInitCompleted(CONN_RESULT.CONNECTING, "");
             clockify = new ClockifyClient(Settings.Default.ApiKey);
             Console.WriteLine("Init clokify connection .. ");
             var cr = await PerformClokiConnect();
             Console.WriteLine("Done.");          
             if (!ClockifyReady)
             {
-                OnInitCompleteInvoke(CONN_RESULT.ERROR,  cr.ErrorMessage);
+                OnInitCompleted(CONN_RESULT.ERROR,  cr.ErrorMessage);
             }
                 
             Console.WriteLine("Init TFS connection ...");
             var tr = await PerformTFSConnect();
             if (!TfsReady)
             {
-                OnInitCompleteInvoke(CONN_RESULT.ERROR, tr.ErrorMessage);
+                OnInitCompleted(CONN_RESULT.ERROR, tr.ErrorMessage);
             }
-            OnInitCompleteInvoke(CONN_RESULT.OK, "");
+            OnInitCompleted(CONN_RESULT.OK, "");
             if (ClockifyReady && TfsReady)
                 return true;
             else return false;
@@ -171,48 +117,39 @@ namespace TSApp
         {
             string query = TFSworkItemId == null ? null : TFSworkItemId.ToString();
             var ret = await clockify.FindAllTimeEntriesForUserAsync(StaticData.WorkspaceId, StaticData.UserId,
-                                                           query,  
-                                                           queryFrom,  null,
-                                                           StaticData.ProjectId);
-            //Thread.Sleep(100);
+                                                           query,
+                                                           queryFrom, null,
+                                                           StaticData.ProjectId, null, null, null, null, null, null, 1, 5000);
             return ret;
         }
 
-        public bool PublishClokifyData(TimeEntry te)
+        public async Task<bool> UpdateClokiEntries(List<TimeData> entries, string wiTitle)
         {
+            IRestResponse r;
+            TimeEntryDtoImpl x;
+            if (entries == null || entries.Count == 0)
+                return false;
+            foreach (var e in entries)
+            {
+                // удаляем старые записи, как ненужные - пересоздадим
+                if (e.TimeEntries != null && e.TimeEntries.Count != 0)
+                {
+                    foreach (var t in e.TimeEntries)
+                    {
+                        r = clockify.DeleteTimeEntryAsync(StaticData.WorkspaceId, t.Id).Result;
+                        if (!r.IsSuccessful)
+                            throw new Exception("Ошибка при удалении Clokify TimeEntry");
+                        OnTimeEntryDeleted(t.Id, t.WorkItemId);
+                    }
+                }
 
-            return true;
-        }
-
-        private bool MakeEntry()
-        {
-            /*
-            var rq = new Clockify.Net.Models.TimeEntries.TimeEntryRequest();
-            rq.Description = wi.Id.ToString() + "." + wi.Name;
-            DateTimeOffset dt = DateTime.Now.Date.AddHours(9).ToUniversalTime();
-            rq.Start = dt;
-            rq.End = dt.AddHours(wi.GetChanged()[WIFields.CompletedWork]).ToUniversalTime();
-            rq.ProjectId = projectId;
-            
-            var x = clockify.CreateTimeEntryAsync(workspaceId, rq).Result;
-            wi.ClockifyId = x.Data.Id;
-            wi.ClokifyWork = TimeSpan.FromHours(wi.CompletedWork);
-            wi.IsChanged = false;
-            */
-            return true;
-        }
-
-        private bool UpdateEntry()
-        {
-            /*
-            var rq = new Clockify.Net.Models.TimeEntries.UpdateTimeEntryRequest();
-            rq.Billable = true;
-            rq.ProjectId = projectId;
-            DateTimeOffset dt = DateTime.Now.Date.AddHours(9).ToUniversalTime();
-            rq.Start = dt;
-            rq.End = dt.AddMinutes(wi.ClokifyWork.TotalMinutes).ToUniversalTime();
-            var x = clockify.UpdateTimeEntryAsync(workspaceId, wi.ClockifyId, rq).Result;
-            */
+                var rq = TimeEntryRequestFabric.GetRequest(e);
+                rq.Description = wiTitle + '.' + e.Comment;
+                x = clockify.CreateTimeEntryAsync(StaticData.WorkspaceId, rq).Result.Data;
+                if (x == null)
+                    throw new Exception("Ошибка при создании Clokify TimeEntry");
+                OnTimeEntryCreated(new TimeEntry(x));
+            }
             return true;
         }
 
@@ -221,15 +158,17 @@ namespace TSApp
             try
             {
                 WorkItem result = await witClient.UpdateWorkItemAsync(patch, id);
+                OnWorkItemUpdated(new TFSWorkItem(result));
                 return true;
             }
             catch (AggregateException ex)
             {
-                Console.WriteLine("Error creating bug: {0}", ex.InnerException.Message);
+                Console.WriteLine("Error updating workitem: {0}", ex.InnerException.Message);
                 return false;
             }
 
         }
+
 
         public async Task<List<WorkItem>> QueryMyTasks()
         {
@@ -288,8 +227,20 @@ namespace TSApp
                     while (workItemRefs.Count() == batchSize);
                 }
             }
-            OnQueryCompleteInvoke();
+            OnTfsQueryCompleted();
             return workItems;
+        }
+
+
+        public void TestClokiCreate()
+        {
+            var rq = TimeEntryRequestFabric.GetRequest();
+            rq.Description = "Test";
+            rq.Start = DateTime.Now;
+            rq.End = DateTime.Now.AddMinutes(15);
+            var ct = clockify.CreateTimeEntryAsync(StaticData.WorkspaceId, rq).Result;
+            var Id = ct.Data.Id;
+            var rm = clockify.DeleteTimeEntryAsync(StaticData.WorkspaceId, Id).Result;
         }
 
     }

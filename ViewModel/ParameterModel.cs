@@ -1,17 +1,12 @@
 ﻿using Microsoft.Toolkit.Mvvm.ComponentModel;
 using System;
-using System.Collections.Generic;
-using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows.Input;
+using TSApp.Model;
 
 namespace TSApp.ViewModel
 {
     public class ParameterModel : ObservableObject
     {
-        private ServerConnection connectionInfo;
+        private DAL connectionInfo;
 
         private string btnTfsLabel;
         private string btnTfsforeColor;
@@ -33,11 +28,11 @@ namespace TSApp.ViewModel
 
         public string TxtClokiErrorLabel { get => txtClokiErrorLabel; set => SetProperty(ref txtClokiErrorLabel, value); }
         
-        public ServerConnection ConnectionInfo { get => connectionInfo;
+        public DAL ConnectionInfo { get => connectionInfo;
             set
             {
                 connectionInfo = value;
-                connectionInfo.OnInitComplete += ConnectionInfo_OnInitComplete;
+                connectionInfo.InitCompleted += ConnectionInfo_OnInitComplete;
                 UpdateLabels();
             }
         }

@@ -200,6 +200,13 @@
       <SubType>Designer</SubType>
     </ApplicationDefinition>
     <Compile Include="Bahaviors\Comparers.cs" />
+    <Compile Include="Model\DalEvents.cs" />
+    <Compile Include="Model\TimeEntryRequestFabric.cs" />
+    <Compile Include="Settings.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTimeSharedInput>True</DesignTimeSharedInput>
+      <DependentUpon>Settings.settings</DependentUpon>
+    </Compile>
     <Compile Include="Utility\TimeSpanConverter.cs" />
     <Compile Include="ViewModel\EntryType.cs" />
     <Compile Include="ViewModel\GridEntry.cs" />
@@ -211,17 +218,10 @@
     </Compile>
     <Compile Include="Utility\Helpers.cs" />
     <Compile Include="ProjectConstants\StaticData.cs" />
-    <Compile Include="Model\ServerConnection.cs" />
+    <Compile Include="Model\DAL.cs" />
     <Compile Include="Settings.cs" />
-    <Compile Include="Settings1.Designer.cs">
-      <AutoGen>True</AutoGen>
-      <DesignTimeSharedInput>True</DesignTimeSharedInput>
-      <DependentUpon>Settings.settings</DependentUpon>
-    </Compile>
     <Compile Include="ViewModel\MainFormModel.cs" />
     <Compile Include="ViewModel\ParameterModel.cs" />
-    <Compile Include="ViewModel\RowItem.cs" />
-    <Compile Include="ViewModel\WIDataSource.cs" />
     <Compile Include="ViewModel\WorkItemViewModel.cs" />
     <Compile Include="Views\SfDataGridExt.cs" />
     <Page Include="Views\MainWindow.xaml">
@@ -269,7 +269,7 @@
     </None>
     <None Include="Settings.settings">
       <Generator>PublicSettingsSingleFileGenerator</Generator>
-      <LastGenOutput>Settings1.Designer.cs</LastGenOutput>
+      <LastGenOutput>Settings.Designer.cs</LastGenOutput>
     </None>
   </ItemGroup>
   <ItemGroup>

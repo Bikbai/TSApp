@@ -7,18 +7,19 @@ namespace TSApp.ProjectConstans
         private static string projectId;
         private static string userId;
         private static string workspaceId;
-        private static DateTimeOffset defaultStartTime; 
+        private static TimeSpan defaultStartTime = TimeSpan.FromHours(9);       
 
         public static string ProjectId => projectId;
         public static string UserId => userId;
         public static string WorkspaceId => workspaceId;
 
-        public static DateTimeOffset DefaultStartTime => defaultStartTime;
+        public static TimeSpan DefaultStartTime => defaultStartTime;
 
-        public static void Init(string ProjectId, string UserId, string WorkspaceId, DateTimeOffset DefaultStartTime)
+        public static TimeSpan[] weekTimeTable { get; set; }
+        public static void Init(string ProjectId, string UserId, string WorkspaceId)
         {
             projectId = ProjectId; userId = UserId; workspaceId = WorkspaceId;
-            defaultStartTime = DefaultStartTime;
         }
+
     }
 }

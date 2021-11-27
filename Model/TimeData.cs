@@ -5,17 +5,24 @@ namespace TSApp.Model
 {
     public class TimeData
     {
+        private string comment = "";
+
+        public DateTime Calday { get; set; }
         public int WorkItemId { get; }
         public int DayOfWeek { get; set; } // на всякий случай
         public TimeSpan Work { get; set; } // введенная работа по таймшиту
         public TimeSpan OriginalWork { get; set; } // оригинальная работа по таймшиту
+        public string Comment { get => comment; set => comment = value; }
         public List<TimeEntry> TimeEntries { get; set; } // учтённое в клоки время в этот день
-        public TimeData(int day, TimeSpan work, int workItemId)
+        public TimeData(int day, TimeSpan work, int workItemId, int weekNumber)
         {
             WorkItemId = workItemId;
             DayOfWeek = day;
             Work = work;
             OriginalWork = work;
+            Calday = Helpers.WeekBoundaries(weekNumber, true).AddDays(day);
         }
+
+        
     }
 }

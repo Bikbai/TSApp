@@ -22,7 +22,7 @@ namespace TSApp.ViewModel
         private WeekData workDaily;  // учтённая трудоемкость по дням недели
         // учтено по клоки, в часах во всех остальных периодах, чохом
         private TimeSpan restTotalWork = TimeSpan.Zero;
-        private ObservableCollection<string> commentDaily = new ObservableCollection<string> { "c0", "c1", "c2", "c3", "c4", "c5", "c6" };  // комментарии по дням недели
+
         private TFSWorkItem _workItem = new TFSWorkItem();
 
         public EntryType Type { get; set; } // тип строки
@@ -43,7 +43,14 @@ namespace TSApp.ViewModel
         }
         public int Id { get => id; set => id = value; }
         public string Title { get => id.ToString() + '.' + title; set => title = value; }
-        public ObservableCollection<string> CommentDaily { get => commentDaily; set => commentDaily = value; }
+        public string MondayComment { get => workDaily.TimeData[0].Comment; set => workDaily.TimeData[0].Comment = value; }
+        public string TuesdayComment { get => workDaily.TimeData[1].Comment; set => workDaily.TimeData[1].Comment = value; }
+        public string WednesdayComment { get => workDaily.TimeData[2].Comment; set => workDaily.TimeData[2].Comment = value; }
+        public string ThursdayComment { get => workDaily.TimeData[3].Comment; set => workDaily.TimeData[3].Comment = value; }
+        public string FridayComment { get => workDaily.TimeData[4].Comment; set => workDaily.TimeData[4].Comment = value; }
+        public string SundayComment { get => workDaily.TimeData[5].Comment; set => workDaily.TimeData[5].Comment = value; }
+        public string SaturdayComment { get => workDaily.TimeData[6].Comment; set => workDaily.TimeData[6].Comment = value; }
+
         public string CompletedWorkMon { get => workDaily.TimeData[0].Work.TotalHours.ToString("0.00"); set => ParseEntry(value, 0); }
         public string CompletedWorkTue { get => workDaily.TimeData[1].Work.TotalHours.ToString("0.00"); set => ParseEntry(value, 1); }
         public string CompletedWorkWed { get => workDaily.TimeData[2].Work.TotalHours.ToString("0.00"); set => ParseEntry(value, 2); }
@@ -59,8 +66,8 @@ namespace TSApp.ViewModel
         public TimeSpan TotalWork { get => RestTotalWork + workDaily.getTotalWork(); }
         public TimeSpan OriginalTotalWork { get => RestTotalWork + workDaily.getOriginalTotalWork(); }
         public bool IsChanged { get => workDaily.IsChanged; }
-        public TimeSpan RestTotalWork { get => restTotalWork; set { SetProperty(ref restTotalWork, value); OnPropertyChanged("TotalWork"); } }        
-        public string Uri { get => _workItem.LinkedWorkItem.Url;}
+        public TimeSpan RestTotalWork { get => restTotalWork; set { SetProperty(ref restTotalWork, value); OnPropertyChanged("TotalWork"); } }
+        public string Uri { get => _workItem.LinkedWorkItem.Url; }
         #endregion
 
         #region Constructors
@@ -87,14 +94,14 @@ namespace TSApp.ViewModel
 
         // инициализируем рабочие часы, уже учтённые в клокифае
         // в текущей неделе - в указанный день
-        public void InitClokiWork(int workItemId, int workDay, TimeSpan work, TimeEntry te)
+        public void InitClokiWork(int workDay, TimeSpan work, TimeEntry te)
         {
-            workDaily.InitClokiWorkByDay(workItemId, work, workDay, te);
+            workDaily.InitClokiWorkByDay(this.Id, work, workDay, te);
         }
 
         public TimeSpan WorkByDay(int workDay)
         {
-            if (workDaily.TimeData == null || workDaily.TimeData[workDay] == null) 
+            if (workDaily.TimeData == null || workDaily.TimeData[workDay] == null)
                 return TimeSpan.Zero;
             return workDaily.TimeData[workDay].Work;
         }
@@ -148,37 +155,37 @@ namespace TSApp.ViewModel
             return Helpers.CalcRank(item.State);
         }
 
-        public JsonPatchDocument GetUpdateData()
+        public JsonPatchDocument GetTfsUpdateData()
         {
             JsonPatchDocument result = new JsonPatchDocument();
             // оригинальное учтённое по клокифай время
             TimeSpan totals = OriginalTotalWork;
-            double remaining = _workItem.RemainingWork;
+            double remnWork = _workItem.RemainingWork;
+            TimeSpan delta = TimeSpan.Zero;
             for (int i = 0; i < workDaily.TimeData.Length; i++)
             {
                 // если модифицировано время в таймшите
-                if (workDaily.TimeData[i].OriginalWork != workDaily.TimeData[i].Work )
+                if (workDaily.TimeData[i].OriginalWork != workDaily.TimeData[i].Work)
                 {
-                    // добавляем к оригинальному - дельту внесённого в таймшит
-                    totals += workDaily.TimeData[i].Work - workDaily.TimeData[i].OriginalWork;
-                    // вычитаем из оставшейся
-                    remaining -= workDaily.TimeData[i].Work.TotalHours + workDaily.TimeData[i].OriginalWork.TotalHours;
+                    // считаем дельту внесённого времени на всех днях недели
+                    delta += workDaily.TimeData[i].Work - workDaily.TimeData[i].OriginalWork;
                 }
             }
-            if (remaining < 0) remaining = 0;
+            remnWork = Math.Round(remnWork - delta.TotalHours, 2);
+            if (remnWork < 0) remnWork = 0;
 
             result.Add(new JsonPatchOperation()
             {
                 Operation = Operation.Replace,
                 Path = "/fields/" + WIFields.RemainingWork,
-                Value = Math.Round(remaining, 2).ToString("0.00", System.Globalization.CultureInfo.InvariantCulture)
+                Value = remnWork.ToString("0.00", System.Globalization.CultureInfo.InvariantCulture)
             });
-            
+
             result.Add(new JsonPatchOperation()
             {
                 Operation = Operation.Replace,
                 Path = "/fields/" + WIFields.CompletedWork,
-                Value = Math.Round(totals.TotalHours, 2).ToString("0.00", System.Globalization.CultureInfo.InvariantCulture)
+                Value = Math.Round((totals + delta).TotalHours, 2).ToString("0.00", System.Globalization.CultureInfo.InvariantCulture)
             });
             return result;
         }
@@ -192,5 +199,33 @@ namespace TSApp.ViewModel
                 Value = value
             });
         }
+
+        public List<TimeData> GetClokiUpdateData()
+        {
+            List<TimeData> result = new List<TimeData>();
+
+            foreach (var w in workDaily.TimeData)
+            {
+                if (w.OriginalWork != w.Work)
+                    result.Add(w);
+            }
+            return result;
+        }
+
+        public bool RemoveTimeEntry(string timeEntryId)
+        {
+            foreach (var w in workDaily.TimeData)
+            {
+                if (w.TimeEntries != null)
+                    foreach (var t in w.TimeEntries)
+                        if (t.Id == timeEntryId)
+                        {
+                            w.TimeEntries.Remove(t);
+                            return true;
+                        }
+            }
+            return false;
+        }
     }
+    
 }

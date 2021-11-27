@@ -1,11 +1,12 @@
-﻿using Microsoft.Toolkit.Mvvm.ComponentModel;
+﻿using TSApp.Model;
+using Microsoft.Toolkit.Mvvm.ComponentModel;
 
 namespace TSApp.ViewModel
 {
     public class MainFormModel : ObservableObject
     {
         public WorkItemViewModel gridModel;
-        public ServerConnection connection;
+        public DAL connection;
         private string btnCnxnStatusText = "";
         private string btnCnxnStatusForeColor = "";
         private int presentedWeekNumber = Helpers.CurrentWeekNumber();
@@ -19,26 +20,30 @@ namespace TSApp.ViewModel
 
         public MainFormModel()
         {
-            connection = new ServerConnection(Settings.Default);
-            connection.OnInitComplete += Connection_OnInitComplete;
+            connection = new DAL(Settings.Default);
+            connection.InitCompleted += InitCompleteHandler;
             var connectionTask = connection.Init();
-            gridModel = new WorkItemViewModel(null);
+            gridModel = new WorkItemViewModel(null, connection);
+            connection.TimeEntryCreated += gridModel.OnTimeEntryCreateHandler;
+            connection.TimeEntryDeleted += gridModel.OnTimeEntryDeleteHandler;
+            connection.WorkItemUpdated += gridModel.OnWorkItemUpdatedHandler;
         }
 
         public void Publish()
         {
-           var x = gridModel.Publish(connection);
+           
+           var x = gridModel.Publish();
         }
 
         public async void Reload()
         {
-            var y = await gridModel.FetchTfsData(connection);
-            var work = await gridModel.FillCurrentWork(connection);
-            var x = await gridModel.FetchClokiData(connection);
+            var y = await gridModel.FetchTfsData();
+            var work = await gridModel.FillCurrentWork();
+            var x = await gridModel.FetchClokiData();
         }
 
 
-        private async void Connection_OnInitComplete(OnInitCompleteEventArgs args)
+        private async void InitCompleteHandler(OnInitCompleteEventArgs args)
         {
             if (connection == null)
                 return;
@@ -46,9 +51,9 @@ namespace TSApp.ViewModel
             {
                 case CONN_RESULT.OK:
                     BtnCnxnStatusText = "Успешно подключен";
-                    var y = await gridModel.FetchTfsData(connection);                    
-                    var work = await gridModel.FillCurrentWork(connection);                    
-                    var x = await gridModel.FetchClokiData(connection);
+                    var y = await gridModel.FetchTfsData();                    
+                    var work = await gridModel.FillCurrentWork();                    
+                    //var x = await gridModel.FetchClokiData();
                     break;
                 case CONN_RESULT.CONNECTING:
                     BtnCnxnStatusText = "В процессе подключения";

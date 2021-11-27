@@ -8,6 +8,15 @@ namespace TSApp.Model
         public TimeData[] TimeData { get; set; }
         public int WeekNumber;
 
+        public WeekData(int weekNumber, int workItemId)
+        {
+            WeekNumber = weekNumber == 0 ? 1 : weekNumber;
+            TimeData = new TimeData[7];
+            for (int i = 0; i < 7; i++)
+            {
+                TimeData[i] = new TimeData(i, TimeSpan.Zero, workItemId, weekNumber);
+            }
+        }
         public bool IsChanged
         {
             get
@@ -22,17 +31,6 @@ namespace TSApp.Model
                 return false;
             }
         }
-
-        public WeekData(int weekNumber, int workItemId) 
-        { 
-            WeekNumber = weekNumber == 0? 1: weekNumber;
-            TimeData = new TimeData[7];
-            for (int i = 0; i < 7; i++)
-            {
-                TimeData[i] = new TimeData(i, TimeSpan.Zero, workItemId);
-            }
-        }
-
         public void InitClokiWorkByDay(int workItemId, TimeSpan work, int workDay, TimeEntry te)
         {
             if (workDay > 6 || workDay < 0)
@@ -40,7 +38,7 @@ namespace TSApp.Model
 
             if (TimeData[workDay] == null)
             { 
-                TimeData[workDay] = new TimeData(workDay, work, workItemId);
+                TimeData[workDay] = new TimeData(workDay, work, workItemId, WeekNumber);
             } else
             {
                 TimeData[workDay].Work += work;
@@ -54,7 +52,6 @@ namespace TSApp.Model
             TimeData[workDay].TimeEntries.Clear();
             TimeData[workDay].TimeEntries.Add(te);
         }
-
         public TimeSpan getTotalWork()
         {
             TimeSpan retval = TimeSpan.Zero;
@@ -64,7 +61,6 @@ namespace TSApp.Model
             }
             return retval;
         }
-
         public TimeSpan getOriginalTotalWork()
         {
             TimeSpan retval = TimeSpan.Zero;
