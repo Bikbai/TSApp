@@ -1,11 +1,14 @@
 ﻿using System;
-using Microsoft.Toolkit.Mvvm.ComponentModel;
 using Clockify.Net.Models.TimeEntries;
 
 namespace TSApp.Model
 {
-    public class TimeEntry : ObservableObject
+    /// <summary>
+    /// Класс-обёртка для отображения записи в Клокифай.
+    /// </summary>
+    public class TimeEntry
     {
+        #region Private fields
         private readonly string id;
         private string userId;
         private string workspaceId;
@@ -15,6 +18,8 @@ namespace TSApp.Model
         private TimeSpan workTime;
         private DateTimeOffset start;
         private DateTimeOffset end;
+        #endregion
+
         /// <summary>
         /// Конструктор нового TimeEntry, для создания непривязанных к задачам записей
         /// </summary>
@@ -70,5 +75,9 @@ namespace TSApp.Model
         /// Идентификатор записи в Клоки
         /// </summary>
         public string Id { get => id; }
+        /// <summary>
+        /// День недели
+        /// </summary>
+        public int DayOfWeek { get => (int)Calday.DayOfWeek - 1; }
     }
 }

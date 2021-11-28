@@ -1,6 +1,6 @@
-﻿using Microsoft.Toolkit.Mvvm.ComponentModel;
+﻿using Microsoft.TeamFoundation.WorkItemTracking.WebApi.Models;
+using Microsoft.Toolkit.Mvvm.ComponentModel;
 using System;
-using Microsoft.TeamFoundation.WorkItemTracking.WebApi.Models;
 using System.Collections.Generic;
 
 namespace TSApp.Model

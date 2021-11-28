@@ -271,6 +271,7 @@
       <Generator>PublicSettingsSingleFileGenerator</Generator>
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>
     </None>
+    <None Include="Структура.cd" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />

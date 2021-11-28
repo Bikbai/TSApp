@@ -1,9 +1,4 @@
-﻿using Microsoft.TeamFoundation.WorkItemTracking.WebApi.Models;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System;
 
 namespace TSApp.Model
 {
@@ -79,6 +74,9 @@ namespace TSApp.Model
         /// </summary>
         public event InitCompletedDelegate InitCompleted;
 
+        /// <summary>
+        /// Вызов события окончания инициализации
+        /// </summary>
         private void OnInitCompleted(CONN_RESULT state, string msg)
         {
             if (InitCompleted != null)
@@ -92,6 +90,9 @@ namespace TSApp.Model
         /// Событие окончания асинхронного запроса к TFS
         /// </summary>
         public event TfsQueryCompletedDelegate TfsQueryCompleted;
+        /// <summary>
+        /// Вызов события окончания чтения задач из TFS
+        /// </summary>
         private void OnTfsQueryCompleted()
         {
             if (TfsQueryCompleted != null)
@@ -105,6 +106,9 @@ namespace TSApp.Model
         /// Событие успешного апдейта TFS WorkItem
         /// </summary>
         public event WorkItemUpdateDelegate WorkItemUpdated;
+        /// <summary>
+        /// Событие изменения TFS work item
+        /// </summary>
         public void OnWorkItemUpdated(TFSWorkItem wi)
         {
             if (WorkItemUpdated != null)

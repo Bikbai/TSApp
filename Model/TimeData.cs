@@ -3,26 +3,53 @@ using System.Collections.Generic;
 
 namespace TSApp.Model
 {
+    /// <summary>
+    /// Класс-обёртка для хранения сведений, манипуляция данными снаружи!
+    /// </summary>
     public class TimeData
     {
         private string comment = "";
-
+        /// <summary>
+        /// Текущий календарный день записи
+        /// </summary>
         public DateTime Calday { get; set; }
+        /// <summary>
+        /// Идентификатор WI TFS
+        /// </summary>
         public int WorkItemId { get; }
-        public int DayOfWeek { get; set; } // на всякий случай
+        /// <summary>
+        /// модифицированное количество работы по таймшиту
+        /// </summary>
         public TimeSpan Work { get; set; } // введенная работа по таймшиту
+        /// <summary>
+        /// немодифицированное количество работы по таймшиту
+        /// </summary>
         public TimeSpan OriginalWork { get; set; } // оригинальная работа по таймшиту
+        /// <summary>
+        /// Комментарий к работе
+        /// </summary>
         public string Comment { get => comment; set => comment = value; }
+        /// <summary>
+        /// Список TE, полученный из клоки, для нумера WI
+        /// </summary>
         public List<TimeEntry> TimeEntries { get; set; } // учтённое в клоки время в этот день
-        public TimeData(int day, TimeSpan work, int workItemId, int weekNumber)
+        /// <summary>
+        /// конструктор
+        /// </summary>
+        /// <param name="dayOfWeek">Нумер дня недели</param>
+        /// <param name="totalWorkHours">Общее количество часов, учтённое на задаче в день</param>
+        /// <param name="workItemId">TFS WorkItem Id</param>
+        /// <param name="weekNumber">Нумер рабочей недели</param>
+        public TimeData(int dayOfWeek, TimeSpan totalWorkHours, int workItemId, int weekNumber)
         {
-            WorkItemId = workItemId;
-            DayOfWeek = day;
-            Work = work;
-            OriginalWork = work;
-            Calday = Helpers.WeekBoundaries(weekNumber, true).AddDays(day);
+            WorkItemId = workItemId;              
+            Work = totalWorkHours;
+            OriginalWork = totalWorkHours;
+            Calday = Helpers.WeekBoundaries(weekNumber, true).AddDays(dayOfWeek);
         }
-
-        
+        /// <summary>
+        /// Текущий день недели
+        /// </summary>
+        public int DayOfWeek { get => (int)Calday.DayOfWeek - 1; }
     }
 }

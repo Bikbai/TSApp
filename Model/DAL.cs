@@ -32,16 +32,19 @@ namespace TSApp.Model
 
         public DAL(Settings s)
         {
-            Settings.Default.SettingsLoaded += SettingsLoaded;
+            Settings.Default.SettingsLoaded += SettingsLoadedHandler;
             if (s == null)
                 OnInitCompleted(CONN_RESULT.ERROR, "Не настроены параметры подключения.");
         }
 
-        private async void SettingsLoaded(object sender, System.Configuration.SettingsLoadedEventArgs e)
+        private async void SettingsLoadedHandler(object sender, System.Configuration.SettingsLoadedEventArgs e)
         {
             await this.Init();
         }
-        
+
+        /// <summary>
+        /// Инициализация подключения к TFS
+        /// </summary>
         public async Task<ConnectResult> PerformTFSConnect()
         {
             ConnectResult result = new ConnectResult(CONN_RESULT.OK, "");
@@ -56,10 +59,13 @@ namespace TSApp.Model
                 result.Status = CONN_RESULT.ERROR;
                 result.ErrorMessage = e.Message;
             }
-            TfsReady =  result.Status == CONN_RESULT.OK ? true : false;
+            TfsReady = result.Status == CONN_RESULT.OK ? true : false;
             return result;
         }
-        
+
+        /// <summary>
+        /// Инициализация подключения к Клоки
+        /// </summary>
         public async Task<ConnectResult> PerformClokiConnect()
         {
             ConnectResult result = new ConnectResult(CONN_RESULT.ERROR, "");
@@ -76,8 +82,10 @@ namespace TSApp.Model
                         {
                             StaticData.Init(prj.Data[0].Id, uid.Data.Id, ws.Data[0].Id);
                             result.Status = CONN_RESULT.OK;
-                        } else { result.ErrorMessage = prj.StatusDescription + " " + prj.Content; }
-                    } else { result.ErrorMessage = ws.StatusDescription + " " + ws.Content; }
+                        }
+                        else { result.ErrorMessage = prj.StatusDescription + " " + prj.Content; }
+                    }
+                    else { result.ErrorMessage = ws.StatusDescription + " " + ws.Content; }
                 }
                 else { result.ErrorMessage = uid.StatusDescription + " " + uid.Content; }
             }
@@ -86,7 +94,7 @@ namespace TSApp.Model
                 result.ErrorMessage = e.Message;
             }
 
-            ClockifyReady = result.Status == CONN_RESULT.OK? true : false;
+            ClockifyReady = result.Status == CONN_RESULT.OK ? true : false;
             return result;
         }
         public async Task<bool> Init()
@@ -113,17 +121,31 @@ namespace TSApp.Model
             else return false;
         }
 
-        public async Task<IRestResponse<List<TimeEntryDtoImpl>>> FindAllTimeEntriesForUser(int? TFSworkItemId, DateTime? queryFrom) 
+        /// <summary>
+        /// Чтение всех Time Entry из Клоки
+        /// </summary>
+        public async Task<List<TimeEntry>> FindAllTimeEntriesForUser(int? TFSworkItemId, DateTime? queryFrom)
         {
+            List<TimeEntry> result = new List<TimeEntry>();
             string query = TFSworkItemId == null ? null : TFSworkItemId.ToString();
             var ret = await clockify.FindAllTimeEntriesForUserAsync(StaticData.WorkspaceId, StaticData.UserId,
                                                            query,
                                                            queryFrom, null,
                                                            StaticData.ProjectId, null, null, null, null, null, null, 1, 5000);
-            return ret;
+            if (ret == null || ret.Data == null)
+                return result;
+            
+            foreach (TimeEntryDtoImpl d in ret.Data)
+            {
+                // задачи без конца и начала пропускаем
+                if (d.TimeInterval.End == null || d.TimeInterval.Start == null)
+                    continue;
+                result.Add(new TimeEntry(d));
+            }
+            return result;
         }
 
-        public async Task<bool> UpdateClokiEntries(List<TimeData> entries, string wiTitle)
+        public bool UpdateClokiEntries(List<TimeData> entries, string wiTitle)
         {
             IRestResponse r;
             TimeEntryDtoImpl x;
@@ -170,7 +192,10 @@ namespace TSApp.Model
         }
 
 
-        public async Task<List<WorkItem>> QueryMyTasks()
+        /// <summary>
+        /// Чтение актуальных задач
+        /// </summary>
+        public async Task<List<WorkItem>> QueryTfsTasks()
         {
             // Create instance of WorkItemTrackingHttpClient using VssConnection
             WorkItemTrackingHttpClient witClient = tfsConnection.GetClient<WorkItemTrackingHttpClient>();
@@ -231,6 +256,12 @@ namespace TSApp.Model
             return workItems;
         }
 
+
+        public async Task<bool> Publish(WeekData wd)
+        {
+
+            return true;
+        }
 
         public void TestClokiCreate()
         {

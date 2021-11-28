@@ -12,37 +12,25 @@ namespace TSApp.ViewModel
     {
         #region internal variable
         private enum CMD : int { incr, decr, replace };
-        private string state; //State
-        private int id; //Id
-        private string title; //Название                              
-        private double originalEstimate = 10;
-        // учтено в TFS, в часах
-        private double completedWork = 0;
         // учтено по дням в Клоки
         private WeekData workDaily;  // учтённая трудоемкость по дням недели
         // учтено по клоки, в часах во всех остальных периодах, чохом
         private TimeSpan restTotalWork = TimeSpan.Zero;
-
+        // сведения о TFS
         private TFSWorkItem _workItem = new TFSWorkItem();
-
         public EntryType Type { get; set; } // тип строки
 
+        private string _state = "";
         #endregion
 
         #region properties
-        public string State
-        {
-            get
-            {
-                return state;
-            }
-            set
-            {
-                SetProperty(ref state, value);
-            }
-        }
-        public int Id { get => id; set => id = value; }
-        public string Title { get => id.ToString() + '.' + title; set => title = value; }
+        /// <summary>
+        /// Статус/тип. Т.к. в гриде будет микс из задач и просто времени из клоки - вот такая странность
+        /// </summary>
+        public string State { get => _state; set => SetProperty(ref _state, value); }
+        public int Id { get => _workItem.Id;}
+        public string Title { get => Id.ToString() + '.' + _workItem.Title;}
+        #region Комментарии по дням недели
         public string MondayComment { get => workDaily.TimeData[0].Comment; set => workDaily.TimeData[0].Comment = value; }
         public string TuesdayComment { get => workDaily.TimeData[1].Comment; set => workDaily.TimeData[1].Comment = value; }
         public string WednesdayComment { get => workDaily.TimeData[2].Comment; set => workDaily.TimeData[2].Comment = value; }
@@ -50,7 +38,8 @@ namespace TSApp.ViewModel
         public string FridayComment { get => workDaily.TimeData[4].Comment; set => workDaily.TimeData[4].Comment = value; }
         public string SundayComment { get => workDaily.TimeData[5].Comment; set => workDaily.TimeData[5].Comment = value; }
         public string SaturdayComment { get => workDaily.TimeData[6].Comment; set => workDaily.TimeData[6].Comment = value; }
-
+        #endregion
+        #region Работа по дням недели
         public string CompletedWorkMon { get => workDaily.TimeData[0].Work.TotalHours.ToString("0.00"); set => ParseEntry(value, 0); }
         public string CompletedWorkTue { get => workDaily.TimeData[1].Work.TotalHours.ToString("0.00"); set => ParseEntry(value, 1); }
         public string CompletedWorkWed { get => workDaily.TimeData[2].Work.TotalHours.ToString("0.00"); set => ParseEntry(value, 2); }
@@ -58,14 +47,23 @@ namespace TSApp.ViewModel
         public string CompletedWorkFri { get => workDaily.TimeData[4].Work.TotalHours.ToString("0.00"); set => ParseEntry(value, 4); }
         public string CompletedWorkSun { get => workDaily.TimeData[5].Work.TotalHours.ToString("0.00"); set => ParseEntry(value, 5); }
         public string CompletedWorkSat { get => workDaily.TimeData[6].Work.TotalHours.ToString("0.00"); set => ParseEntry(value, 6); }
+        #endregion
         public int WeekNumber { get => workDaily.WeekNumber; set => workDaily.WeekNumber = value; }
-        public double OriginalEstimate { get => originalEstimate; set => originalEstimate = value; }
-        public double CompletedWork { get => Math.Round(completedWork, 2); }
-        public string Stats { get => completedWork.ToString("0.00"); }
-        // итого, посчитанное из суммы текущей недели и предыдущих
-        public TimeSpan TotalWork { get => RestTotalWork + workDaily.getTotalWork(); }
-        public TimeSpan OriginalTotalWork { get => RestTotalWork + workDaily.getOriginalTotalWork(); }
+        public double OriginalEstimate { get => _workItem.OriginalEstimate;}
+        public double CompletedWork { get => Math.Round(_workItem.CompletedWork, 2); }
+        public string Stats { get => CompletedWork.ToString("0.00"); }
+        /// <summary>
+        /// Суммарные трудозатраты с учётом модификации
+        /// </summary>
+        public TimeSpan TotalWork { get => RestTotalWork + workDaily.GetTotalWork(); }
+        /// <summary>
+        /// Суммарные трудозатраты, до модификации
+        /// </summary>
+        public TimeSpan OriginalTotalWork { get => RestTotalWork + workDaily.GetOriginalTotalWork(); }
         public bool IsChanged { get => workDaily.IsChanged; }
+        /// <summary>
+        /// Суммарные трудозатраты, учтённые в прочих неделях
+        /// </summary>
         public TimeSpan RestTotalWork { get => restTotalWork; set { SetProperty(ref restTotalWork, value); OnPropertyChanged("TotalWork"); } }
         public string Uri { get => _workItem.LinkedWorkItem.Url; }
         #endregion
@@ -83,20 +81,17 @@ namespace TSApp.ViewModel
         public GridEntry(TFSWorkItem item, int week)
         {
             Type = EntryType.workItem;
-            id = item.Id;
-            completedWork = item.CompletedWork;
-            state = item.State;
-            title = item.Title;
             _workItem = item;
             workDaily = new WeekData(week, item.Id);
+            State = item.State;
         }
         #endregion
 
         // инициализируем рабочие часы, уже учтённые в клокифае
         // в текущей неделе - в указанный день
-        public void InitClokiWork(int workDay, TimeSpan work, TimeEntry te)
+        public void AppendTimeEntry(TimeSpan work, TimeEntry te)
         {
-            workDaily.InitClokiWorkByDay(this.Id, work, workDay, te);
+            workDaily.AppendTimeEntry(this.Id, work, te);
         }
 
         public TimeSpan WorkByDay(int workDay)
@@ -106,11 +101,15 @@ namespace TSApp.ViewModel
             return workDaily.TimeData[workDay].Work;
         }
 
-        // функция расчёта нового значения, в зависимости от команды вида
-        // -число - вычесть
-        // +число - добавить
-        // число - присвоение
-        // отслеживает создание новой версии
+        /// <summary>
+        /// функция ввода нового значения, в зависимости от команды вида
+        /// -число - вычесть
+        /// +число - добавить
+        /// число - присвоение
+        /// </summary>
+        /// <param name="inputValue"></param>
+        /// <param name="dayOfWeek"></param>
+        /// <exception cref="NotSupportedException"></exception>
         private void ParseEntry(string inputValue, int dayOfWeek)
         {
             if (dayOfWeek > 6)
@@ -118,7 +117,7 @@ namespace TSApp.ViewModel
 
             // текущее значение
             double currentValue = workDaily.TimeData[dayOfWeek].Work.TotalHours;
-            // вычисляем введённую команду
+            // определяем, какая команда была введена
             CMD cmd = CMD.replace;
             double val = 0;
             if (inputValue[0] == '+')
@@ -136,6 +135,7 @@ namespace TSApp.ViewModel
                 val = Helpers.GetDouble(inputValue, 0, out successEntry);
                 if (successEntry)
                     workDaily.TimeData[dayOfWeek].Work = TimeSpan.FromHours(val);
+                // стреляем событием, чтобы грид пересчитал и тоталсы
                 OnPropertyChanged("TotalWork");
                 return;
             }
@@ -145,6 +145,7 @@ namespace TSApp.ViewModel
             currentValue = currentValue + val * (cmd == CMD.decr ? -1 : 1);
             //            SetProperty(ref workDaily[dayOfWeek], currentValue < 0 ? TimeSpan.FromHours(0) : TimeSpan.FromHours(currentValue));
             workDaily.TimeData[dayOfWeek].Work = currentValue < 0 ? TimeSpan.FromHours(0) : TimeSpan.FromHours(currentValue);
+            // стреляем событием, чтобы грид пересчитал и тоталсы
             OnPropertyChanged("TotalWork");
         }
 
@@ -214,17 +215,10 @@ namespace TSApp.ViewModel
 
         public bool RemoveTimeEntry(string timeEntryId)
         {
-            foreach (var w in workDaily.TimeData)
-            {
-                if (w.TimeEntries != null)
-                    foreach (var t in w.TimeEntries)
-                        if (t.Id == timeEntryId)
-                        {
-                            w.TimeEntries.Remove(t);
-                            return true;
-                        }
-            }
-            return false;
+            var removedWork = workDaily.RemoveTimeEntry(timeEntryId);
+            if (removedWork == TimeSpan.Zero)
+                return false;
+            return true;
         }
     }
     

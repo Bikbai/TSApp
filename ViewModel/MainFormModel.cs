@@ -1,5 +1,7 @@
 ﻿using TSApp.Model;
 using Microsoft.Toolkit.Mvvm.ComponentModel;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace TSApp.ViewModel
 {
@@ -37,9 +39,7 @@ namespace TSApp.ViewModel
 
         public async void Reload()
         {
-            var y = await gridModel.FetchTfsData();
-            var work = await gridModel.FillCurrentWork();
-            var x = await gridModel.FetchClokiData();
+            await ResetAndLoadData();            
         }
 
 
@@ -50,10 +50,9 @@ namespace TSApp.ViewModel
             switch (args.result.Status)
             {
                 case CONN_RESULT.OK:
-                    BtnCnxnStatusText = "Успешно подключен";
-                    var y = await gridModel.FetchTfsData();                    
-                    var work = await gridModel.FillCurrentWork();                    
+                    BtnCnxnStatusText = "Успешно подключен";                
                     //var x = await gridModel.FetchClokiData();
+                    await ResetAndLoadData();
                     break;
                 case CONN_RESULT.CONNECTING:
                     BtnCnxnStatusText = "В процессе подключения";
@@ -62,6 +61,26 @@ namespace TSApp.ViewModel
                     BtnCnxnStatusText = "Ошибка подключения";
                     break;
             }
+        }
+        /// <summary>
+        /// Очистка данных и их полная перезагрузка
+        /// </summary>
+        /// <returns></returns>
+        private async Task ResetAndLoadData()
+        {
+            List<Task> tasks = new List<Task>
+            {
+                gridModel.FetchClokiData(),
+                gridModel.FetchTfsData()
+            };
+
+            while (tasks.Count > 0)
+            {
+                // TODO прогресс-бар загрузки надо бы
+                Task finishedTask = await Task.WhenAny(tasks);
+                tasks.Remove(finishedTask);
+            }
+            gridModel.FillCurrentWork();
         }
     }
 }

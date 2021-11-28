@@ -1,0 +1,114 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<ClassDiagram MajorVersion="1" MinorVersion="1">
+  <Class Name="TSApp.Model.TimeData" Collapsed="true">
+    <Position X="14" Y="1.75" Width="1.25" />
+    <Compartments>
+      <Compartment Name="Methods" Collapsed="true" />
+    </Compartments>
+    <TypeIdentifier>
+      <HashCode>AAwAAAAEAAAAAAAoAAAAAAAAAAAAAAAABCAEAAAAAAA=</HashCode>
+      <FileName>Model\TimeData.cs</FileName>
+    </TypeIdentifier>
+    <ShowAsCollectionAssociation>
+      <Property Name="TimeEntries" />
+    </ShowAsCollectionAssociation>
+  </Class>
+  <Class Name="TSApp.Model.TimeEntry" Collapsed="true">
+    <Position X="14" Y="2.75" Width="1.25" />
+    <Compartments>
+      <Compartment Name="Fields" Collapsed="true" />
+      <Compartment Name="Properties" Collapsed="true" />
+      <Compartment Name="Methods" Collapsed="true" />
+    </Compartments>
+    <TypeIdentifier>
+      <HashCode>AAICAAACACIAAAAoKAAECAAAAAgEAAAABAAEAAAAAgA=</HashCode>
+      <FileName>Model\TimeEntry.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="TSApp.Model.WeekData" Collapsed="true">
+    <Position X="14" Y="0.5" Width="1.25" />
+    <Compartments>
+      <Compartment Name="Properties" Collapsed="true" />
+    </Compartments>
+    <TypeIdentifier>
+      <HashCode>AAgIIAAAAAAEAAAAAAAIIAAAAAAAAAAAAAAAAAAAAAg=</HashCode>
+      <FileName>Model\WeekData.cs</FileName>
+    </TypeIdentifier>
+    <ShowAsCollectionAssociation>
+      <Property Name="TimeData" />
+    </ShowAsCollectionAssociation>
+  </Class>
+  <Class Name="TSApp.Model.DAL">
+    <Position X="3.5" Y="0.5" Width="1.75" />
+    <NestedTypes>
+      <Delegate Name="TSApp.Model.DAL.TimeEntryDeleteDelegate" Collapsed="true">
+        <TypeIdentifier>
+          <NewMemberFileName>Model\DalEvents.cs</NewMemberFileName>
+        </TypeIdentifier>
+      </Delegate>
+      <Delegate Name="TSApp.Model.DAL.TimeEntryCreateDelegate" Collapsed="true">
+        <TypeIdentifier>
+          <NewMemberFileName>Model\DalEvents.cs</NewMemberFileName>
+        </TypeIdentifier>
+      </Delegate>
+      <Delegate Name="TSApp.Model.DAL.InitCompletedDelegate" Collapsed="true">
+        <TypeIdentifier>
+          <NewMemberFileName>Model\DalEvents.cs</NewMemberFileName>
+        </TypeIdentifier>
+      </Delegate>
+      <Delegate Name="TSApp.Model.DAL.TfsQueryCompletedDelegate" Collapsed="true">
+        <TypeIdentifier>
+          <NewMemberFileName>Model\DalEvents.cs</NewMemberFileName>
+        </TypeIdentifier>
+      </Delegate>
+      <Delegate Name="TSApp.Model.DAL.WorkItemUpdateDelegate" Collapsed="true">
+        <TypeIdentifier>
+          <NewMemberFileName>Model\DalEvents.cs</NewMemberFileName>
+        </TypeIdentifier>
+      </Delegate>
+    </NestedTypes>
+    <TypeIdentifier>
+      <HashCode>QIIAokFA4AAAAEFAAACAAAQAAIIAAAChAgCGAAQAAAA=</HashCode>
+      <FileName>Model\DAL.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="TSApp.ViewModel.GridEntry">
+    <Position X="11" Y="0.5" Width="2" />
+    <Compartments>
+      <Compartment Name="Properties" Collapsed="true" />
+    </Compartments>
+    <NestedTypes>
+      <Enum Name="TSApp.ViewModel.GridEntry.CMD" Collapsed="true">
+        <TypeIdentifier>
+          <NewMemberFileName>ViewModel\GridEntry.cs</NewMemberFileName>
+        </TypeIdentifier>
+      </Enum>
+    </NestedTypes>
+    <TypeIdentifier>
+      <HashCode>ABACNEAgQKDeBcQBQAQIICCIAAwAAKAECQAIBAAAAsw=</HashCode>
+      <FileName>ViewModel\GridEntry.cs</FileName>
+    </TypeIdentifier>
+    <ShowAsAssociation>
+      <Field Name="workDaily" />
+    </ShowAsAssociation>
+    <Lollipop Position="0.2" />
+  </Class>
+  <Class Name="TSApp.ViewModel.WorkItemViewModel">
+    <Position X="7" Y="0.5" Width="2.75" />
+    <NestedTypes>
+      <Delegate Name="TSApp.ViewModel.WorkItemViewModel.ItemPublishedDelegate" Collapsed="true">
+        <TypeIdentifier>
+          <NewMemberFileName>ViewModel\WorkItemViewModel.cs</NewMemberFileName>
+        </TypeIdentifier>
+      </Delegate>
+    </NestedTypes>
+    <TypeIdentifier>
+      <HashCode>AAIAAAAAAAAAIAkACEAAIIAABCgoAAARAAECgAAASAA=</HashCode>
+      <FileName>ViewModel\WorkItemViewModel.cs</FileName>
+    </TypeIdentifier>
+    <ShowAsCollectionAssociation>
+      <Field Name="_gridEntries" />
+    </ShowAsCollectionAssociation>
+  </Class>
+  <Font Name="Segoe UI" Size="9" />
+</ClassDiagram>
