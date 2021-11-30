@@ -1,10 +1,14 @@
 ﻿<Application
-             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:local="clr-namespace:TSApp"
-             xmlns:utility="clr-namespace:TSApp.Utility"
-             xmlns:syncfusion="http://schemas.syncfusion.com/wpf" x:Class="TSApp.App"
-             StartupUri="./Views/MainWindow.xaml">
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="clr-namespace:TSApp"
+    xmlns:beh="clr-namespace:TSApp.Behaviors"
+    xmlns:utility="clr-namespace:TSApp.Utility"
+    xmlns:ts="clr-namespace:TSApp"
+    xmlns:sfgrid="clr-namespace:Syncfusion.UI.Xaml.Grid;assembly=Syncfusion.SfGrid.WPF"
+    xmlns:syncfusion="http://schemas.syncfusion.com/wpf" 
+    x:Class="TSApp.App"
+    StartupUri="./Views/MainWindow.xaml">
     <Application.Resources>
         <utility:TimeSpanConverter x:Key="timeSpanConverter"/>
         <DataTemplate x:Key="TopCellTemplate">
@@ -28,5 +32,10 @@
                 <TextBlock FontWeight="Bold" Text="{Binding Path=TotalWork, Converter={StaticResource timeSpanConverter}}"/>
             </StackPanel>
         </DataTemplate>
+        <beh:RowColorConverter x:Key="converter"/>
+        <Style x:Key="RowStyle" 
+               TargetType="sfgrid:VirtualizingCellsControl">
+            <Setter Property="Background" Value="{Binding Path=IsChanged, Mode=OneWay, Converter={StaticResource ResourceKey=converter}, UpdateSourceTrigger=PropertyChanged}" />
+        </Style>
     </Application.Resources>
 </Application>

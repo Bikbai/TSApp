@@ -9,7 +9,7 @@ using System.Windows;
 using System.Windows.Input;
 using System.Windows.Threading;
 using TSApp.Model;
-using TSApp.Bahaviors;
+using TSApp.Behaviors;
 using TSApp.ProjectConstans;
 using TSApp.ViewModel;
 
@@ -30,6 +30,7 @@ namespace TSApp
             mainGrid.QueryUnBoundRow += MainGrid_QueryUnBoundRow;
             mainGrid.QueryCoveredRange += MainGrid_QueryCoveredRange;
             mainGrid.SortComparers.Add(new SortComparer() { Comparer = new CustomStateComparer(), PropertyName = "State" });
+            mainGrid.DataContext = mdl.gridModel.GridEntries;
             mainGrid.ItemsSource = mdl.gridModel.GridEntries;
             mainGrid.CurrentCellRequestNavigate += MainGrid_CurrentCellRequestNavigate;
         }
@@ -88,7 +89,8 @@ namespace TSApp
                     else if (index >= 5 && index % 2 != 0 && index < 14)
                     {
                         int d = index / 2 - 2;
-                        e.Value = mdl.gridModel.GetTotalWork(d);
+                        /// TODO гыыы надо уметь в русские дни недели
+                        e.Value = mdl.gridModel.GetTotalWork(Helpers.DayOfWeekFromRus(d));
                         e.Handled = true;
                     }
                 }
@@ -193,21 +195,16 @@ namespace TSApp
 
         private async void button3_Click(object sender, RoutedEventArgs e)
         {
-            foreach (var x in mdl.gridModel.GridEntries)
-            {
-                if (x.Id == 11618)
-                    return;
-            }
-            
-
+            var ix = mainGrid.SelectedIndex;
+            var row = mainGrid.CurrentItem;
         }
 
         private void InitSettings()
         {
             if (StaticData.weekTimeTable == null)
-                StaticData.weekTimeTable = new TimeSpan[7];
-            for (int i = 0; i < 7; i++)
-                StaticData.weekTimeTable[i] = TimeSpan.FromHours(10);
+                StaticData.weekTimeTable = new System.Collections.Generic.Dictionary<DayOfWeek, TimeSpan>();
+            foreach (var d in Enum.GetValues(typeof(DayOfWeek)))
+                StaticData.weekTimeTable.Add((DayOfWeek)d, TimeSpan.FromHours(10));
             // TODO сделать сохранение и загрузку рабочего графика
         }
     }

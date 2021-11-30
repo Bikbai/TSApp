@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 
 namespace TSApp.ProjectConstans
 {
@@ -15,7 +16,7 @@ namespace TSApp.ProjectConstans
 
         public static TimeSpan DefaultStartTime => defaultStartTime;
 
-        public static TimeSpan[] weekTimeTable { get; set; }
+        public static Dictionary<DayOfWeek, TimeSpan> weekTimeTable { get; set; }
         public static void Init(string ProjectId, string UserId, string WorkspaceId)
         {
             projectId = ProjectId; userId = UserId; workspaceId = WorkspaceId;

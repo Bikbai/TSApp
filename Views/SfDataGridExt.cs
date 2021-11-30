@@ -1,6 +1,7 @@
 ﻿using Syncfusion.UI.Xaml.Grid;
 using System.Linq;
 using System.Windows.Input;
+using TSApp.Behaviors;
 
 namespace TSApp { 
     public class SfDataGridExt : SfDataGrid

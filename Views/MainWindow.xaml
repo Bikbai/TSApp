@@ -4,10 +4,11 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:TSApp"
+    xmlns:beh="clr-namespace:TSApp.Behaviors"
         xmlns:syncfusion="http://schemas.syncfusion.com/wpf" 
-        xmlns:ViewModel="clr-namespace:TSApp.ViewModel" 
-        x:Name="window" x:Class="TSApp.MainWindow"
-        mc:Ignorable="d"
+        xmlns:ViewModel="clr-namespace:TSApp.ViewModel" d:DataContext="{d:DesignInstance Type=ViewModel:GridEntry}"
+    x:Name="window" x:Class="TSApp.MainWindow"
+        mc:Ignorable="d"        
         Title="MainWindow" Height="891.067" Width="2107.671" Loaded="Window_Loaded">
     <Canvas x:Name="canvas" HorizontalAlignment="Left" 
             Width="{Binding Width, ElementName=window}" 
@@ -28,7 +29,9 @@
                 AddNewRowInitiating="mainGrid_AddNewRowInitiating"
                 Margin="10,10,10,10"
                 ScrollViewer.VerticalScrollBarVisibility="Visible"
-                CurrentCellBeginEdit="mainGrid_CurrentCellBeginEdit" AllowSorting="False">
+                CurrentCellBeginEdit="mainGrid_CurrentCellBeginEdit"
+                AllowSorting="False" RowStyle="{DynamicResource RowStyle}" 
+                >
                 <local:SfDataGridExt.UnBoundRows>
                     <syncfusion:GridUnBoundRow Position="Top" x:Name="WorkHours"/>
                     <syncfusion:GridUnBoundRow Position="Bottom" x:Name="Totals"/>
@@ -70,12 +73,12 @@
                         AllowEditing="True" Width="60" TextAlignment="Right"/>
                     <syncfusion:GridTextColumn AllowEditing="True" MappingName ="SundayComment"  
                                                Width="100" HeaderText="Комментарий"/>
-                    
+
                     <syncfusion:GridTextColumn MappingName ="CompletedWorkSat" HeaderText="ВС"
                         AllowEditing="True" Width="60" TextAlignment="Right"/>
                     <syncfusion:GridTextColumn MappingName ="SaturdayComment" HeaderText="Комментарий" 
                                                AllowEditing="True"  Width="100"/>
-                    
+
                     <syncfusion:GridTemplateColumn HeaderText="Суммарно"
                         AllowEditing="False" Width="120" TextAlignment="Right" CellTemplate="{DynamicResource totalWork}"/>
                 </local:SfDataGridExt.Columns>
@@ -97,12 +100,12 @@
                 </ProgressBar>
             </StatusBarItem>
             <StatusBarItem Height="40" VerticalAlignment="Center" Width="300">
-                 <Label x:Name="tmpLabel" Content="TestContent"/>
+                <Label x:Name="tmpLabel" Content="TestContent"/>
             </StatusBarItem>
         </StatusBar>
         <Button x:Name="btnLoad" Content="Обновить" Canvas.Left="12" Canvas.Top="10" 
-                Width="75" Height="40" Click="btnLoad_Click"/>
-        <Button x:Name="button1" Content="Publish" Width="75" Canvas.Left="114" Canvas.Top="10" Click="button1_Click" Height="40"/>
+                Width="75" Height="40" Click="btnLoad_Click" VerticalAlignment="Top"/>
+        <Button x:Name="button1" Content="Publish" Width="75" Canvas.Left="114" Canvas.Top="10" Click="button1_Click" Height="40" VerticalAlignment="Top"/>
         <Grid x:Name="grid" Height="40" Canvas.Left="316" Canvas.Top="10" Width="576">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="Auto"/>

@@ -97,7 +97,7 @@ namespace TSApp.ViewModel
         /// </summary>
         /// <param name="workDay"></param>
         /// <returns></returns>
-        public double GetTotalWork(int workDay)
+        public double GetTotalWork(DayOfWeek workDay)
         {
             TimeSpan retval = TimeSpan.Zero;
             foreach(var w in _gridEntries)
@@ -120,7 +120,7 @@ namespace TSApp.ViewModel
                 if (start >= Helpers.WeekBoundaries(CurrentWeekNumber, true) &&
                     start <= Helpers.WeekBoundaries(CurrentWeekNumber, false))
                 {
-                    gridEntry.AppendTimeEntry(end.Subtract(start), te);
+                    gridEntry.AppendTimeEntry(te);
                 }
                 else
                 {
@@ -149,8 +149,9 @@ namespace TSApp.ViewModel
         {
             List<Task> Workers = new List<Task>();
             bool x = false;
+            var changed = _gridEntries.Where(p => p.IsChanged == true);
 
-            foreach (GridEntry w in _gridEntries)
+            foreach (GridEntry w in changed)
             {
                 if  (w.IsChanged && w.Type == EntryType.workItem)
                 {
@@ -159,7 +160,7 @@ namespace TSApp.ViewModel
                         // сначала ждём апдейта клоки
                         var cl =  Connection.UpdateClokiEntries(w.GetClokiUpdateData(), w.Title);
                         // потом подтягиваем в TFS и апдейтим грид
-                        var tf = await Connection.UpdateTFSEntry(w.Id, w.GetTfsUpdateData()); 
+                        Workers.Add(Connection.UpdateTFSEntry(w.Id, w.GetTfsUpdateData()));
                     }
                     catch (AggregateException ae) { throw ae; }                   
                 }
@@ -193,7 +194,9 @@ namespace TSApp.ViewModel
 
             var ge = GridEntries.Where(p => p.Id == (int)wi.Id).First();
             if (ge != null)
+            {
                 ge = nge;
+            }
             else
                 GridEntries.Add(nge);
         }
@@ -210,13 +213,13 @@ namespace TSApp.ViewModel
 
         public void OnTimeEntryCreateHandler(TimeEntry te)
         {
+            _timeEntries.Add(te);
             if (te.WorkItemId != -1) 
             {
                 var wi = GridEntries.First(p => p.Id == te.WorkItemId);
                 if (wi != null)
-                    /// TODO туду ёпта запихивания TimeEntry в нужные места
-                    return;
-                    
+                    wi.AppendTimeEntry(te);
+                /// TODO туду ёпта запихивания TimeEntry в нужные места
             }
         }
     }

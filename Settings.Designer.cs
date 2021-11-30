@@ -38,7 +38,7 @@ namespace TSApp {
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.SpecialSettingAttribute(global::System.Configuration.SpecialSetting.WebServiceUrl)]
-        [global::System.Configuration.DefaultSettingValueAttribute("http://ztfs-2017.fintech.ru:8080/tfs/Fintech")]
+        [global::System.Configuration.DefaultSettingValueAttribute("http://ztfs-2017:8080/tfs/Fintech")]
         public string CollectionURI {
             get {
                 return ((string)(this["CollectionURI"]));

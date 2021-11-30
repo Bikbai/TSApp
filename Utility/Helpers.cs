@@ -86,6 +86,11 @@ namespace TSApp
             return start? result.AddDays(-3): result.AddDays(4);
         }
     
-    
+        public static DayOfWeek DayOfWeekFromRus(int day)
+        {
+            int d = day + 1;
+            if (d == 7) d = 0;
+            return (DayOfWeek)d;
+        }
     }
 }

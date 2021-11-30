@@ -7,7 +7,7 @@ using System.Text;
 using System.Threading.Tasks;
 using TSApp.ViewModel;
 
-namespace TSApp.Behavior
+namespace TSApp.Behaviors
 {
     public class CustomStateComparer : IComparer<object>, ISortDirection
     {

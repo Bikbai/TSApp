@@ -33,7 +33,7 @@ namespace TSApp.ViewModel
 
         public void Publish()
         {
-           
+         
            var x = gridModel.Publish();
         }
 

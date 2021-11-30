@@ -47,9 +47,17 @@ namespace TSApp.Model
             OriginalWork = totalWorkHours;
             Calday = Helpers.WeekBoundaries(weekNumber, true).AddDays(dayOfWeek);
         }
+
+        public TimeData(DateTime calday, TimeSpan totalWorkHours, int workItemId, int weekNumber)
+        {
+            WorkItemId = workItemId;
+            Work = totalWorkHours;
+            OriginalWork = totalWorkHours;
+            Calday = calday;
+        }
         /// <summary>
         /// Текущий день недели
         /// </summary>
-        public int DayOfWeek { get => (int)Calday.DayOfWeek - 1; }
+        public DayOfWeek DayOfWeek { get => Calday.DayOfWeek; }
     }
 }

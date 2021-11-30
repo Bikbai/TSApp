@@ -5,27 +5,23 @@ namespace TSApp.Model
 {
     public class WeekData
     {
-        public TimeData[] TimeData { get; set; }
+        public Dictionary<DayOfWeek, TimeData> TimeDataDaily { get; set; }
         public int WeekNumber;
 
         public WeekData(int weekNumber, int workItemId)
         {
             WeekNumber = weekNumber == 0 ? 1 : weekNumber;
-            TimeData = new TimeData[7];
-            for (int i = 0; i < 7; i++)
-            {
-                TimeData[i] = new TimeData(i, TimeSpan.Zero, workItemId, weekNumber);
-            }
+            TimeDataDaily = new Dictionary<DayOfWeek, TimeData>();
         }
         public bool IsChanged
         {
             get
             {
-                foreach (var data in TimeData)
+                if (TimeDataDaily.Count == 0)
+                    return false;
+                foreach (var data in TimeDataDaily)
                 {
-                    if (data == null)
-                        return false;
-                    if (data.OriginalWork != data.Work)
+                    if (data.Value.OriginalWork != data.Value.Work)
                         return true;
                 }
                 return false;
@@ -38,24 +34,32 @@ namespace TSApp.Model
         /// <param name="work">Учтённые часы</param>
         /// <param name="te">Учитываемый Clokify TimeEntry</param>
         /// <param name="applyChanges"></param>
-        public void AppendTimeEntry(int workItemId, TimeSpan work, TimeEntry te)
+        public void AppendTimeEntry(TimeEntry te)
         {
-            int workDay = te.DayOfWeek;
+            int workItemId = te.WorkItemId;
+            if (workItemId == -1)
+                throw new ArgumentException("AppendTimeEntry: попытка добавить TimeEntry, не привязанный к WorkItem.Id: ");
+            DateTime start = ((DateTimeOffset)te.Start).DateTime;
+            DateTime end = ((DateTimeOffset)te.End).DateTime;
+            TimeSpan work = end.Subtract(start);
+            var workDay = te.DayOfWeek;
+            TimeData td;
 
-            if (TimeData[workDay] == null)
+            if (!TimeDataDaily.TryGetValue(workDay, out td))
             { 
-                TimeData[workDay] = new TimeData(workDay, work, workItemId, WeekNumber);
-            } else
+                TimeDataDaily.Add(workDay, new TimeData(start.Date, work, workItemId, WeekNumber));
+            } 
+            else
             {
-                TimeData[workDay].Work += work;
-                TimeData[workDay].OriginalWork += work;
+                TimeDataDaily[workDay].Work += work;
+                TimeDataDaily[workDay].OriginalWork += work;
             }
 
-            if (TimeData[workDay].TimeEntries == null)
+            if (TimeDataDaily[workDay].TimeEntries == null)
             {
-                TimeData[workDay].TimeEntries = new List<TimeEntry>();                
+                TimeDataDaily[workDay].TimeEntries = new List<TimeEntry>();                
             }
-            TimeData[workDay].TimeEntries.Add(te);
+            TimeDataDaily[workDay].TimeEntries.Add(te);
         }
         /// <summary>
         /// Удалить Time Entry с пересчётом времени
@@ -65,8 +69,9 @@ namespace TSApp.Model
         public TimeSpan RemoveTimeEntry(string timeEntryId)
         {
             TimeSpan removedWork = TimeSpan.Zero;
-            foreach (var w in this.TimeData)
+            foreach (var td in this.TimeDataDaily)
             {
+                var w = td.Value;
                 if (w.TimeEntries != null)
                     foreach (var t in w.TimeEntries)
                         if (t.Id == timeEntryId)
@@ -89,9 +94,9 @@ namespace TSApp.Model
         public TimeSpan GetTotalWork()
         {
             TimeSpan retval = TimeSpan.Zero;
-            foreach (var time in TimeData)
+            foreach (var time in TimeDataDaily)
             {
-                retval += time.Work;
+                retval += time.Value.Work;
             }
             return retval;
         }
@@ -102,9 +107,9 @@ namespace TSApp.Model
         public TimeSpan GetOriginalTotalWork()
         {
             TimeSpan retval = TimeSpan.Zero;
-            foreach (var time in TimeData)
+            foreach (var time in TimeDataDaily)
             {
-                retval += time.OriginalWork;
+                retval += time.Value.OriginalWork;
             }
             return retval;
         }

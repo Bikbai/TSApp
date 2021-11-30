@@ -31,22 +31,54 @@ namespace TSApp.ViewModel
         public int Id { get => _workItem.Id;}
         public string Title { get => Id.ToString() + '.' + _workItem.Title;}
         #region Комментарии по дням недели
-        public string MondayComment { get => workDaily.TimeData[0].Comment; set => workDaily.TimeData[0].Comment = value; }
-        public string TuesdayComment { get => workDaily.TimeData[1].Comment; set => workDaily.TimeData[1].Comment = value; }
-        public string WednesdayComment { get => workDaily.TimeData[2].Comment; set => workDaily.TimeData[2].Comment = value; }
-        public string ThursdayComment { get => workDaily.TimeData[3].Comment; set => workDaily.TimeData[3].Comment = value; }
-        public string FridayComment { get => workDaily.TimeData[4].Comment; set => workDaily.TimeData[4].Comment = value; }
-        public string SundayComment { get => workDaily.TimeData[5].Comment; set => workDaily.TimeData[5].Comment = value; }
-        public string SaturdayComment { get => workDaily.TimeData[6].Comment; set => workDaily.TimeData[6].Comment = value; }
+        public string MondayComment { 
+            get => GetTimeData(DayOfWeek.Monday, true); 
+            set => workDaily.TimeDataDaily[DayOfWeek.Monday].Comment = value; 
+        }
+        public string TuesdayComment {
+            get => GetTimeData(DayOfWeek.Wednesday, true);
+            set => workDaily.TimeDataDaily[DayOfWeek.Wednesday].Comment = value; 
+        }
+        public string WednesdayComment { 
+            get => GetTimeData(DayOfWeek.Tuesday, true); 
+            set => workDaily.TimeDataDaily[DayOfWeek.Tuesday].Comment = value; 
+        }
+        public string ThursdayComment { 
+            get => GetTimeData(DayOfWeek.Thursday, true);
+            set => workDaily.TimeDataDaily[DayOfWeek.Thursday].Comment = value; 
+        }
+        public string FridayComment { 
+            get => GetTimeData(DayOfWeek.Friday, true);
+            set => workDaily.TimeDataDaily[DayOfWeek.Friday].Comment = value; }
+        public string SundayComment { 
+            get => GetTimeData(DayOfWeek.Sunday, true);
+            set => workDaily.TimeDataDaily[DayOfWeek.Sunday].Comment = value; }
+        public string SaturdayComment { 
+            get => GetTimeData(DayOfWeek.Saturday, true);
+            set => workDaily.TimeDataDaily[DayOfWeek.Saturday].Comment = value; }
         #endregion
         #region Работа по дням недели
-        public string CompletedWorkMon { get => workDaily.TimeData[0].Work.TotalHours.ToString("0.00"); set => ParseEntry(value, 0); }
-        public string CompletedWorkTue { get => workDaily.TimeData[1].Work.TotalHours.ToString("0.00"); set => ParseEntry(value, 1); }
-        public string CompletedWorkWed { get => workDaily.TimeData[2].Work.TotalHours.ToString("0.00"); set => ParseEntry(value, 2); }
-        public string CompletedWorkThu { get => workDaily.TimeData[3].Work.TotalHours.ToString("0.00"); set => ParseEntry(value, 3); }
-        public string CompletedWorkFri { get => workDaily.TimeData[4].Work.TotalHours.ToString("0.00"); set => ParseEntry(value, 4); }
-        public string CompletedWorkSun { get => workDaily.TimeData[5].Work.TotalHours.ToString("0.00"); set => ParseEntry(value, 5); }
-        public string CompletedWorkSat { get => workDaily.TimeData[6].Work.TotalHours.ToString("0.00"); set => ParseEntry(value, 6); }
+        public string CompletedWorkMon { 
+            get => GetTimeData(DayOfWeek.Monday, false);
+            set => ParseEntry(value, DayOfWeek.Monday); }
+        public string CompletedWorkTue { 
+            get => GetTimeData(DayOfWeek.Wednesday, false);
+            set => ParseEntry(value, DayOfWeek.Wednesday); }
+        public string CompletedWorkWed { 
+            get => GetTimeData(DayOfWeek.Tuesday, false);
+            set => ParseEntry(value, DayOfWeek.Tuesday); }
+        public string CompletedWorkThu { 
+            get => GetTimeData(DayOfWeek.Thursday, false);
+            set => ParseEntry(value, DayOfWeek.Thursday); }
+        public string CompletedWorkFri { 
+            get => GetTimeData(DayOfWeek.Friday, false);
+            set => ParseEntry(value, DayOfWeek.Friday); }
+        public string CompletedWorkSun { 
+            get => GetTimeData(DayOfWeek.Sunday, false);
+            set => ParseEntry(value, DayOfWeek.Sunday); }
+        public string CompletedWorkSat { 
+            get => GetTimeData(DayOfWeek.Saturday, false);
+            set => ParseEntry(value, DayOfWeek.Saturday); }
         #endregion
         public int WeekNumber { get => workDaily.WeekNumber; set => workDaily.WeekNumber = value; }
         public double OriginalEstimate { get => _workItem.OriginalEstimate;}
@@ -89,16 +121,20 @@ namespace TSApp.ViewModel
 
         // инициализируем рабочие часы, уже учтённые в клокифае
         // в текущей неделе - в указанный день
-        public void AppendTimeEntry(TimeSpan work, TimeEntry te)
+        public void AppendTimeEntry(TimeEntry te)
         {
-            workDaily.AppendTimeEntry(this.Id, work, te);
+            workDaily.AppendTimeEntry(te);
         }
 
-        public TimeSpan WorkByDay(int workDay)
+        public TimeSpan WorkByDay(DayOfWeek workDay)
         {
-            if (workDaily.TimeData == null || workDaily.TimeData[workDay] == null)
+            TimeData td;
+            if (workDaily.TimeDataDaily == null || workDaily.TimeDataDaily.Count == 0)
                 return TimeSpan.Zero;
-            return workDaily.TimeData[workDay].Work;
+
+            if (workDaily.TimeDataDaily.TryGetValue(workDay, out td))
+                return td.Work;
+            else return TimeSpan.Zero; 
         }
 
         /// <summary>
@@ -110,13 +146,15 @@ namespace TSApp.ViewModel
         /// <param name="inputValue"></param>
         /// <param name="dayOfWeek"></param>
         /// <exception cref="NotSupportedException"></exception>
-        private void ParseEntry(string inputValue, int dayOfWeek)
+        private void ParseEntry(string inputValue, DayOfWeek dayOfWeek)
         {
-            if (dayOfWeek > 6)
-                throw new NotSupportedException("ParseEntry: dayOfWeek = " + dayOfWeek);
-
             // текущее значение
-            double currentValue = workDaily.TimeData[dayOfWeek].Work.TotalHours;
+            TimeData td;
+            double currentValue = 0;
+            if (workDaily.TimeDataDaily.TryGetValue(dayOfWeek, out td))
+                currentValue = td.Work.TotalHours;
+            else
+                throw new NotSupportedException();
             // определяем, какая команда была введена
             CMD cmd = CMD.replace;
             double val = 0;
@@ -134,9 +172,10 @@ namespace TSApp.ViewModel
             {
                 val = Helpers.GetDouble(inputValue, 0, out successEntry);
                 if (successEntry)
-                    workDaily.TimeData[dayOfWeek].Work = TimeSpan.FromHours(val);
+                    workDaily.TimeDataDaily[dayOfWeek].Work = TimeSpan.FromHours(val);
                 // стреляем событием, чтобы грид пересчитал и тоталсы
                 OnPropertyChanged("TotalWork");
+                OnPropertyChanged("IsChanged");
                 return;
             }
             val = Helpers.GetDouble(inputValue.Substring(1, inputValue.Length - 1), 0, out successEntry);
@@ -144,8 +183,9 @@ namespace TSApp.ViewModel
                 return;
             currentValue = currentValue + val * (cmd == CMD.decr ? -1 : 1);
             //            SetProperty(ref workDaily[dayOfWeek], currentValue < 0 ? TimeSpan.FromHours(0) : TimeSpan.FromHours(currentValue));
-            workDaily.TimeData[dayOfWeek].Work = currentValue < 0 ? TimeSpan.FromHours(0) : TimeSpan.FromHours(currentValue);
+            workDaily.TimeDataDaily[dayOfWeek].Work = currentValue < 0 ? TimeSpan.FromHours(0) : TimeSpan.FromHours(currentValue);
             // стреляем событием, чтобы грид пересчитал и тоталсы
+            OnPropertyChanged("IsChanged");
             OnPropertyChanged("TotalWork");
         }
 
@@ -163,13 +203,13 @@ namespace TSApp.ViewModel
             TimeSpan totals = OriginalTotalWork;
             double remnWork = _workItem.RemainingWork;
             TimeSpan delta = TimeSpan.Zero;
-            for (int i = 0; i < workDaily.TimeData.Length; i++)
+            foreach (var td in workDaily.TimeDataDaily)
             {
                 // если модифицировано время в таймшите
-                if (workDaily.TimeData[i].OriginalWork != workDaily.TimeData[i].Work)
+                if (td.Value.OriginalWork != td.Value.Work)
                 {
                     // считаем дельту внесённого времени на всех днях недели
-                    delta += workDaily.TimeData[i].Work - workDaily.TimeData[i].OriginalWork;
+                    delta += td.Value.Work - td.Value.OriginalWork;
                 }
             }
             remnWork = Math.Round(remnWork - delta.TotalHours, 2);
@@ -205,10 +245,10 @@ namespace TSApp.ViewModel
         {
             List<TimeData> result = new List<TimeData>();
 
-            foreach (var w in workDaily.TimeData)
+            foreach (var w in workDaily.TimeDataDaily)
             {
-                if (w.OriginalWork != w.Work)
-                    result.Add(w);
+                if (w.Value.OriginalWork != w.Value.Work)
+                    result.Add(w.Value);
             }
             return result;
         }
@@ -219,6 +259,17 @@ namespace TSApp.ViewModel
             if (removedWork == TimeSpan.Zero)
                 return false;
             return true;
+        }
+
+        private string GetTimeData(DayOfWeek day, bool needComment)
+        {
+            TimeData td;
+            if (workDaily.TimeDataDaily == null)
+                return "";
+            if (workDaily.TimeDataDaily.TryGetValue(day, out td))
+                return needComment ? td.Comment : td.Work.TotalHours.ToString("0.00");
+            else
+                return "";
         }
     }
     

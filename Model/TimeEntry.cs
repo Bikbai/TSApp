@@ -78,6 +78,6 @@ namespace TSApp.Model
         /// <summary>
         /// День недели
         /// </summary>
-        public int DayOfWeek { get => (int)Calday.DayOfWeek - 1; }
+        public DayOfWeek DayOfWeek { get => Calday.DayOfWeek; }
     }
 }
