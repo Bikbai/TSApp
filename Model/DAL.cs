@@ -144,7 +144,13 @@ namespace TSApp.Model
             }
             return result;
         }
-
+        /// <summary>
+        /// Пересоздание TimeEntry по одному GridEntry, т.е. за все дни чохом.
+        /// </summary>
+        /// <param name="entries">Пересоздаваемые TE</param>
+        /// <param name="wiTitle">Текст, который будет записан в Клоки</param>
+        /// <returns></returns>
+        /// <exception cref="Exception"></exception>
         public bool UpdateClokiEntries(List<TimeData> entries, string wiTitle)
         {
             IRestResponse r;
@@ -156,15 +162,20 @@ namespace TSApp.Model
                 // удаляем старые записи, как ненужные - пересоздадим
                 if (e.TimeEntries != null && e.TimeEntries.Count != 0)
                 {
+                    bool teDeleted = false;
                     foreach (var t in e.TimeEntries)
                     {
                         r = clockify.DeleteTimeEntryAsync(StaticData.WorkspaceId, t.Id).Result;
                         if (!r.IsSuccessful)
                             throw new Exception("Ошибка при удалении Clokify TimeEntry");
-                        OnTimeEntryDeleted(t.Id, t.WorkItemId);
+                        teDeleted = true;
                     }
+                    if (teDeleted)
+                        OnTimeEntryDeleted(e.Calday, e.WorkItemId);
                 }
-
+                // Обнуление = удаление, нулевой Item не создаём
+                if (e.Work == TimeSpan.Zero)
+                    continue;
                 var rq = TimeEntryRequestFabric.GetRequest(e);
                 rq.Description = wiTitle + '.' + e.Comment;
                 x = clockify.CreateTimeEntryAsync(StaticData.WorkspaceId, rq).Result.Data;
@@ -175,18 +186,19 @@ namespace TSApp.Model
             return true;
         }
 
-        public async Task<bool> UpdateTFSEntry(int id, JsonPatchDocument patch) {
+        public async Task<int> UpdateTFSEntry(int id, JsonPatchDocument patch) {
             WorkItemTrackingHttpClient witClient = tfsConnection.GetClient<WorkItemTrackingHttpClient>();
             try
             {
                 WorkItem result = await witClient.UpdateWorkItemAsync(patch, id);
+                // кидаем событие для перезагрузки содержимого GridEntry
                 OnWorkItemUpdated(new TFSWorkItem(result));
-                return true;
+                return id;
             }
             catch (AggregateException ex)
             {
                 Console.WriteLine("Error updating workitem: {0}", ex.InnerException.Message);
-                return false;
+                return 0;
             }
 
         }
@@ -225,7 +237,7 @@ namespace TSApp.Model
                         Wiql = "SELECT [System.Id],[System.WorkItemType],[System.Title],[System.AssignedTo],[System.State] " +
                                 "FROM WorkItems WHERE " +
                                 "[System.WorkItemType] = 'Task' AND " +
-                                "[System.State] <> 'Closed' AND " +
+                                //"[System.State] <> 'Closed' AND " +
                                 "[System.AssignedTo] = @Me",
                         IsFolder = false
                     };
@@ -254,13 +266,6 @@ namespace TSApp.Model
             }
             OnTfsQueryCompleted();
             return workItems;
-        }
-
-
-        public async Task<bool> Publish(WeekData wd)
-        {
-
-            return true;
         }
 
         public void TestClokiCreate()

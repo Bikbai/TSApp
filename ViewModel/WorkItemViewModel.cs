@@ -14,7 +14,7 @@ namespace TSApp.ViewModel
         /// <summary>
         /// хранилище задач с привязанными к ним TimeEntry
         /// </summary>
-        public BindingList<GridEntry> _gridEntries = new BindingList<GridEntry>();
+        private BindingList<GridEntry> _gridEntries = new BindingList<GridEntry>();
         /// <summary>
         /// общее хранилище TimeEntry
         /// </summary>
@@ -22,6 +22,10 @@ namespace TSApp.ViewModel
         private TimeSpan[] _defaultWorkdayStart = new TimeSpan[7];
 
         private DAL Connection;
+
+        public BindingList<GridEntry> GridEntries { get => _gridEntries; } //  set => SetProperty(ref _gridEntries, value);
+        //        public List<TimeEntry> TimeEntries { get => _timeEntries; set => SetProperty(ref _timeEntries, value); }
+        public int CurrentWeekNumber { get => currentWeekNumber; set => currentWeekNumber = value; }
 
         public WorkItemViewModel()
         {
@@ -45,15 +49,16 @@ namespace TSApp.ViewModel
                     throw new NotSupportedException("Settings.Default.defaultWorkDayStart is null");
                 _defaultWorkdayStart[i] = Settings.Default.defaultWorkDayStart;
             }
+            this.ItemPublished += WorkItemViewModel_ItemPublished;
         }
 
-        public BindingList<GridEntry> GridEntries { get => _gridEntries; set => SetProperty(ref _gridEntries, value); }
-//        public List<TimeEntry> TimeEntries { get => _timeEntries; set => SetProperty(ref _timeEntries, value); }
-        public int CurrentWeekNumber { get => currentWeekNumber; set => currentWeekNumber = value; }
+        private void WorkItemViewModel_ItemPublished(bool finished, int workItemId)
+        {
+        }
 
         public int GetChangedCount() 
         {
-            return _gridEntries.Count(item => item.IsChanged == true);
+            return GridEntries.Count(item => item.IsChanged == true);
         }
         public TimeSpan GetWorkDayStart(DayOfWeek i)
         {
@@ -100,7 +105,7 @@ namespace TSApp.ViewModel
         public double GetTotalWork(DayOfWeek workDay)
         {
             TimeSpan retval = TimeSpan.Zero;
-            foreach(var w in _gridEntries)
+            foreach(var w in GridEntries)
             {
                 retval += w.WorkByDay(workDay);
             }
@@ -134,10 +139,10 @@ namespace TSApp.ViewModel
 
         public bool FillCurrentWork ()
         {
-            if (_gridEntries == null)
+            if (GridEntries == null)
                 return false;
             // шуршим по всем timeEntry для каждой задачи  
-            foreach (var t in _gridEntries)
+            foreach (var t in GridEntries)
             {
                 FillItemCurrentWork(t);
             }
@@ -149,7 +154,7 @@ namespace TSApp.ViewModel
         {
             List<Task> Workers = new List<Task>();
             bool x = false;
-            var changed = _gridEntries.Where(p => p.IsChanged == true);
+            var changed = GridEntries.Where(p => p.IsChanged == true);
 
             foreach (GridEntry w in changed)
             {
@@ -159,7 +164,7 @@ namespace TSApp.ViewModel
                     {
                         // сначала ждём апдейта клоки
                         var cl =  Connection.UpdateClokiEntries(w.GetClokiUpdateData(), w.Title);
-                        // потом подтягиваем в TFS и апдейтим грид
+                        // асинхронно передаём в TFS
                         Workers.Add(Connection.UpdateTFSEntry(w.Id, w.GetTfsUpdateData()));
                     }
                     catch (AggregateException ae) { throw ae; }                   
@@ -168,20 +173,28 @@ namespace TSApp.ViewModel
             while(Workers.Count > 0)
             {
                 var finishedTask = await Task.WhenAny(Workers);
-                Workers.Remove(finishedTask);
-                OnItemPublished(false);
+                OnItemPublished(false, ((Task<int>)finishedTask).Result);
+                Workers.Remove(finishedTask);                
             }
-            OnItemPublished(true);
+            OnItemPublished(true, 0);
             return x;
         }
 
-        public delegate void ItemPublishedDelegate(bool finished);
+        public delegate void ItemPublishedDelegate(bool finished, int workItemId);
+        /// <summary>
+        /// Событие публикации WI в недра TFS, возвращает ID после публикации (finished == false), 
+        /// либо 0 если процесс завершен (finished == true)
+        /// </summary>
         public event ItemPublishedDelegate ItemPublished;
-
-        private void OnItemPublished(bool finished)
+        /// <summary>
+        /// Вызов события публикации WI в недра TFS
+        /// </summary>
+        /// <param name="finished"></param>
+        /// <param name="workItemId">0 если закончена обработка</param>
+        private void OnItemPublished(bool finished, int workItemId)
         {
             if (ItemPublished != null)
-                ItemPublished.Invoke(finished);
+                ItemPublished.Invoke(finished, workItemId);
         }
         /// <summary>
         /// Обновляем сведения о TFS WI и пересчитываем учтённое время.
@@ -189,37 +202,38 @@ namespace TSApp.ViewModel
         /// <param name="wi"></param>
         public void OnWorkItemUpdatedHandler(TFSWorkItem wi)
         {
-            var nge = new GridEntry(wi, CurrentWeekNumber);
-            FillItemCurrentWork(nge);
-
-            var ge = GridEntries.Where(p => p.Id == (int)wi.Id).First();
+            var ge = GridEntries.First(p => p.Id == wi.Id);
             if (ge != null)
-            {
-                ge = nge;
-            }
-            else
-                GridEntries.Add(nge);
+                ge.WorkItem = wi;
         }
 
-        public void OnTimeEntryDeleteHandler(string timeEntryId, int workItemId)
+        public void OnTimeEntryDeleteHandler(DateTime CalDay, int workItemId)
         {
-            foreach (var te in _timeEntries)
-                if (te.Id == timeEntryId)
-                    _timeEntries.Remove(te);
-            foreach (var wi in GridEntries)
-                if (wi.Id == workItemId)
-                    wi.RemoveTimeEntry(timeEntryId);
+            // чистим локальное хранилище
+            var cnt = _timeEntries.RemoveAll(p => p.WorkItemId == workItemId && p.Calday == CalDay);
+            if (cnt == 0)
+                throw new Exception("OnTimeEntryDeleteHandler: Ошибка при очистке хранилища TimeEntry - не найдено записей!");
+            var ge = GridEntries.First(p => p.Id == workItemId);
+            ge.RemoveTimeEntry(CalDay, workItemId);            
         }
-
+        /// <summary>
+        /// Обработчик события создания TE после заливки его в Клоки.
+        /// </summary>
+        /// <param name="te"></param>
         public void OnTimeEntryCreateHandler(TimeEntry te)
         {
+            if (te.WorkTime == TimeSpan.Zero)
+                return;
             _timeEntries.Add(te);
             if (te.WorkItemId != -1) 
             {
-                var wi = GridEntries.First(p => p.Id == te.WorkItemId);
-                if (wi != null)
-                    wi.AppendTimeEntry(te);
-                /// TODO туду ёпта запихивания TimeEntry в нужные места
+                var ge = GridEntries.First(p => p.Id == te.WorkItemId);
+                if (ge != null)
+                {
+                    // сначала чистим данные за день - их надо перезаписать полученным единственным TE
+                    ge.RemoveTimeEntry(te.Calday, te.WorkItemId);
+                    ge.AppendTimeEntry(te);
+                }
             }
         }
     }

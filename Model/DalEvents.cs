@@ -34,7 +34,7 @@ namespace TSApp.Model
     public partial class DAL
     {
         #region TimeEntryDeleted
-        public delegate void TimeEntryDeleteDelegate(string TimeEntryId, int WorkItemId);
+        public delegate void TimeEntryDeleteDelegate(DateTime Calday, int WorkItemId);
         /// <summary>
         /// Событие удаления записи из Клоки, вызывается при изменении количества часов на задаче (update = delete + insert)
         /// </summary>
@@ -43,10 +43,10 @@ namespace TSApp.Model
         /// Вызывает событие удаления
         /// </summary>
         /// <param name="TimeEntryId">Идентификатор записи в Cloki</param>
-        public void OnTimeEntryDeleted(string TimeEntryId, int WorkItemId)
+        public void OnTimeEntryDeleted(DateTime Calday, int WorkItemId)
         {
             if (TimeEntryDeleted != null)
-                TimeEntryDeleted.Invoke(TimeEntryId, WorkItemId);
+                TimeEntryDeleted.Invoke(Calday, WorkItemId);
         }
         #endregion
 

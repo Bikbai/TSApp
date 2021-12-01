@@ -62,11 +62,11 @@ namespace TSApp.ViewModel
             get => GetTimeData(DayOfWeek.Monday, false);
             set => ParseEntry(value, DayOfWeek.Monday); }
         public string CompletedWorkTue { 
-            get => GetTimeData(DayOfWeek.Wednesday, false);
-            set => ParseEntry(value, DayOfWeek.Wednesday); }
-        public string CompletedWorkWed { 
             get => GetTimeData(DayOfWeek.Tuesday, false);
             set => ParseEntry(value, DayOfWeek.Tuesday); }
+        public string CompletedWorkWed { 
+            get => GetTimeData(DayOfWeek.Wednesday, false);
+            set => ParseEntry(value, DayOfWeek.Wednesday); }
         public string CompletedWorkThu { 
             get => GetTimeData(DayOfWeek.Thursday, false);
             set => ParseEntry(value, DayOfWeek.Thursday); }
@@ -98,10 +98,11 @@ namespace TSApp.ViewModel
         /// </summary>
         public TimeSpan RestTotalWork { get => restTotalWork; set { SetProperty(ref restTotalWork, value); OnPropertyChanged("TotalWork"); } }
         public string Uri { get => _workItem.LinkedWorkItem.Url; }
-        #endregion
+        public TFSWorkItem WorkItem { get => _workItem; set { SetProperty(ref _workItem, value); OnPropertyChanged("CompletedWork"); } }
+    #endregion
 
-        #region Constructors
-        public GridEntry(bool isTimeEntry, int weekNumber)
+    #region Constructors
+    public GridEntry(bool isTimeEntry, int weekNumber)
         {
             if (!isTimeEntry)
                 throw new ArgumentException("Only EntryType.timeEntry supported.", nameof(isTimeEntry));
@@ -118,12 +119,15 @@ namespace TSApp.ViewModel
             State = item.State;
         }
         #endregion
-
-        // инициализируем рабочие часы, уже учтённые в клокифае
-        // в текущей неделе - в указанный день
+        /// <summary>
+        /// инициализируем рабочие часы, уже учтённые в клокифае 
+        /// в текущей неделе - в указанный день
+        /// </summary>
+        /// <param name="te"></param>
         public void AppendTimeEntry(TimeEntry te)
         {
             workDaily.AppendTimeEntry(te);
+            OnPropertyChanged("IsChanged");
         }
 
         public TimeSpan WorkByDay(DayOfWeek workDay)
@@ -132,7 +136,7 @@ namespace TSApp.ViewModel
             if (workDaily.TimeDataDaily == null || workDaily.TimeDataDaily.Count == 0)
                 return TimeSpan.Zero;
 
-            if (workDaily.TimeDataDaily.TryGetValue(workDay, out td))
+            if (workDaily.TimeDataDaily.TryGetValue(workDay, out td) && td != null)
                 return td.Work;
             else return TimeSpan.Zero; 
         }
@@ -149,15 +153,16 @@ namespace TSApp.ViewModel
         private void ParseEntry(string inputValue, DayOfWeek dayOfWeek)
         {
             // текущее значение
-            TimeData td;
             double currentValue = 0;
-            if (workDaily.TimeDataDaily.TryGetValue(dayOfWeek, out td))
-                currentValue = td.Work.TotalHours;
+            if (workDaily.TimeDataDaily[dayOfWeek] != null)
+                currentValue = workDaily.TimeDataDaily[dayOfWeek].Work.TotalHours;
             else
-                throw new NotSupportedException();
+                workDaily.TimeDataDaily[dayOfWeek] = new TimeData(Helpers.RusDayNumberFromDayOfWeek(dayOfWeek), TimeSpan.Zero, this._workItem.Id, WeekNumber);
             // определяем, какая команда была введена
             CMD cmd = CMD.replace;
             double val = 0;
+            if (inputValue.Length == 0)
+                return;
             if (inputValue[0] == '+')
             {
                 cmd = CMD.incr;
@@ -205,6 +210,7 @@ namespace TSApp.ViewModel
             TimeSpan delta = TimeSpan.Zero;
             foreach (var td in workDaily.TimeDataDaily)
             {
+                if (td.Value == null) continue;
                 // если модифицировано время в таймшите
                 if (td.Value.OriginalWork != td.Value.Work)
                 {
@@ -247,26 +253,37 @@ namespace TSApp.ViewModel
 
             foreach (var w in workDaily.TimeDataDaily)
             {
+                if (w.Value == null) continue;
                 if (w.Value.OriginalWork != w.Value.Work)
                     result.Add(w.Value);
             }
             return result;
         }
-
-        public bool RemoveTimeEntry(string timeEntryId)
+        /// <summary>
+        /// Очистка учтённых трудоёмкостей в указанном дне
+        /// </summary>
+        /// <param name="calDay">День</param>
+        /// <param name="workItemId">WorkItem</param>
+        /// <returns>false, если ничего не получилось</returns>
+        public bool RemoveTimeEntry(DateTime calDay, int workItemId)
         {
-            var removedWork = workDaily.RemoveTimeEntry(timeEntryId);
-            if (removedWork == TimeSpan.Zero)
+            if (!workDaily.TimeDataDaily.TryGetValue(calDay.DayOfWeek, out var result))
                 return false;
+            workDaily.TimeDataDaily[calDay.DayOfWeek] = new TimeData(calDay, TimeSpan.Zero, workItemId);
+            OnPropertyChanged("IsChanged");
             return true;
         }
-
+        /// <summary>
+        /// Хелпер-метод извлечения данных
+        /// </summary>
+        /// <param name="day">день недели</param>
+        /// <param name="needComment">возвращать коммент или форматированное значение трудозатрат</param>
+        /// <returns></returns>
         private string GetTimeData(DayOfWeek day, bool needComment)
         {
-            TimeData td;
             if (workDaily.TimeDataDaily == null)
                 return "";
-            if (workDaily.TimeDataDaily.TryGetValue(day, out td))
+            if (workDaily.TimeDataDaily.TryGetValue(day, out TimeData td) && td != null)
                 return needComment ? td.Comment : td.Work.TotalHours.ToString("0.00");
             else
                 return "";

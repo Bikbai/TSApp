@@ -3,8 +3,9 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:local="clr-namespace:TSApp"
-    xmlns:beh="clr-namespace:TSApp.Behaviors"
+        xmlns:p="clr-namespace:TSApp.Properties"
+        xmlns:local="clr-namespace:TSApp" 
+        xmlns:beh="clr-namespace:TSApp.Behaviors"
         xmlns:syncfusion="http://schemas.syncfusion.com/wpf" 
         xmlns:ViewModel="clr-namespace:TSApp.ViewModel" d:DataContext="{d:DesignInstance Type=ViewModel:GridEntry}"
     x:Name="window" x:Class="TSApp.MainWindow"
@@ -38,7 +39,9 @@
                 </local:SfDataGridExt.UnBoundRows>
                 <local:SfDataGridExt.Columns>
                     <syncfusion:GridTextColumn MappingName ="State" HeaderText="Статус (тип)" 
-                        GroupMode="Default" AllowGrouping="True"/>
+                        GroupMode="Default" AllowGrouping="True"
+                        IsHidden="{Binding ApiKey, Source={x:Static p:Settings.Default}}" 
+                        />
                     <syncfusion:GridHyperlinkColumn MappingName ="Title" HeaderText=""
                         Width="700" AllowEditing="False"/>
                     <syncfusion:GridTextColumn MappingName ="State" HeaderText="Dummy" IsHidden="True" 

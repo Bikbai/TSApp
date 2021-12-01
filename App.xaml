@@ -6,7 +6,7 @@
     xmlns:utility="clr-namespace:TSApp.Utility"
     xmlns:ts="clr-namespace:TSApp"
     xmlns:sfgrid="clr-namespace:Syncfusion.UI.Xaml.Grid;assembly=Syncfusion.SfGrid.WPF"
-    xmlns:syncfusion="http://schemas.syncfusion.com/wpf" 
+    xmlns:syncfusion="http://schemas.syncfusion.com/wpf"
     x:Class="TSApp.App"
     StartupUri="./Views/MainWindow.xaml">
     <Application.Resources>
@@ -37,5 +37,6 @@
                TargetType="sfgrid:VirtualizingCellsControl">
             <Setter Property="Background" Value="{Binding Path=IsChanged, Mode=OneWay, Converter={StaticResource ResourceKey=converter}, UpdateSourceTrigger=PropertyChanged}" />
         </Style>
+        
     </Application.Resources>
 </Application>

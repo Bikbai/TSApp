@@ -33,8 +33,13 @@ namespace TSApp
             mainGrid.DataContext = mdl.gridModel.GridEntries;
             mainGrid.ItemsSource = mdl.gridModel.GridEntries;
             mainGrid.CurrentCellRequestNavigate += MainGrid_CurrentCellRequestNavigate;
+//            mainGrid.Columns[3].IsHidden = Settings.Default.HideComments;
         }
-
+        /// <summary>
+        /// Обработка клика на гиперссылку
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void MainGrid_CurrentCellRequestNavigate(object sender, CurrentCellRequestNavigateEventArgs e)
         {
             Process.Start(new ProcessStartInfo("http://ztfs-2017:8080/tfs/Fintech/Mir/_workitems/edit/" + (e.RowData as GridEntry).Id)); 
@@ -89,7 +94,6 @@ namespace TSApp
                     else if (index >= 5 && index % 2 != 0 && index < 14)
                     {
                         int d = index / 2 - 2;
-                        /// TODO гыыы надо уметь в русские дни недели
                         e.Value = mdl.gridModel.GetTotalWork(Helpers.DayOfWeekFromRus(d));
                         e.Handled = true;
                     }
@@ -149,7 +153,7 @@ namespace TSApp
                 mdl.Publish();
             }            
         }
-        private void GridModel_ItemPublished(bool finished)
+        private void GridModel_ItemPublished(bool finished, int workItemId)
         {
             if (finished)
             {
@@ -196,7 +200,8 @@ namespace TSApp
         private async void button3_Click(object sender, RoutedEventArgs e)
         {
             var ix = mainGrid.SelectedIndex;
-            var row = mainGrid.CurrentItem;
+            var row = mainGrid.CurrentItem as GridEntry;
+            mdl.gridModel.GridEntries.ResetBindings();
         }
 
         private void InitSettings()

@@ -92,5 +92,14 @@ namespace TSApp
             if (d == 7) d = 0;
             return (DayOfWeek)d;
         }
+
+        public static int RusDayNumberFromDayOfWeek(DayOfWeek day)
+        {
+            // Sunday == 0. Заменяем на 6
+            if ((int)day -1 == -1)
+                return 6;
+            else
+                return (int)day - 1;
+        }
     }
 }

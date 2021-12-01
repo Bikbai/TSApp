@@ -38,7 +38,7 @@ namespace TSApp {
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.SpecialSettingAttribute(global::System.Configuration.SpecialSetting.WebServiceUrl)]
-        [global::System.Configuration.DefaultSettingValueAttribute("http://ztfs-2017:8080/tfs/Fintech")]
+        [global::System.Configuration.DefaultSettingValueAttribute("http://ztfs-2017.fintech.ru:8080/tfs/Fintech")]
         public string CollectionURI {
             get {
                 return ((string)(this["CollectionURI"]));
@@ -74,22 +74,25 @@ namespace TSApp {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute(@"<?xml version=""1.0"" encoding=""utf-16""?>
-<ArrayOfString xmlns:xsd=""http://www.w3.org/2001/XMLSchema"" xmlns:xsi=""http://www.w3.org/2001/XMLSchema-instance"">
-  <string>10:00</string>
-  <string>10:00</string>
-  <string>10:00</string>
-  <string>10:00</string>
-  <string>10:00</string>
-  <string>10:00</string>
-  <string>10:00</string>
-</ArrayOfString>")]
-        public global::System.Collections.Specialized.StringCollection Timetable {
+        [global::System.Configuration.DefaultSettingValueAttribute("True")]
+        public bool HideComments {
             get {
-                return ((global::System.Collections.Specialized.StringCollection)(this["Timetable"]));
+                return ((bool)(this["HideComments"]));
             }
             set {
-                this["Timetable"] = value;
+                this["HideComments"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("False")]
+        public bool TestValue {
+            get {
+                return ((bool)(this["TestValue"]));
+            }
+            set {
+                this["TestValue"] = value;
             }
         }
     }

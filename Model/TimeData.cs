@@ -34,9 +34,9 @@ namespace TSApp.Model
         /// </summary>
         public List<TimeEntry> TimeEntries { get; set; } // учтённое в клоки время в этот день
         /// <summary>
-        /// конструктор
+        /// конструктор для указанного дня недели (0 это понедельник, 6 - воскресение)
         /// </summary>
-        /// <param name="dayOfWeek">Нумер дня недели</param>
+        /// <param name="dayOfWeek">Нумер дня недели, начиная с нуля</param>
         /// <param name="totalWorkHours">Общее количество часов, учтённое на задаче в день</param>
         /// <param name="workItemId">TFS WorkItem Id</param>
         /// <param name="weekNumber">Нумер рабочей недели</param>
@@ -48,7 +48,7 @@ namespace TSApp.Model
             Calday = Helpers.WeekBoundaries(weekNumber, true).AddDays(dayOfWeek);
         }
 
-        public TimeData(DateTime calday, TimeSpan totalWorkHours, int workItemId, int weekNumber)
+        public TimeData(DateTime calday, TimeSpan totalWorkHours, int workItemId)
         {
             WorkItemId = workItemId;
             Work = totalWorkHours;

@@ -12,6 +12,11 @@ namespace TSApp.Model
         {
             WeekNumber = weekNumber == 0 ? 1 : weekNumber;
             TimeDataDaily = new Dictionary<DayOfWeek, TimeData>();
+            foreach(var d in Enum.GetValues(typeof(DayOfWeek)))
+            {
+                // инициализируем коллекцию как массив, пустыми значениями
+                TimeDataDaily.Add((DayOfWeek)d, null);
+            }
         }
         public bool IsChanged
         {
@@ -21,6 +26,8 @@ namespace TSApp.Model
                     return false;
                 foreach (var data in TimeDataDaily)
                 {
+                    if (data.Value == null)
+                        continue;
                     if (data.Value.OriginalWork != data.Value.Work)
                         return true;
                 }
@@ -43,11 +50,10 @@ namespace TSApp.Model
             DateTime end = ((DateTimeOffset)te.End).DateTime;
             TimeSpan work = end.Subtract(start);
             var workDay = te.DayOfWeek;
-            TimeData td;
 
-            if (!TimeDataDaily.TryGetValue(workDay, out td))
+            if (TimeDataDaily[workDay] == null)
             { 
-                TimeDataDaily.Add(workDay, new TimeData(start.Date, work, workItemId, WeekNumber));
+                TimeDataDaily[workDay] = new TimeData(start.Date, work, workItemId);
             } 
             else
             {
@@ -72,7 +78,7 @@ namespace TSApp.Model
             foreach (var td in this.TimeDataDaily)
             {
                 var w = td.Value;
-                if (w.TimeEntries != null)
+                if (w != null && w.TimeEntries != null)
                     foreach (var t in w.TimeEntries)
                         if (t.Id == timeEntryId)
                         {
@@ -96,6 +102,7 @@ namespace TSApp.Model
             TimeSpan retval = TimeSpan.Zero;
             foreach (var time in TimeDataDaily)
             {
+                if (time.Value == null) continue;
                 retval += time.Value.Work;
             }
             return retval;
@@ -109,9 +116,11 @@ namespace TSApp.Model
             TimeSpan retval = TimeSpan.Zero;
             foreach (var time in TimeDataDaily)
             {
+                if (time.Value == null) continue ;
                 retval += time.Value.OriginalWork;
             }
             return retval;
         }
+
     }
 }
