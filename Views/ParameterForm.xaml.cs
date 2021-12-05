@@ -32,5 +32,10 @@ namespace TSApp
         {
 
         }
+
+        private void button_Click(object sender, RoutedEventArgs e)
+        {
+            model.SaveParameters();
+        }
     }
 }

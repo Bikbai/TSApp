@@ -14,10 +14,11 @@
             </syncfusion:PropertyGrid.DataContext>
         </syncfusion:PropertyGrid>
         <Label x:Name="label" Content="Подключение к TFS:" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="10,10,0,0" Height="29" Width="134"/>
-        <Button x:Name="btnTestTFSConnection" HorizontalAlignment="Left" VerticalAlignment="Top" Width="185" Margin="144,13,0,0" Height="26" Content="{Binding BtnTfsLabel}"/>
+        <Button x:Name="btnTestTFSConnection" HorizontalAlignment="Left" VerticalAlignment="Top" Width="185" Margin="144,13,0,0" Height="26" 
+                Content="{Binding BtnTfsLabel}"/>
         <Label x:Name="label_Copy" Content="Подключение к Clokify:" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="429,10,0,0" Height="29" Width="139"/>
         <Button x:Name="btnTestTFSConnection_Copy" Content="{Binding BtnClokiLabel}" HorizontalAlignment="Left" VerticalAlignment="Top" Width="185" Margin="598,13,0,0" Height="26"/>
-        <Button x:Name="button" Content="Сохранить" HorizontalAlignment="Left" VerticalAlignment="Top" Width="135" Margin="648,375,0,0" Height="36"/>
+        <Button x:Name="button" Content="Сохранить" HorizontalAlignment="Left" VerticalAlignment="Top" Width="135" Margin="648,375,0,0" Height="36" Click="button_Click"/>
         <Button x:Name="button1" Content="Закрыть" HorizontalAlignment="Left" Margin="10,375,0,0" VerticalAlignment="Top" Width="143" Height="36"/>
         <Label x:Name="label1" Content="{Binding TxtTfsErrorLabel}" HorizontalAlignment="Left" Margin="10,44,0,0" VerticalAlignment="Top" Width="319">
         </Label>

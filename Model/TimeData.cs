@@ -4,11 +4,11 @@ using System.Collections.Generic;
 namespace TSApp.Model
 {
     /// <summary>
-    /// Класс-обёртка для хранения сведений, манипуляция данными снаружи!
+    /// Класс-обёртка для хранения сведений за календарный день, манипуляция данными снаружи!
     /// </summary>
     public class TimeData
     {
-        private string comment = "";
+        public bool ManualDistribution { get; set; }
         /// <summary>
         /// Текущий календарный день записи
         /// </summary>
@@ -28,7 +28,7 @@ namespace TSApp.Model
         /// <summary>
         /// Комментарий к работе
         /// </summary>
-        public string Comment { get => comment; set => comment = value; }
+        public string Comment { get ; set; }
         /// <summary>
         /// Список TE, полученный из клоки, для нумера WI
         /// </summary>
@@ -42,6 +42,7 @@ namespace TSApp.Model
         /// <param name="weekNumber">Нумер рабочей недели</param>
         public TimeData(int dayOfWeek, TimeSpan totalWorkHours, int workItemId, int weekNumber)
         {
+            ManualDistribution = false;
             WorkItemId = workItemId;              
             Work = totalWorkHours;
             OriginalWork = totalWorkHours;
@@ -50,6 +51,7 @@ namespace TSApp.Model
 
         public TimeData(DateTime calday, TimeSpan totalWorkHours, int workItemId)
         {
+            ManualDistribution = false;
             WorkItemId = workItemId;
             Work = totalWorkHours;
             OriginalWork = totalWorkHours;

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.ComponentModel;
 using Microsoft.Toolkit.Mvvm.ComponentModel;
 using Microsoft.VisualStudio.Services.WebApi.Patch;
 using Microsoft.VisualStudio.Services.WebApi.Patch.Json;
@@ -24,12 +25,31 @@ namespace TSApp.ViewModel
         #endregion
 
         #region properties
+        public List<TimeEntry> TimeEntries
+        {
+            get
+            {
+                List<TimeEntry> retval = new List<TimeEntry>();
+                foreach (var w in workDaily.TimeDataDaily)
+                {
+                    if (w.Value != null && w.Value.TimeEntries.Count > 0)
+                        retval.AddRange(w.Value.TimeEntries);
+                }
+                return retval;
+            }
+        }
+
         /// <summary>
         /// Статус/тип. Т.к. в гриде будет микс из задач и просто времени из клоки - вот такая странность
         /// </summary>
         public string State { get => _state; set => SetProperty(ref _state, value); }
-        public int Id { get => _workItem.Id;}
-        public string Title { get => Id.ToString() + '.' + _workItem.Title;}
+
+        public string RemainingWork {
+            get => GetTimeData(DayOfWeek.Monday, false);
+            set => ParseEntry(value, DayOfWeek.Monday);
+        }
+        public int WorkItemId { get => _workItem.Id;}
+        public string Title { get => WorkItemId.ToString() + '.' + _workItem.Title;}
         #region Комментарии по дням недели
         public string MondayComment { 
             get => GetTimeData(DayOfWeek.Monday, true); 
@@ -99,10 +119,11 @@ namespace TSApp.ViewModel
         public TimeSpan RestTotalWork { get => restTotalWork; set { SetProperty(ref restTotalWork, value); OnPropertyChanged("TotalWork"); } }
         public string Uri { get => _workItem.LinkedWorkItem.Url; }
         public TFSWorkItem WorkItem { get => _workItem; set { SetProperty(ref _workItem, value); OnPropertyChanged("CompletedWork"); } }
-    #endregion
 
-    #region Constructors
-    public GridEntry(bool isTimeEntry, int weekNumber)
+        #endregion
+
+        #region Constructors
+        public GridEntry(bool isTimeEntry, int weekNumber)
         {
             if (!isTimeEntry)
                 throw new ArgumentException("Only EntryType.timeEntry supported.", nameof(isTimeEntry));
@@ -150,8 +171,9 @@ namespace TSApp.ViewModel
         /// <param name="inputValue"></param>
         /// <param name="dayOfWeek"></param>
         /// <exception cref="NotSupportedException"></exception>
-        private void ParseEntry(string inputValue, DayOfWeek dayOfWeek)
+        private void ParseEntry(string inputValue, DayOfWeek? dw)
         {
+            DayOfWeek dayOfWeek = (DayOfWeek)dw;
             // текущее значение
             double currentValue = 0;
             if (workDaily.TimeDataDaily[dayOfWeek] != null)
@@ -265,7 +287,7 @@ namespace TSApp.ViewModel
         /// <param name="calDay">День</param>
         /// <param name="workItemId">WorkItem</param>
         /// <returns>false, если ничего не получилось</returns>
-        public bool RemoveTimeEntry(DateTime calDay, int workItemId)
+        public bool RemoveTimeEntries(DateTime calDay, int workItemId)
         {
             if (!workDaily.TimeDataDaily.TryGetValue(calDay.DayOfWeek, out var result))
                 return false;

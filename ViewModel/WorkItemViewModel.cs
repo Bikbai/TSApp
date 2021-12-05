@@ -18,7 +18,10 @@ namespace TSApp.ViewModel
         /// <summary>
         /// общее хранилище TimeEntry
         /// </summary>
-        private List<TimeEntry> _timeEntries = new List<TimeEntry>();
+        private BindingList<TimeEntry> _timeEntries = new BindingList<TimeEntry>();
+
+        public BindingList<TimeEntry> TimeEntries { get { return _timeEntries; } }
+
         private TimeSpan[] _defaultWorkdayStart = new TimeSpan[7];
 
         private DAL Connection;
@@ -87,14 +90,16 @@ namespace TSApp.ViewModel
             return true;
         } 
         /// <summary>
-        /// Полная загрузка последних 5000 Time Entry из Клокифая
+        /// Полная загрузка последних 7 дней Time Entry из Клокифая
         /// </summary>
         /// <returns></returns>
         public async Task<bool> FetchClokiData()
         {
+           
             _timeEntries.Clear();
-            var x = await Connection.FindAllTimeEntriesForUser(null, null);
-            _timeEntries.AddRange(x);
+            var x = await Connection.FindAllTimeEntriesForUser(null, DateTime.Now.AddDays(-7));
+            foreach (var item in x)
+                _timeEntries.Add(item);
             return true;
         }
         /// <summary>
@@ -115,7 +120,7 @@ namespace TSApp.ViewModel
         private void FillItemCurrentWork(GridEntry gridEntry)
         {
             //и собираем затраченное время по дням недели
-            var workItemTimeEntries = _timeEntries.FindAll(p => p.WorkItemId == gridEntry.Id);
+            var workItemTimeEntries = _timeEntries.Where(p => p.WorkItemId == gridEntry.WorkItemId).ToList();
             TimeSpan restWork = TimeSpan.Zero;
             foreach (var te in workItemTimeEntries)
             {
@@ -165,7 +170,7 @@ namespace TSApp.ViewModel
                         // сначала ждём апдейта клоки
                         var cl =  Connection.UpdateClokiEntries(w.GetClokiUpdateData(), w.Title);
                         // асинхронно передаём в TFS
-                        Workers.Add(Connection.UpdateTFSEntry(w.Id, w.GetTfsUpdateData()));
+                        Workers.Add(Connection.UpdateTFSEntry(w.WorkItemId, w.GetTfsUpdateData()));
                     }
                     catch (AggregateException ae) { throw ae; }                   
                 }
@@ -202,7 +207,7 @@ namespace TSApp.ViewModel
         /// <param name="wi"></param>
         public void OnWorkItemUpdatedHandler(TFSWorkItem wi)
         {
-            var ge = GridEntries.First(p => p.Id == wi.Id);
+            var ge = GridEntries.First(p => p.WorkItemId == wi.Id);
             if (ge != null)
                 ge.WorkItem = wi;
         }
@@ -210,11 +215,13 @@ namespace TSApp.ViewModel
         public void OnTimeEntryDeleteHandler(DateTime CalDay, int workItemId)
         {
             // чистим локальное хранилище
-            var cnt = _timeEntries.RemoveAll(p => p.WorkItemId == workItemId && p.Calday == CalDay);
-            if (cnt == 0)
+            var cnt = _timeEntries.Where(p => p.WorkItemId == workItemId && p.Calday == CalDay).ToList();
+            if (cnt.Count == 0)
                 throw new Exception("OnTimeEntryDeleteHandler: Ошибка при очистке хранилища TimeEntry - не найдено записей!");
-            var ge = GridEntries.First(p => p.Id == workItemId);
-            ge.RemoveTimeEntry(CalDay, workItemId);            
+            foreach (var c in cnt)
+                _timeEntries.Remove(c);
+            var ge = GridEntries.First(p => p.WorkItemId == workItemId);
+            ge.RemoveTimeEntries(CalDay, workItemId);            
         }
         /// <summary>
         /// Обработчик события создания TE после заливки его в Клоки.
@@ -227,11 +234,11 @@ namespace TSApp.ViewModel
             _timeEntries.Add(te);
             if (te.WorkItemId != -1) 
             {
-                var ge = GridEntries.First(p => p.Id == te.WorkItemId);
+                var ge = GridEntries.First(p => p.WorkItemId == te.WorkItemId);
                 if (ge != null)
                 {
                     // сначала чистим данные за день - их надо перезаписать полученным единственным TE
-                    ge.RemoveTimeEntry(te.Calday, te.WorkItemId);
+                    ge.RemoveTimeEntries(te.Calday, te.WorkItemId);
                     ge.AppendTimeEntry(te);
                 }
             }

@@ -10,13 +10,13 @@ namespace TSApp.Model
 {
     internal static class TimeEntryRequestFabric
     {
-        public static TimeEntryRequest GetRequest(TimeData te)
+        public static TimeEntryRequest GetRequest(TimeData td)
         {
             var rq = GetRequest();
-            DateTimeOffset dt = (te.Calday + StaticData.weekTimeTable[te.DayOfWeek]).ToUniversalTime();
+            DateTimeOffset dt = (td.Calday + StaticData.weekTimeTable[td.DayOfWeek]).ToUniversalTime();
             rq.Start = dt;
-            rq.Description = te.WorkItemId.ToString();
-            rq.End = dt.AddHours(te.Work.TotalHours).ToUniversalTime();
+            rq.Description = td.WorkItemId.ToString();
+            rq.End = dt.AddHours(td.Work.TotalHours).ToUniversalTime();
             return rq;
         }
 

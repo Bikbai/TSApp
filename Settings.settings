@@ -17,8 +17,5 @@
     <Setting Name="HideComments" Type="System.Boolean" Scope="User">
       <Value Profile="(Default)">True</Value>
     </Setting>
-    <Setting Name="TestValue" Type="System.Boolean" Scope="User">
-      <Value Profile="(Default)">False</Value>
-    </Setting>
   </Settings>
 </SettingsFile>

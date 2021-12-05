@@ -10,14 +10,11 @@ namespace TSApp.Model
     {
         #region Private fields
         private readonly string id;
-        private string userId;
-        private string workspaceId;
-        private string projectId;
         private int workItemId = -1;
-        private string description;
         private TimeSpan workTime;
         private DateTimeOffset start;
         private DateTimeOffset end;
+        private string comment;
         #endregion
 
         /// <summary>
@@ -28,7 +25,7 @@ namespace TSApp.Model
         /// <param name="end"></param>
         public TimeEntry(string description, DateTimeOffset start, DateTimeOffset end)
         {
-            this.description = description;
+            Description = description;
             workTime = end - start;
             this.start = start;
             this.end = end;
@@ -39,17 +36,24 @@ namespace TSApp.Model
         /// <param name="te">Запись в клоки</param>
         public TimeEntry(TimeEntryDtoImpl te)
         {
-            this.id = te.Id;
-            this.description = te.Description;
+            id = te.Id;
             if (te.TimeInterval.End != null) {
                 workTime = (DateTimeOffset)te.TimeInterval.End - (DateTimeOffset)te.TimeInterval.Start;
-                this.start = (DateTimeOffset)te.TimeInterval.Start;
-                this.end = (DateTimeOffset)te.TimeInterval.End;
+                start = (DateTimeOffset)te.TimeInterval.Start;
+                end = (DateTimeOffset)te.TimeInterval.End;
             }
             int idx = 0;
             idx = te.Description.IndexOf('.');
             if (idx < 7 && idx > 0)
-                int.TryParse(te.Description.Substring(0, idx), out workItemId);
+                int.TryParse(te.Description.Substring(0, idx), out workItemId);            
+            idx = te.Description.IndexOf("//", 10);
+            if (idx < 10)
+                Description = te.Description;
+            else
+            {
+                Description = te.Description.Substring(0, idx);
+                Comment = te.Description.Substring(idx + 3);
+            }
         }
         /// <summary>
         /// Календарный день записи
@@ -79,5 +83,7 @@ namespace TSApp.Model
         /// День недели
         /// </summary>
         public DayOfWeek DayOfWeek { get => Calday.DayOfWeek; }
+        public string Comment { get => comment; set => comment = value; }
+        public string Description { get; set; }
     }
 }

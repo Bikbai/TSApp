@@ -10,11 +10,9 @@ namespace TSApp.ViewModel
 
         private string btnTfsLabel;
         private string btnTfsforeColor;
-        private string btnTfsBackgound;
 
         private string btnClokiLabel;
         private string btnClokiForeColor;
-        private string btnClokiBackground;
 
         private string txtTfsErrorLabel;
         private string txtClokiErrorLabel;
@@ -39,7 +37,7 @@ namespace TSApp.ViewModel
 
         public ParameterModel()
         {
-            
+
         }
 
         private void ConnectionInfo_OnInitComplete(OnInitCompleteEventArgs args)
@@ -52,7 +50,8 @@ namespace TSApp.ViewModel
             try
             {
                 Settings.Default.Save();
-                var x = ConnectionInfo.Init(); // force this
+                Settings.Default.Upgrade();
+                Settings.Default.Reload();
             }
             catch (Exception e)
             {

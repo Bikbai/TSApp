@@ -7,7 +7,6 @@ namespace TSApp.Model
     {
         public Dictionary<DayOfWeek, TimeData> TimeDataDaily { get; set; }
         public int WeekNumber;
-
         public WeekData(int weekNumber, int workItemId)
         {
             WeekNumber = weekNumber == 0 ? 1 : weekNumber;
@@ -68,32 +67,6 @@ namespace TSApp.Model
             TimeDataDaily[workDay].TimeEntries.Add(te);
         }
         /// <summary>
-        /// Удалить Time Entry с пересчётом времени
-        /// </summary>
-        /// <param name="timeEntryId"></param>
-        /// <returns></returns>
-        public TimeSpan RemoveTimeEntry(string timeEntryId)
-        {
-            TimeSpan removedWork = TimeSpan.Zero;
-            foreach (var td in this.TimeDataDaily)
-            {
-                var w = td.Value;
-                if (w != null && w.TimeEntries != null)
-                    foreach (var t in w.TimeEntries)
-                        if (t.Id == timeEntryId)
-                        {
-                            removedWork = t.WorkTime;
-                            w.Work -= t.WorkTime;
-                            if (w.Work < TimeSpan.Zero) w.Work = TimeSpan.Zero;
-                            w.OriginalWork -= t.WorkTime;
-                            if (w.OriginalWork < TimeSpan.Zero) w.OriginalWork = TimeSpan.Zero;
-                            w.TimeEntries.Remove(t);
-                            return removedWork;
-                        }
-            }
-            return removedWork;
-        }
-        /// <summary>
         /// Получить текущие трудозатраты за неделю
         /// </summary>
         /// <returns>Трудозатраты, введённые в табеле</returns>
@@ -121,6 +94,5 @@ namespace TSApp.Model
             }
             return retval;
         }
-
     }
 }

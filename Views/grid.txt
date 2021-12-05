@@ -1,0 +1,39 @@
+﻿                   <syncfusion:GridTextColumn AllowEditing="True" MappingName ="MondayComment" 
+                                               Width="100" HeaderText="Комментарий"
+                                               IsHidden="{Binding HideComments, Mode=OneWay, NotifyOnSourceUpdated=True, Source={StaticResource s}}"/>
+
+                    <syncfusion:GridTextColumn MappingName ="CompletedWorkTue" HeaderText="Вт"
+                        AllowEditing="True" Width="60" TextAlignment="Right"/>
+                    <syncfusion:GridTextColumn AllowEditing="True" MappingName ="TuesdayComment"
+                                               Width="100" HeaderText="Комментарий"
+                                               IsHidden="{Binding HideComments, Source={StaticResource s}}"/>
+
+                    <syncfusion:GridTextColumn MappingName ="CompletedWorkWed" HeaderText="Ср"
+                        AllowEditing="True" Width="60" TextAlignment="Right"/>
+                    <syncfusion:GridTextColumn AllowEditing="True" MappingName ="WednesdayComment"  
+                                               Width="100" HeaderText="Комментарий" 
+                                               IsHidden="{Binding HideComments, Source={StaticResource s}}"/>
+
+                    <syncfusion:GridTextColumn MappingName ="CompletedWorkThu" HeaderText="Чт"
+                        AllowEditing="True" Width="60" TextAlignment="Right"/>
+                    <syncfusion:GridTextColumn AllowEditing="True" MappingName ="ThursdayComment"  
+                                               Width="100" HeaderText="Комментарий"
+                                               IsHidden="{Binding HideComments, Source={StaticResource s}}"/>                       
+
+                    <syncfusion:GridTextColumn MappingName ="CompletedWorkFri" HeaderText="Пт"
+                        AllowEditing="True" Width="60" TextAlignment="Right"/>
+                    <syncfusion:GridTextColumn AllowEditing="True" MappingName ="FridayComment"  
+                                               Width="100" HeaderText="Комментарий"
+                                               IsHidden="{Binding HideComments, Source={StaticResource s}}"/>
+
+                    <syncfusion:GridTextColumn MappingName ="CompletedWorkSun" HeaderText="СБ"
+                        AllowEditing="True" Width="60" TextAlignment="Right"/>
+                    <syncfusion:GridTextColumn AllowEditing="True" MappingName ="SundayComment"  
+                                               Width="100" HeaderText="Комментарий"
+                                               IsHidden="{Binding HideComments, Source={StaticResource s}}"/>
+
+                    <syncfusion:GridTextColumn MappingName ="CompletedWorkSat" HeaderText="ВС"
+                        AllowEditing="True" Width="60" TextAlignment="Right"/>
+                    <syncfusion:GridTextColumn MappingName ="SaturdayComment" HeaderText="Комментарий" 
+                                               AllowEditing="True"  Width="100"
+                                               IsHidden="{Binding HideComments, Source={StaticResource s}}"/>

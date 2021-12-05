@@ -33,10 +33,9 @@
             </StackPanel>
         </DataTemplate>
         <beh:RowColorConverter x:Key="converter"/>
-        <Style x:Key="RowStyle" 
-               TargetType="sfgrid:VirtualizingCellsControl">
+        <ts:Settings x:Key="s"/>
+        <Style x:Key="RowStyle" TargetType="sfgrid:VirtualizingCellsControl">
             <Setter Property="Background" Value="{Binding Path=IsChanged, Mode=OneWay, Converter={StaticResource ResourceKey=converter}, UpdateSourceTrigger=PropertyChanged}" />
         </Style>
-        
     </Application.Resources>
 </Application>

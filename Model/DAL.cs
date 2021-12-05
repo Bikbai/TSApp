@@ -158,7 +158,7 @@ namespace TSApp.Model
             if (entries == null || entries.Count == 0)
                 return false;
             foreach (var e in entries)
-            {
+            {                
                 // удаляем старые записи, как ненужные - пересоздадим
                 if (e.TimeEntries != null && e.TimeEntries.Count != 0)
                 {

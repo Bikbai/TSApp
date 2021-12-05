@@ -33,7 +33,18 @@ namespace TSApp
             mainGrid.DataContext = mdl.gridModel.GridEntries;
             mainGrid.ItemsSource = mdl.gridModel.GridEntries;
             mainGrid.CurrentCellRequestNavigate += MainGrid_CurrentCellRequestNavigate;
-//            mainGrid.Columns[3].IsHidden = Settings.Default.HideComments;
+            /*
+            var detailsGrid = new GridViewDefinition();
+            detailsGrid.RelationalColumn = "TimeEntries";
+            detailsGrid.DataGrid = new SfDataGrid() {
+                AutoGenerateColumnsMode = AutoGenerateColumnsMode.None,
+                Name = "DetailsGrid", 
+                AutoGenerateColumns = true,
+                ItemsSource = mdl.gridModel.TimeEntries,
+            };
+            mainGrid.DetailsViewDefinition.Add(detailsGrid);
+            */
+
         }
         /// <summary>
         /// Обработка клика на гиперссылку
@@ -42,7 +53,7 @@ namespace TSApp
         /// <param name="e"></param>
         private void MainGrid_CurrentCellRequestNavigate(object sender, CurrentCellRequestNavigateEventArgs e)
         {
-            Process.Start(new ProcessStartInfo("http://ztfs-2017:8080/tfs/Fintech/Mir/_workitems/edit/" + (e.RowData as GridEntry).Id)); 
+            Process.Start(new ProcessStartInfo("http://ztfs-2017:8080/tfs/Fintech/Mir/_workitems/edit/" + (e.RowData as GridEntry).WorkItemId)); 
         }
 
 
@@ -91,10 +102,9 @@ namespace TSApp
                         e.CellTemplate = App.Current.Resources["BottomCellTemplate"] as DataTemplate;
                         e.Handled = true;
                     }
-                    else if (index >= 5 && index % 2 != 0 && index < 14)
+                    else if (index >= 5 && index < 12)
                     {
-                        int d = index / 2 - 2;
-                        e.Value = mdl.gridModel.GetTotalWork(Helpers.DayOfWeekFromRus(d));
+                        e.Value = mdl.gridModel.GetTotalWork(Helpers.DayOfWeekFromRus(index - 5));
                         e.Handled = true;
                     }
                 }

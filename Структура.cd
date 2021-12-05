@@ -1,41 +1,38 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <ClassDiagram MajorVersion="1" MinorVersion="1">
-  <Class Name="TSApp.Model.TimeData" Collapsed="true">
-    <Position X="14" Y="1.75" Width="1.25" />
+  <Class Name="TSApp.Model.TimeData">
+    <Position X="14" Y="3" Width="1.75" />
     <Compartments>
       <Compartment Name="Methods" Collapsed="true" />
     </Compartments>
     <TypeIdentifier>
-      <HashCode>AAwAAAAEAAAAAAAoAAAAAAAAAAAAAAAABCAEAAAAAAA=</HashCode>
+      <HashCode>AAwAAAAEAAAAAAAoAAAAAAAAAAAAAAAABAAEAAAAAAA=</HashCode>
       <FileName>Model\TimeData.cs</FileName>
     </TypeIdentifier>
-    <ShowAsCollectionAssociation>
-      <Property Name="TimeEntries" />
-    </ShowAsCollectionAssociation>
   </Class>
-  <Class Name="TSApp.Model.TimeEntry" Collapsed="true">
-    <Position X="14" Y="2.75" Width="1.25" />
+  <Class Name="TSApp.Model.TimeEntry">
+    <Position X="14" Y="6.75" Width="1.75" />
     <Compartments>
       <Compartment Name="Fields" Collapsed="true" />
-      <Compartment Name="Properties" Collapsed="true" />
       <Compartment Name="Methods" Collapsed="true" />
+      <Compartment Name="Properties" Collapsed="true" />
     </Compartments>
     <TypeIdentifier>
-      <HashCode>AAICAAACACIAAAAoKAAECAAAAAgEAAAABAAEAAAAAgA=</HashCode>
+      <HashCode>AAYCAAAGACAAAAAoIAAACAAAAAgEAAAABAAEAAAAAgA=</HashCode>
       <FileName>Model\TimeEntry.cs</FileName>
     </TypeIdentifier>
   </Class>
-  <Class Name="TSApp.Model.WeekData" Collapsed="true">
-    <Position X="14" Y="0.5" Width="1.25" />
+  <Class Name="TSApp.Model.WeekData">
+    <Position X="14" Y="0.5" Width="1.75" />
     <Compartments>
-      <Compartment Name="Properties" Collapsed="true" />
+      <Compartment Name="Methods" Collapsed="true" />
     </Compartments>
     <TypeIdentifier>
-      <HashCode>AAgIIAAAAAAEAAAAAAAIIAAAAAAAAAAAAAAAAAAAAAg=</HashCode>
+      <HashCode>AAAAIAAAAAAEAAgAAAAAIAAAAAAAAAAAAAAgAQAAAAA=</HashCode>
       <FileName>Model\WeekData.cs</FileName>
     </TypeIdentifier>
     <ShowAsCollectionAssociation>
-      <Property Name="TimeData" />
+      <Property Name="TimeDataDaily" />
     </ShowAsCollectionAssociation>
   </Class>
   <Class Name="TSApp.Model.DAL">
@@ -85,7 +82,7 @@
       </Enum>
     </NestedTypes>
     <TypeIdentifier>
-      <HashCode>ABACNEAgQKDeBcQBQAQIICCIAAwAAKAECQAIBAAAAsw=</HashCode>
+      <HashCode>ABAAMAAgAKDeBcQBRgQIKCCIAAwAAKAADSAIBAAAAMQ=</HashCode>
       <FileName>ViewModel\GridEntry.cs</FileName>
     </TypeIdentifier>
     <ShowAsAssociation>
@@ -103,11 +100,12 @@
       </Delegate>
     </NestedTypes>
     <TypeIdentifier>
-      <HashCode>AAIAAAAAAAAAIAkACEAAIIAABCgoAAARAAECgAAASAA=</HashCode>
+      <HashCode>AAIAAAAAAAAAIAkACEAAIIAABCgoEAARACECgAAASAA=</HashCode>
       <FileName>ViewModel\WorkItemViewModel.cs</FileName>
     </TypeIdentifier>
     <ShowAsCollectionAssociation>
       <Field Name="_gridEntries" />
+      <Field Name="_timeEntries" />
     </ShowAsCollectionAssociation>
   </Class>
   <Font Name="Segoe UI" Size="9" />
