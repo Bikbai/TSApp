@@ -19,22 +19,20 @@ namespace TSApp.ViewModel
         private TimeSpan restTotalWork = TimeSpan.Zero;
         // сведения о TFS
         private TFSWorkItem _workItem = new TFSWorkItem();
-        public EntryType Type { get; set; } // тип строки
+
+        private double _remainingWork = 0;
 
         private string _state = "";
         #endregion
 
         #region properties
-        public List<TimeEntry> TimeEntries
+        public EntryType Type { get; set; } // тип строки
+        public List<TimeEntry> WiTimeEntries
         {
             get
             {
                 List<TimeEntry> retval = new List<TimeEntry>();
-                foreach (var w in workDaily.TimeDataDaily)
-                {
-                    if (w.Value != null && w.Value.TimeEntries.Count > 0)
-                        retval.AddRange(w.Value.TimeEntries);
-                }
+                retval.AddRange(Storage.TimeEntries.FindAll(p => p.WorkItemId == this.WorkItemId));
                 return retval;
             }
         }
@@ -46,7 +44,11 @@ namespace TSApp.ViewModel
 
         public string RemainingWork {
             get => GetTimeData(DayOfWeek.Monday, false);
-            set => ParseEntry(value, DayOfWeek.Monday);
+            set {
+                var val = ParseInput(value, _remainingWork);
+                if (val != _remainingWork)
+                    SetProperty(ref _remainingWork, val);
+                }
         }
         public int WorkItemId { get => _workItem.Id;}
         public string Title { get => WorkItemId.ToString() + '.' + _workItem.Title;}
@@ -80,25 +82,25 @@ namespace TSApp.ViewModel
         #region Работа по дням недели
         public string CompletedWorkMon { 
             get => GetTimeData(DayOfWeek.Monday, false);
-            set => ParseEntry(value, DayOfWeek.Monday); }
+            set => ApplyValue(value, DayOfWeek.Monday); }
         public string CompletedWorkTue { 
             get => GetTimeData(DayOfWeek.Tuesday, false);
-            set => ParseEntry(value, DayOfWeek.Tuesday); }
+            set => ApplyValue(value, DayOfWeek.Tuesday); }
         public string CompletedWorkWed { 
             get => GetTimeData(DayOfWeek.Wednesday, false);
-            set => ParseEntry(value, DayOfWeek.Wednesday); }
+            set => ApplyValue(value, DayOfWeek.Wednesday); }
         public string CompletedWorkThu { 
             get => GetTimeData(DayOfWeek.Thursday, false);
-            set => ParseEntry(value, DayOfWeek.Thursday); }
+            set => ApplyValue(value, DayOfWeek.Thursday); }
         public string CompletedWorkFri { 
             get => GetTimeData(DayOfWeek.Friday, false);
-            set => ParseEntry(value, DayOfWeek.Friday); }
+            set => ApplyValue(value, DayOfWeek.Friday); }
         public string CompletedWorkSun { 
             get => GetTimeData(DayOfWeek.Sunday, false);
-            set => ParseEntry(value, DayOfWeek.Sunday); }
+            set => ApplyValue(value, DayOfWeek.Sunday); }
         public string CompletedWorkSat { 
             get => GetTimeData(DayOfWeek.Saturday, false);
-            set => ParseEntry(value, DayOfWeek.Saturday); }
+            set => ApplyValue(value, DayOfWeek.Saturday); }
         #endregion
         public int WeekNumber { get => workDaily.WeekNumber; set => workDaily.WeekNumber = value; }
         public double OriginalEstimate { get => _workItem.OriginalEstimate;}
@@ -134,6 +136,7 @@ namespace TSApp.ViewModel
 
         public GridEntry(TFSWorkItem item, int week)
         {
+            _remainingWork = item.RemainingWork;
             Type = EntryType.workItem;
             _workItem = item;
             workDaily = new WeekData(week, item.Id);
@@ -163,28 +166,21 @@ namespace TSApp.ViewModel
         }
 
         /// <summary>
-        /// функция ввода нового значения, в зависимости от команды вида
-        /// -число - вычесть
-        /// +число - добавить
-        /// число - присвоение
+        /// парсер ввода нового значения типа double
         /// </summary>
         /// <param name="inputValue"></param>
-        /// <param name="dayOfWeek"></param>
-        /// <exception cref="NotSupportedException"></exception>
-        private void ParseEntry(string inputValue, DayOfWeek? dw)
+        /// <param name="before"></param>
+        /// <returns></returns>
+        private double ParseInput(string inputValue, in double before)
         {
-            DayOfWeek dayOfWeek = (DayOfWeek)dw;
-            // текущее значение
-            double currentValue = 0;
-            if (workDaily.TimeDataDaily[dayOfWeek] != null)
-                currentValue = workDaily.TimeDataDaily[dayOfWeek].Work.TotalHours;
-            else
-                workDaily.TimeDataDaily[dayOfWeek] = new TimeData(Helpers.RusDayNumberFromDayOfWeek(dayOfWeek), TimeSpan.Zero, this._workItem.Id, WeekNumber);
+            bool successEntry;
             // определяем, какая команда была введена
             CMD cmd = CMD.replace;
             double val = 0;
             if (inputValue.Length == 0)
-                return;
+            {
+                return before;
+            }
             if (inputValue[0] == '+')
             {
                 cmd = CMD.incr;
@@ -194,23 +190,45 @@ namespace TSApp.ViewModel
                 cmd = CMD.decr;
             }
 
-            bool successEntry;
             if (cmd == CMD.replace)
             {
                 val = Helpers.GetDouble(inputValue, 0, out successEntry);
                 if (successEntry)
-                    workDaily.TimeDataDaily[dayOfWeek].Work = TimeSpan.FromHours(val);
-                // стреляем событием, чтобы грид пересчитал и тоталсы
-                OnPropertyChanged("TotalWork");
-                OnPropertyChanged("IsChanged");
-                return;
+                    return val < 0 ? 0 : val;
             }
             val = Helpers.GetDouble(inputValue.Substring(1, inputValue.Length - 1), 0, out successEntry);
             if (!successEntry)
+                return before;
+            val = before + val * (cmd == CMD.decr ? -1 : 1);
+            return val < 0 ? 0 : val;
+        }
+
+
+
+        /// <summary>
+        /// функция ввода нового значения, в зависимости от команды вида
+        /// -число - вычесть
+        /// +число - добавить
+        /// число - присвоение
+        /// </summary>
+        /// <param name="inputValue"></param>
+        /// <param name="dayOfWeek"></param>
+        /// <exception cref="NotSupportedException"></exception>
+        private void ApplyValue(string inputValue, DayOfWeek dayOfWeek)
+        {
+            // текущее значение
+            double currentValue = 0;
+            if (workDaily.TimeDataDaily[dayOfWeek] != null)
+                currentValue = workDaily.TimeDataDaily[dayOfWeek].Work.TotalHours;
+            else
+                workDaily.TimeDataDaily[dayOfWeek] = new TimeData(Helpers.RusDayNumberFromDayOfWeek(dayOfWeek), TimeSpan.Zero, this._workItem.Id, WeekNumber);
+
+            double val = ParseInput(inputValue, currentValue);
+
+            if (val == currentValue)
                 return;
-            currentValue = currentValue + val * (cmd == CMD.decr ? -1 : 1);
-            //            SetProperty(ref workDaily[dayOfWeek], currentValue < 0 ? TimeSpan.FromHours(0) : TimeSpan.FromHours(currentValue));
-            workDaily.TimeDataDaily[dayOfWeek].Work = currentValue < 0 ? TimeSpan.FromHours(0) : TimeSpan.FromHours(currentValue);
+
+            workDaily.TimeDataDaily[dayOfWeek].Work = TimeSpan.FromHours(val);
             // стреляем событием, чтобы грид пересчитал и тоталсы
             OnPropertyChanged("IsChanged");
             OnPropertyChanged("TotalWork");
@@ -256,6 +274,7 @@ namespace TSApp.ViewModel
                 Path = "/fields/" + WIFields.CompletedWork,
                 Value = Math.Round((totals + delta).TotalHours, 2).ToString("0.00", System.Globalization.CultureInfo.InvariantCulture)
             });
+
             return result;
         }
 

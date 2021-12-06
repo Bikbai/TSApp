@@ -15,14 +15,8 @@ namespace TSApp.ViewModel
         /// хранилище задач с привязанными к ним TimeEntry
         /// </summary>
         private BindingList<GridEntry> _gridEntries = new BindingList<GridEntry>();
-        /// <summary>
-        /// общее хранилище TimeEntry
-        /// </summary>
-        private BindingList<TimeEntry> _timeEntries = new BindingList<TimeEntry>();
 
-        public BindingList<TimeEntry> TimeEntries { get { return _timeEntries; } }
-
-        private TimeSpan[] _defaultWorkdayStart = new TimeSpan[7];
+        private Dictionary<DayOfWeek, TimeSpan> _defaultWorkdayStart = new Dictionary<DayOfWeek, TimeSpan>();
 
         private DAL Connection;
 
@@ -46,7 +40,7 @@ namespace TSApp.ViewModel
 
         private void Init()
         {
-            for (int i = 0; i < 7; i++)
+            foreach (DayOfWeek i in Enum.GetValues(typeof(DayOfWeek)))
             {
                 if (Settings.Default.defaultWorkDayStart == null)
                     throw new NotSupportedException("Settings.Default.defaultWorkDayStart is null");
@@ -65,11 +59,11 @@ namespace TSApp.ViewModel
         }
         public TimeSpan GetWorkDayStart(DayOfWeek i)
         {
-            return _defaultWorkdayStart[(int)i];
+            return _defaultWorkdayStart[i];
         }
         public void SetWorkDayStart(DayOfWeek i, TimeSpan value)
         {
-            _defaultWorkdayStart[(int)i] = value;
+            _defaultWorkdayStart[i] = value;
         }
 
         /// <summary>
@@ -88,25 +82,26 @@ namespace TSApp.ViewModel
                 GridEntries.Add(ge);
             }
             return true;
-        } 
+        }
         /// <summary>
         /// Полная загрузка последних 7 дней Time Entry из Клокифая
         /// </summary>
         /// <returns></returns>
         public async Task<bool> FetchClokiData()
         {
-           
-            _timeEntries.Clear();
-            var x = await Connection.FindAllTimeEntriesForUser(null, DateTime.Now.AddDays(-7));
+            Storage.TimeEntries.Clear();
+            var x = await Connection.FindAllTimeEntriesForUser(null, DateTime.Now.AddDays(-90));
             foreach (var item in x)
-                _timeEntries.Add(item);
+                Storage.TimeEntries.Add(item);
             return true;
         }
+
         /// <summary>
         /// Служебный метод - получение трудозатрат за день
         /// </summary>
         /// <param name="workDay"></param>
         /// <returns></returns>
+        /// 
         public double GetTotalWork(DayOfWeek workDay)
         {
             TimeSpan retval = TimeSpan.Zero;
@@ -120,7 +115,7 @@ namespace TSApp.ViewModel
         private void FillItemCurrentWork(GridEntry gridEntry)
         {
             //и собираем затраченное время по дням недели
-            var workItemTimeEntries = _timeEntries.Where(p => p.WorkItemId == gridEntry.WorkItemId).ToList();
+            var workItemTimeEntries = Storage.TimeEntries.Where(p => p.WorkItemId == gridEntry.WorkItemId).ToList();
             TimeSpan restWork = TimeSpan.Zero;
             foreach (var te in workItemTimeEntries)
             {
@@ -215,11 +210,11 @@ namespace TSApp.ViewModel
         public void OnTimeEntryDeleteHandler(DateTime CalDay, int workItemId)
         {
             // чистим локальное хранилище
-            var cnt = _timeEntries.Where(p => p.WorkItemId == workItemId && p.Calday == CalDay).ToList();
+            var cnt = Storage.TimeEntries.Where(p => p.WorkItemId == workItemId && p.Calday == CalDay).ToList();
             if (cnt.Count == 0)
                 throw new Exception("OnTimeEntryDeleteHandler: Ошибка при очистке хранилища TimeEntry - не найдено записей!");
             foreach (var c in cnt)
-                _timeEntries.Remove(c);
+                Storage.TimeEntries.Remove(c);
             var ge = GridEntries.First(p => p.WorkItemId == workItemId);
             ge.RemoveTimeEntries(CalDay, workItemId);            
         }
@@ -231,7 +226,7 @@ namespace TSApp.ViewModel
         {
             if (te.WorkTime == TimeSpan.Zero)
                 return;
-            _timeEntries.Add(te);
+            Storage.TimeEntries.Add(te);
             if (te.WorkItemId != -1) 
             {
                 var ge = GridEntries.First(p => p.WorkItemId == te.WorkItemId);

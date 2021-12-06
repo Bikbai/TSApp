@@ -142,6 +142,8 @@ namespace TSApp.Model
                     continue;
                 result.Add(new TimeEntry(d));
             }
+            if (result.Count == 0)
+                throw new Exception("Нет данных");
             return result;
         }
         /// <summary>
@@ -264,7 +266,7 @@ namespace TSApp.Model
                     while (workItemRefs.Count() == batchSize);
                 }
             }
-            OnTfsQueryCompleted();
+//            OnTfsQueryCompleted();
             return workItems;
         }
 

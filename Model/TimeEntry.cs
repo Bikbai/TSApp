@@ -45,11 +45,15 @@ namespace TSApp.Model
             int idx = 0;
             idx = te.Description.IndexOf('.');
             if (idx < 7 && idx > 0)
-                int.TryParse(te.Description.Substring(0, idx), out workItemId);            
-            idx = te.Description.IndexOf("//", 10);
-            if (idx < 10)
+            {
+                int.TryParse(te.Description.Substring(0, idx), out this.workItemId);
+                idx = te.Description.IndexOf("//", idx);
+            }
+                
+            if (idx < 1)
                 Description = te.Description;
             else
+            if (idx > 10)
             {
                 Description = te.Description.Substring(0, idx);
                 Comment = te.Description.Substring(idx + 3);

@@ -68,11 +68,9 @@ namespace TSApp.ViewModel
         /// <returns></returns>
         private async Task ResetAndLoadData()
         {
-            List<Task> tasks = new List<Task>
-            {
-                gridModel.FetchClokiData(),
-                gridModel.FetchTfsData()
-            };
+            List<Task> tasks = new List<Task>();
+            tasks.Add(gridModel.FetchClokiData());
+            tasks.Add(gridModel.FetchTfsData());
 
             while (tasks.Count > 0)
             {

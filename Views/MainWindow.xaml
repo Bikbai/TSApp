@@ -47,7 +47,7 @@
                     <syncfusion:GridTextColumn MappingName ="State" HeaderText="" IsHidden="True" 
                         AllowEditing="False" Width="0" TextAlignment="Right"/>
 
-                    <syncfusion:GridTextColumn MappingName ="RemainingWork"  HeaderText="Remaining"
+                    <syncfusion:GridTextColumn MappingName ="RemainingWork"  HeaderText="Ост."
                         AllowEditing="True" Width="60" TextAlignment="Right" />
 
                     <syncfusion:GridTextColumn MappingName ="CompletedWorkMon" HeaderText="Пн" 
@@ -82,15 +82,14 @@
                     <syncfusion:SortColumnDescription ColumnName="Title" SortDirection="Ascending" />
                 </syncfusion:SfDataGrid.SortColumnDescriptions>
                 <syncfusion:SfDataGrid.DetailsViewDefinition>
-                    <syncfusion:GridViewDefinition RelationalColumn="TimeEntries">
+                    <syncfusion:GridViewDefinition RelationalColumn="WiTimeEntries">
                         <syncfusion:GridViewDefinition.DataGrid>
                             <syncfusion:SfDataGrid x:Name="DetailsGrid" 
-                                                   AutoGenerateColumns="False"
-                                                   ItemsSource="{Binding TimeEntries}">
+                                                   AutoGenerateColumns="False">
                                 <syncfusion:SfDataGrid.Columns>
                                     <syncfusion:GridDateTimeColumn MappingName ="Calday" HeaderText="Календарный день"/>
-                                    <syncfusion:GridTextColumn MappingName ="Description" HeaderText="Описание" Width="600"/>
-                                    <syncfusion:GridTextColumn MappingName ="Comment" HeaderText="Комментарий" Width="300"/>
+                                    <syncfusion:GridTextColumn MappingName ="Description" HeaderText="Описание" Width="400"/>
+                                    <syncfusion:GridTextColumn MappingName ="Comment" HeaderText="Комментарий" Width="400"/>
                                     <syncfusion:GridTextColumn MappingName ="WorkTime" HeaderText="Затраченное время"/>
                                     <syncfusion:GridDateTimeColumn MappingName ="Start" HeaderText="Время начала"/>
                                 </syncfusion:SfDataGrid.Columns>

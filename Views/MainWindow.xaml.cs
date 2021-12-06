@@ -28,7 +28,6 @@ namespace TSApp
             DataContext = mdl;
             mdl.connection.InitCompleted += Connection_OnInitComplete;            
             mainGrid.QueryUnBoundRow += MainGrid_QueryUnBoundRow;
-            mainGrid.QueryCoveredRange += MainGrid_QueryCoveredRange;
             mainGrid.SortComparers.Add(new SortComparer() { Comparer = new CustomStateComparer(), PropertyName = "State" });
             mainGrid.DataContext = mdl.gridModel.GridEntries;
             mainGrid.ItemsSource = mdl.gridModel.GridEntries;
@@ -58,21 +57,6 @@ namespace TSApp
 
 
         #region grid painting
-        // схлопываем ячейки первой строки
-        private void MainGrid_QueryCoveredRange(object sender, GridQueryCoveredRangeEventArgs e)
-        {
-            var x = e.RowColumnIndex.ColumnIndex;
-            if (e.RowColumnIndex.ColumnIndex < 5)
-            {
-                e.Handled = true;
-                return;
-            }
-            if (x % 2 != 0)
-            {
-                e.Range = new CoveredCellInfo(x, x+1, 1, 1);
-                e.Handled = true;
-            }
-        }
         // рисуем первую и последнюю строку
         private void MainGrid_QueryUnBoundRow(object sender, Syncfusion.UI.Xaml.Grid.GridUnBoundRowEventsArgs e)
         {
@@ -88,10 +72,9 @@ namespace TSApp
                         e.Handled = true;
                     }
                     // суббота и воскресенье - нерабочие дни =)
-                    else if (index >= 5 && index % 2 != 0 && index < 14)
+                    else if (index >= 6 && index < 13)
                     {
-                        int d = index / 2 - 2;
-                        e.Value = mdl.gridModel.GetWorkDayStart((DayOfWeek)d).ToString(@"hh\:mm");
+                        e.Value = mdl.gridModel.GetWorkDayStart(Helpers.DayOfWeekFromRus(index - 6)).ToString(@"hh\:mm");
                         e.Handled = true;
                     }
                 } 
@@ -102,9 +85,10 @@ namespace TSApp
                         e.CellTemplate = App.Current.Resources["BottomCellTemplate"] as DataTemplate;
                         e.Handled = true;
                     }
-                    else if (index >= 5 && index < 12)
+                    else if (index >= 6 && index < 13)
                     {
-                        e.Value = mdl.gridModel.GetTotalWork(Helpers.DayOfWeekFromRus(index - 5));
+                        e.Value = mdl.gridModel.GetTotalWork(Helpers.DayOfWeekFromRus(index - 6));
+                        e.Value = Helpers.DayOfWeekFromRus(index - 6).ToString();
                         e.Handled = true;
                     }
                 }

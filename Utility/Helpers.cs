@@ -88,6 +88,8 @@ namespace TSApp
     
         public static DayOfWeek DayOfWeekFromRus(int day)
         {
+            if (day > 6)
+                throw new ArgumentOutOfRangeException("DayOfWeekFromRus: " + day);
             int d = day + 1;
             if (d == 7) d = 0;
             return (DayOfWeek)d;

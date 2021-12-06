@@ -202,6 +202,7 @@
     <Compile Include="Behaviors\Comparers.cs" />
     <Compile Include="Behaviors\RowColorConverter.cs" />
     <Compile Include="Model\DalEvents.cs" />
+    <Compile Include="Model\Storage.cs" />
     <Compile Include="Model\TimeEntryRequestFabric.cs" />
     <Compile Include="Settings.Designer.cs">
       <AutoGen>True</AutoGen>
@@ -290,7 +291,7 @@
     </BootstrapperPackage>
   </ItemGroup>
   <ItemGroup>
-    <Resource Include="Views\grid.txt" />
+    <Resource Include="grid.txt" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
