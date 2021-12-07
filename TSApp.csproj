@@ -59,14 +59,14 @@
     <Reference Include="Microsoft.Bcl.AsyncInterfaces, Version=6.0.0.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
       <HintPath>packages\Microsoft.Bcl.AsyncInterfaces.6.0.0\lib\net461\Microsoft.Bcl.AsyncInterfaces.dll</HintPath>
     </Reference>
-    <Reference Include="Microsoft.IdentityModel.JsonWebTokens, Version=6.14.1.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
-      <HintPath>packages\Microsoft.IdentityModel.JsonWebTokens.6.14.1\lib\net461\Microsoft.IdentityModel.JsonWebTokens.dll</HintPath>
+    <Reference Include="Microsoft.IdentityModel.JsonWebTokens, Version=6.15.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>packages\Microsoft.IdentityModel.JsonWebTokens.6.15.0\lib\net461\Microsoft.IdentityModel.JsonWebTokens.dll</HintPath>
     </Reference>
-    <Reference Include="Microsoft.IdentityModel.Logging, Version=6.14.1.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
-      <HintPath>packages\Microsoft.IdentityModel.Logging.6.14.1\lib\net461\Microsoft.IdentityModel.Logging.dll</HintPath>
+    <Reference Include="Microsoft.IdentityModel.Logging, Version=6.15.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>packages\Microsoft.IdentityModel.Logging.6.15.0\lib\net461\Microsoft.IdentityModel.Logging.dll</HintPath>
     </Reference>
-    <Reference Include="Microsoft.IdentityModel.Tokens, Version=6.14.1.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
-      <HintPath>packages\Microsoft.IdentityModel.Tokens.6.14.1\lib\net461\Microsoft.IdentityModel.Tokens.dll</HintPath>
+    <Reference Include="Microsoft.IdentityModel.Tokens, Version=6.15.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>packages\Microsoft.IdentityModel.Tokens.6.15.0\lib\net461\Microsoft.IdentityModel.Tokens.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.TeamFoundation.Build2.WebApi, Version=16.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
       <HintPath>..\Clockif\packages\Microsoft.TeamFoundationServer.Client.16.170.0\lib\net462\Microsoft.TeamFoundation.Build2.WebApi.dll</HintPath>
@@ -201,6 +201,7 @@
     </ApplicationDefinition>
     <Compile Include="Behaviors\Comparers.cs" />
     <Compile Include="Behaviors\RowColorConverter.cs" />
+    <Compile Include="Model\ClokiData.cs" />
     <Compile Include="Model\DalEvents.cs" />
     <Compile Include="Model\Storage.cs" />
     <Compile Include="Model\TimeEntryRequestFabric.cs" />
@@ -215,6 +216,7 @@
     <Compile Include="ViewModel\ProgressBarVM.cs" />
     <Compile Include="Model\TimeData.cs" />
     <Compile Include="Model\WeekData.cs" />
+    <Compile Include="ViewModel\TimeEntry.cs" />
     <Compile Include="Views\ParameterForm.xaml.cs">
       <DependentUpon>ParameterForm.xaml</DependentUpon>
     </Compile>
@@ -245,7 +247,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Model\TFSWorkItem.cs" />
-    <Compile Include="Model\TimeEntry.cs" />
+    <Compile Include="Model\ClokifyEntry.cs" />
     <Compile Include="Model\WIFields.cs" />
     <Compile Include="Properties\AssemblyInfo.cs">
       <SubType>Code</SubType>
@@ -292,6 +294,9 @@
   </ItemGroup>
   <ItemGroup>
     <Resource Include="grid.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Tests\" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

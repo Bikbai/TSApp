@@ -32,7 +32,7 @@ namespace TSApp.Model
         /// <summary>
         /// Список TE, полученный из клоки, для нумера WI
         /// </summary>
-        public List<TimeEntry> TimeEntries { get; set; } // учтённое в клоки время в этот день
+        public List<ClokifyEntry> TimeEntries { get; set; } // учтённое в клоки время в этот день
         /// <summary>
         /// конструктор для указанного дня недели (0 это понедельник, 6 - воскресение)
         /// </summary>

@@ -21,19 +21,18 @@
                 AutoGenerateColumns="False"
                 AutoExpandGroups="True" 
                 FontSize="16" FontFamily="Segoe UI Symbol"
-                AddNewRowPosition="Bottom"
                 RowHeight="30"
                 SelectionUnit="Cell"
                 NavigationMode="Cell"
                 AllowFrozenGroupHeaders="False"
                 EditTrigger="OnTap"
-                AddNewRowInitiating="mainGrid_AddNewRowInitiating"
                 Margin="10,10,10,10"
                 ScrollViewer.VerticalScrollBarVisibility="Visible"
                 CurrentCellBeginEdit="mainGrid_CurrentCellBeginEdit"
                 AllowSorting="False" 
                 RowStyle="{DynamicResource RowStyle}"
                 AutoGenerateRelations="False"
+                HideEmptyGridViewDefinition="True"
                 >
                 <local:SfDataGridExt.UnBoundRows>
                     <syncfusion:GridUnBoundRow Position="Top" x:Name="WorkHours"/>
@@ -42,6 +41,8 @@
                 <local:SfDataGridExt.Columns>
                     <syncfusion:GridTextColumn MappingName ="State" HeaderText="Статус (тип)" 
                         GroupMode="Default" AllowGrouping="True"/>
+                    <syncfusion:GridCheckBoxColumn MappingName ="ManualTimeSheet" HeaderText="Руч."
+                                                   AllowEditing="True" Width="40"/>
                     <syncfusion:GridHyperlinkColumn MappingName ="Title" HeaderText=""
                         Width="700" AllowEditing="False"/>
                     <syncfusion:GridTextColumn MappingName ="State" HeaderText="" IsHidden="True" 
@@ -85,19 +86,26 @@
                     <syncfusion:GridViewDefinition RelationalColumn="WiTimeEntries">
                         <syncfusion:GridViewDefinition.DataGrid>
                             <syncfusion:SfDataGrid x:Name="DetailsGrid" 
-                                                   AutoGenerateColumns="False">
+                                                   AutoGenerateColumns="False"
+                                                   FontSize="16" FontFamily="Segoe UI Symbol"
+                                                   AddNewRowPosition="FixedTop"
+                                                   AddNewRowText = "Добавить новую запись"
+                                                   RowHeight="30" AddNewRowInitiating="DetailsGrid_AddNewRowInitiating"
+                                                   ItemsSource="{Binding WiTimeEntries}"
+                                                   >
                                 <syncfusion:SfDataGrid.Columns>
-                                    <syncfusion:GridDateTimeColumn MappingName ="Calday" HeaderText="Календарный день"/>
-                                    <syncfusion:GridTextColumn MappingName ="Description" HeaderText="Описание" Width="400"/>
+                                    <syncfusion:GridDateTimeColumn MappingName ="Calday" HeaderText="Кал. день" Width="120"/>
+                                    <syncfusion:GridTextColumn MappingName ="Title" HeaderText="Описание" Width="600"/>
                                     <syncfusion:GridTextColumn MappingName ="Comment" HeaderText="Комментарий" Width="400"/>
-                                    <syncfusion:GridTextColumn MappingName ="WorkTime" HeaderText="Затраченное время"/>
-                                    <syncfusion:GridDateTimeColumn MappingName ="Start" HeaderText="Время начала"/>
+
+                                    <syncfusion:GridTextColumn MappingName ="StartTime" HeaderText="Начало" Width="60"/>
+                                    <syncfusion:GridTextColumn MappingName ="EndTime" HeaderText="Конец" Width="60"/>
+                                    <syncfusion:GridTextColumn MappingName ="Work" HeaderText="Часы" Width="60"/>
                                 </syncfusion:SfDataGrid.Columns>
                             </syncfusion:SfDataGrid>
                         </syncfusion:GridViewDefinition.DataGrid>
                     </syncfusion:GridViewDefinition>
                 </syncfusion:SfDataGrid.DetailsViewDefinition>
-
             </local:SfDataGridExt>
         </Grid>
         <StatusBar x:Name="statusBar" Height="40" VerticalAlignment="Bottom" Width="{Binding Width, ElementName=window}" Canvas.Top="820">

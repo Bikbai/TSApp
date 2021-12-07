@@ -11,12 +11,12 @@ namespace TSApp.Model
         /// <summary>
         /// общее хранилище TimeEntry
         /// </summary>
-        private static List<TimeEntry> _timeEntries;
-        public static List<TimeEntry> TimeEntries { get => _timeEntries; set => _timeEntries = value; }
+        private static List<ClokifyEntry> _timeEntries;
+        public static List<ClokifyEntry> TimeEntries { get => _timeEntries; set => _timeEntries = value; }
 
         static Storage()
         {
-            _timeEntries = new List<TimeEntry>();
+            _timeEntries = new List<ClokifyEntry>();
         }
 
     }

@@ -11,6 +11,8 @@ namespace TSApp.Utility
     {
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
+            if (value == null)
+                return null;
             double val = ((TimeSpan)value).TotalHours;
             return Math.Round(val,2).ToString();
         }

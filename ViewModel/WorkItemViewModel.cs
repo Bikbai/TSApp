@@ -79,10 +79,17 @@ namespace TSApp.ViewModel
             {
                 var tItem = new TFSWorkItem(item);
                 var ge = new GridEntry(tItem, currentWeekNumber);
+                ge.ManualEntryChanged += ManualEntryChanged;
                 GridEntries.Add(ge);
             }
             return true;
         }
+
+        private void ManualEntryChanged()
+        {
+            OnPropertyChanged("ManualEntry");
+        }
+
         /// <summary>
         /// Полная загрузка последних 7 дней Time Entry из Клокифая
         /// </summary>
@@ -222,7 +229,7 @@ namespace TSApp.ViewModel
         /// Обработчик события создания TE после заливки его в Клоки.
         /// </summary>
         /// <param name="te"></param>
-        public void OnTimeEntryCreateHandler(TimeEntry te)
+        public void OnTimeEntryCreateHandler(ClokifyEntry te)
         {
             if (te.WorkTime == TimeSpan.Zero)
                 return;

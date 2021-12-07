@@ -1,10 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.ComponentModel;
-using Microsoft.Toolkit.Mvvm.ComponentModel;
+﻿using Microsoft.Toolkit.Mvvm.ComponentModel;
 using Microsoft.VisualStudio.Services.WebApi.Patch;
 using Microsoft.VisualStudio.Services.WebApi.Patch.Json;
+using Newtonsoft.Json;
+using System;
+using System.Collections.Generic;
 using TSApp.Model;
 
 namespace TSApp.ViewModel
@@ -23,18 +22,41 @@ namespace TSApp.ViewModel
         private double _remainingWork = 0;
 
         private string _state = "";
+
+        private List<TimeEntry> _wiTimeEntries = new List<TimeEntry>();
+
+        private bool _manualTimeSheeet = false;
         #endregion
 
         #region properties
         public EntryType Type { get; set; } // тип строки
+        /// <summary>
+        /// признак распределения времени вручную
+        /// </summary>
+        public bool ManualTimeSheet
+        {
+            get => _manualTimeSheeet;    
+            set
+            {
+                SetProperty(ref _manualTimeSheeet, value);
+                if (_manualTimeSheeet)
+                {
+                    var wiTe = Storage.TimeEntries.FindAll(p => p.WorkItemId == WorkItemId);
+                    foreach (var te in wiTe)
+                        _wiTimeEntries.Add(new TimeEntry(te));
+                }
+                else
+                    _wiTimeEntries.Clear();
+                OnPropertyChanged("WiTimeEntries");
+                OnManualEntryChanged();
+            } 
+        }
+        /// <summary>
+        /// поддержка мастер-деталь
+        /// </summary>
         public List<TimeEntry> WiTimeEntries
         {
-            get
-            {
-                List<TimeEntry> retval = new List<TimeEntry>();
-                retval.AddRange(Storage.TimeEntries.FindAll(p => p.WorkItemId == this.WorkItemId));
-                return retval;
-            }
+            get => _wiTimeEntries;
         }
 
         /// <summary>
@@ -43,7 +65,7 @@ namespace TSApp.ViewModel
         public string State { get => _state; set => SetProperty(ref _state, value); }
 
         public string RemainingWork {
-            get => GetTimeData(DayOfWeek.Monday, false);
+            get => _remainingWork.ToString("0.00");
             set {
                 var val = ParseInput(value, _remainingWork);
                 if (val != _remainingWork)
@@ -52,54 +74,27 @@ namespace TSApp.ViewModel
         }
         public int WorkItemId { get => _workItem.Id;}
         public string Title { get => WorkItemId.ToString() + '.' + _workItem.Title;}
-        #region Комментарии по дням недели
-        public string MondayComment { 
-            get => GetTimeData(DayOfWeek.Monday, true); 
-            set => workDaily.TimeDataDaily[DayOfWeek.Monday].Comment = value; 
-        }
-        public string TuesdayComment {
-            get => GetTimeData(DayOfWeek.Wednesday, true);
-            set => workDaily.TimeDataDaily[DayOfWeek.Wednesday].Comment = value; 
-        }
-        public string WednesdayComment { 
-            get => GetTimeData(DayOfWeek.Tuesday, true); 
-            set => workDaily.TimeDataDaily[DayOfWeek.Tuesday].Comment = value; 
-        }
-        public string ThursdayComment { 
-            get => GetTimeData(DayOfWeek.Thursday, true);
-            set => workDaily.TimeDataDaily[DayOfWeek.Thursday].Comment = value; 
-        }
-        public string FridayComment { 
-            get => GetTimeData(DayOfWeek.Friday, true);
-            set => workDaily.TimeDataDaily[DayOfWeek.Friday].Comment = value; }
-        public string SundayComment { 
-            get => GetTimeData(DayOfWeek.Sunday, true);
-            set => workDaily.TimeDataDaily[DayOfWeek.Sunday].Comment = value; }
-        public string SaturdayComment { 
-            get => GetTimeData(DayOfWeek.Saturday, true);
-            set => workDaily.TimeDataDaily[DayOfWeek.Saturday].Comment = value; }
-        #endregion
         #region Работа по дням недели
         public string CompletedWorkMon { 
-            get => GetTimeData(DayOfWeek.Monday, false);
+            get => GetTimeData(DayOfWeek.Monday);
             set => ApplyValue(value, DayOfWeek.Monday); }
         public string CompletedWorkTue { 
-            get => GetTimeData(DayOfWeek.Tuesday, false);
+            get => GetTimeData(DayOfWeek.Tuesday);
             set => ApplyValue(value, DayOfWeek.Tuesday); }
         public string CompletedWorkWed { 
-            get => GetTimeData(DayOfWeek.Wednesday, false);
+            get => GetTimeData(DayOfWeek.Wednesday);
             set => ApplyValue(value, DayOfWeek.Wednesday); }
         public string CompletedWorkThu { 
-            get => GetTimeData(DayOfWeek.Thursday, false);
+            get => GetTimeData(DayOfWeek.Thursday);
             set => ApplyValue(value, DayOfWeek.Thursday); }
         public string CompletedWorkFri { 
-            get => GetTimeData(DayOfWeek.Friday, false);
+            get => GetTimeData(DayOfWeek.Friday);
             set => ApplyValue(value, DayOfWeek.Friday); }
         public string CompletedWorkSun { 
-            get => GetTimeData(DayOfWeek.Sunday, false);
+            get => GetTimeData(DayOfWeek.Sunday);
             set => ApplyValue(value, DayOfWeek.Sunday); }
         public string CompletedWorkSat { 
-            get => GetTimeData(DayOfWeek.Saturday, false);
+            get => GetTimeData(DayOfWeek.Saturday);
             set => ApplyValue(value, DayOfWeek.Saturday); }
         #endregion
         public int WeekNumber { get => workDaily.WeekNumber; set => workDaily.WeekNumber = value; }
@@ -124,7 +119,7 @@ namespace TSApp.ViewModel
 
         #endregion
 
-        #region Constructors
+        #region constructors
         public GridEntry(bool isTimeEntry, int weekNumber)
         {
             if (!isTimeEntry)
@@ -141,19 +136,22 @@ namespace TSApp.ViewModel
             _workItem = item;
             workDaily = new WeekData(week, item.Id);
             State = item.State;
+            if (item.ClokiData != null && item.ClokiData.ManualEntry)
+                ManualTimeSheet = true;
         }
         #endregion
+
+        #region methods
         /// <summary>
         /// инициализируем рабочие часы, уже учтённые в клокифае 
         /// в текущей неделе - в указанный день
         /// </summary>
         /// <param name="te"></param>
-        public void AppendTimeEntry(TimeEntry te)
+        public void AppendTimeEntry(ClokifyEntry te)
         {
             workDaily.AppendTimeEntry(te);
             OnPropertyChanged("IsChanged");
         }
-
         public TimeSpan WorkByDay(DayOfWeek workDay)
         {
             TimeData td;
@@ -164,7 +162,6 @@ namespace TSApp.ViewModel
                 return td.Work;
             else return TimeSpan.Zero; 
         }
-
         /// <summary>
         /// парсер ввода нового значения типа double
         /// </summary>
@@ -202,9 +199,6 @@ namespace TSApp.ViewModel
             val = before + val * (cmd == CMD.decr ? -1 : 1);
             return val < 0 ? 0 : val;
         }
-
-
-
         /// <summary>
         /// функция ввода нового значения, в зависимости от команды вида
         /// -число - вычесть
@@ -233,14 +227,16 @@ namespace TSApp.ViewModel
             OnPropertyChanged("IsChanged");
             OnPropertyChanged("TotalWork");
         }
-
         public int CompareTo(object obj)
         {
             if (obj == null) return 0;
             GridEntry item = obj as GridEntry;
             return Helpers.CalcRank(item.State);
         }
-
+        /// <summary>
+        /// Получить изменения в TFS Workitem
+        /// </summary>
+        /// <returns></returns>
         public JsonPatchDocument GetTfsUpdateData()
         {
             JsonPatchDocument result = new JsonPatchDocument();
@@ -275,19 +271,24 @@ namespace TSApp.ViewModel
                 Value = Math.Round((totals + delta).TotalHours, 2).ToString("0.00", System.Globalization.CultureInfo.InvariantCulture)
             });
 
+            ClokiData cd = new ClokiData();
+            cd.ManualEntry = ManualTimeSheet;
+            cd.TimeEntryIds = new List<string>();
+            foreach (var te in WiTimeEntries)
+                cd.TimeEntryIds.Add(te.Id);
+
+            result.Add(new JsonPatchOperation()
+            {
+                Operation = Operation.Replace,
+                Path = "/fields/" + WIFields.ClokiData,
+                Value = JsonConvert.SerializeObject(cd)
+            });
             return result;
         }
-
-        private void PatchBuilder(JsonPatchDocument patch, Operation op, string field, string value)
-        {
-            patch.Add(new JsonPatchOperation()
-            {
-                Operation = op,
-                Path = "/fields/" + field,
-                Value = value
-            });
-        }
-
+        /// <summary>
+        /// Метод получения списка TE для перезаливки в Клоки
+        /// </summary>
+        /// <returns></returns>
         public List<TimeData> GetClokiUpdateData()
         {
             List<TimeData> result = new List<TimeData>();
@@ -320,15 +321,26 @@ namespace TSApp.ViewModel
         /// <param name="day">день недели</param>
         /// <param name="needComment">возвращать коммент или форматированное значение трудозатрат</param>
         /// <returns></returns>
-        private string GetTimeData(DayOfWeek day, bool needComment)
+        private string GetTimeData(DayOfWeek day)
         {
             if (workDaily.TimeDataDaily == null)
                 return "";
             if (workDaily.TimeDataDaily.TryGetValue(day, out TimeData td) && td != null)
-                return needComment ? td.Comment : td.Work.TotalHours.ToString("0.00");
+                return td.Work.TotalHours.ToString("0.00");
             else
                 return "";
         }
+        #endregion
+
+        #region events
+        public delegate void OnManualEntryDelegate();
+        public event OnManualEntryDelegate ManualEntryChanged;
+        private void OnManualEntryChanged()
+        {
+            if (ManualEntryChanged != null)
+                ManualEntryChanged.Invoke();
+        }
+        #endregion
+
     }
-    
 }

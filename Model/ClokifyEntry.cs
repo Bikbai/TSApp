@@ -1,40 +1,38 @@
 ﻿using System;
 using Clockify.Net.Models.TimeEntries;
+using Newtonsoft.Json;
+using TSApp.ViewModel;
 
 namespace TSApp.Model
 {
     /// <summary>
     /// Класс-обёртка для отображения записи в Клокифай.
     /// </summary>
-    public class TimeEntry
+    [JsonObject(MemberSerialization.OptIn)]
+    public class ClokifyEntry
     {
         #region Private fields
-        private readonly string id;
+        [JsonProperty]
+        private string id;
+        [JsonProperty]
         private int workItemId = -1;
+        [JsonProperty]
         private TimeSpan workTime;
+        [JsonProperty]
         private DateTimeOffset start;
+        [JsonProperty]
         private DateTimeOffset end;
+        [JsonProperty]
         private string comment;
         #endregion
 
-        /// <summary>
-        /// Конструктор нового TimeEntry, для создания непривязанных к задачам записей
-        /// </summary>
-        /// <param name="description"></param>
-        /// <param name="start"></param>
-        /// <param name="end"></param>
-        public TimeEntry(string description, DateTimeOffset start, DateTimeOffset end)
-        {
-            Description = description;
-            workTime = end - start;
-            this.start = start;
-            this.end = end;
-        }
+        public ClokifyEntry() { }
+
         /// <summary>
         /// Стандартный конструктор объекта на основе данных из клокифая
         /// </summary>
         /// <param name="te">Запись в клоки</param>
-        public TimeEntry(TimeEntryDtoImpl te)
+        public ClokifyEntry(TimeEntryDtoImpl te)
         {
             id = te.Id;
             if (te.TimeInterval.End != null) {
@@ -61,7 +59,8 @@ namespace TSApp.Model
         }
         /// <summary>
         /// Календарный день записи
-        /// </summary>
+        /// </summary>        
+        [JsonIgnore]
         public DateTime Calday { get => (DateTime)start.Date; }
         /// <summary>
         /// Идентификатор задачи в TFS
@@ -86,6 +85,7 @@ namespace TSApp.Model
         /// <summary>
         /// День недели
         /// </summary>
+        [JsonIgnore]
         public DayOfWeek DayOfWeek { get => Calday.DayOfWeek; }
         public string Comment { get => comment; set => comment = value; }
         public string Description { get; set; }

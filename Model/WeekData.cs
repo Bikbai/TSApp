@@ -40,7 +40,7 @@ namespace TSApp.Model
         /// <param name="work">Учтённые часы</param>
         /// <param name="te">Учитываемый Clokify TimeEntry</param>
         /// <param name="applyChanges"></param>
-        public void AppendTimeEntry(TimeEntry te)
+        public void AppendTimeEntry(ClokifyEntry te)
         {
             int workItemId = te.WorkItemId;
             if (workItemId == -1)
@@ -62,7 +62,7 @@ namespace TSApp.Model
 
             if (TimeDataDaily[workDay].TimeEntries == null)
             {
-                TimeDataDaily[workDay].TimeEntries = new List<TimeEntry>();                
+                TimeDataDaily[workDay].TimeEntries = new List<ClokifyEntry>();                
             }
             TimeDataDaily[workDay].TimeEntries.Add(te);
         }

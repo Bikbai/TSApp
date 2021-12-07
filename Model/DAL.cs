@@ -124,9 +124,9 @@ namespace TSApp.Model
         /// <summary>
         /// Чтение всех Time Entry из Клоки
         /// </summary>
-        public async Task<List<TimeEntry>> FindAllTimeEntriesForUser(int? TFSworkItemId, DateTime? queryFrom)
+        public async Task<List<ClokifyEntry>> FindAllTimeEntriesForUser(int? TFSworkItemId, DateTime? queryFrom)
         {
-            List<TimeEntry> result = new List<TimeEntry>();
+            List<ClokifyEntry> result = new List<ClokifyEntry>();
             string query = TFSworkItemId == null ? null : TFSworkItemId.ToString();
             var ret = await clockify.FindAllTimeEntriesForUserAsync(StaticData.WorkspaceId, StaticData.UserId,
                                                            query,
@@ -140,7 +140,7 @@ namespace TSApp.Model
                 // задачи без конца и начала пропускаем
                 if (d.TimeInterval.End == null || d.TimeInterval.Start == null)
                     continue;
-                result.Add(new TimeEntry(d));
+                result.Add(new ClokifyEntry(d));
             }
             if (result.Count == 0)
                 throw new Exception("Нет данных");
@@ -183,7 +183,7 @@ namespace TSApp.Model
                 x = clockify.CreateTimeEntryAsync(StaticData.WorkspaceId, rq).Result.Data;
                 if (x == null)
                     throw new Exception("Ошибка при создании Clokify TimeEntry");
-                OnTimeEntryCreated(new TimeEntry(x));
+                OnTimeEntryCreated(new ClokifyEntry(x));
             }
             return true;
         }

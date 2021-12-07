@@ -68,16 +68,8 @@ namespace TSApp.ViewModel
         /// <returns></returns>
         private async Task ResetAndLoadData()
         {
-            List<Task> tasks = new List<Task>();
-            tasks.Add(gridModel.FetchClokiData());
-            tasks.Add(gridModel.FetchTfsData());
-
-            while (tasks.Count > 0)
-            {
-                // TODO прогресс-бар загрузки надо бы
-                Task finishedTask = await Task.WhenAny(tasks);
-                tasks.Remove(finishedTask);
-            }
+            await gridModel.FetchClokiData();
+            await gridModel.FetchTfsData();
             gridModel.FillCurrentWork();
         }
     }

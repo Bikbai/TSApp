@@ -1,11 +1,13 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 16
-VisualStudioVersion = 16.0.31911.196
+# Visual Studio Version 17
+VisualStudioVersion = 17.1.31911.260
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TSApp", "TSApp.csproj", "{178B30FB-070A-47C4-9840-EEE5F0D9EE2F}"
 EndProject
 Project("{930C7802-8A8C-48F9-8165-68863BCCD9DD}") = "Timesheet APP", "..\Timesheet APP\Timesheet APP.wixproj", "{331583B1-6F84-437A-A89C-951E6EECAE34}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TSAppUnitTest", "Tests\TSAppUnitTest\TSAppUnitTest.csproj", "{DC7B9945-F7F9-4E14-BDD5-44A191EBE50D}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -29,6 +31,14 @@ Global
 		{331583B1-6F84-437A-A89C-951E6EECAE34}.Release|Any CPU.ActiveCfg = Release|x86
 		{331583B1-6F84-437A-A89C-951E6EECAE34}.Release|x86.ActiveCfg = Release|x86
 		{331583B1-6F84-437A-A89C-951E6EECAE34}.Release|x86.Build.0 = Release|x86
+		{DC7B9945-F7F9-4E14-BDD5-44A191EBE50D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DC7B9945-F7F9-4E14-BDD5-44A191EBE50D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DC7B9945-F7F9-4E14-BDD5-44A191EBE50D}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{DC7B9945-F7F9-4E14-BDD5-44A191EBE50D}.Debug|x86.Build.0 = Debug|Any CPU
+		{DC7B9945-F7F9-4E14-BDD5-44A191EBE50D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DC7B9945-F7F9-4E14-BDD5-44A191EBE50D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{DC7B9945-F7F9-4E14-BDD5-44A191EBE50D}.Release|x86.ActiveCfg = Release|Any CPU
+		{DC7B9945-F7F9-4E14-BDD5-44A191EBE50D}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

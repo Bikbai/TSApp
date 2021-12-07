@@ -1,4 +1,6 @@
-﻿using System;
+﻿using Microsoft.VisualStudio.Services.WebApi.Patch;
+using Microsoft.VisualStudio.Services.WebApi.Patch.Json;
+using System;
 using System.Globalization;
 
 namespace TSApp
@@ -102,6 +104,16 @@ namespace TSApp
                 return 6;
             else
                 return (int)day - 1;
+        }
+
+        private static void PatchBuilder(JsonPatchDocument patch, Operation op, string field, string value)
+        {
+            patch.Add(new JsonPatchOperation()
+            {
+                Operation = op,
+                Path = "/fields/" + field,
+                Value = value
+            });
         }
     }
 }

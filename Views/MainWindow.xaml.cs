@@ -12,6 +12,7 @@ using TSApp.Model;
 using TSApp.Behaviors;
 using TSApp.ProjectConstans;
 using TSApp.ViewModel;
+using Newtonsoft.Json;
 
 namespace TSApp
 {
@@ -31,20 +32,16 @@ namespace TSApp
             mainGrid.SortComparers.Add(new SortComparer() { Comparer = new CustomStateComparer(), PropertyName = "State" });
             mainGrid.DataContext = mdl.gridModel.GridEntries;
             mainGrid.ItemsSource = mdl.gridModel.GridEntries;
+            mdl.gridModel.PropertyChanged += GridModel_PropertyChanged;
             mainGrid.CurrentCellRequestNavigate += MainGrid_CurrentCellRequestNavigate;
-            /*
-            var detailsGrid = new GridViewDefinition();
-            detailsGrid.RelationalColumn = "TimeEntries";
-            detailsGrid.DataGrid = new SfDataGrid() {
-                AutoGenerateColumnsMode = AutoGenerateColumnsMode.None,
-                Name = "DetailsGrid", 
-                AutoGenerateColumns = true,
-                ItemsSource = mdl.gridModel.TimeEntries,
-            };
-            mainGrid.DetailsViewDefinition.Add(detailsGrid);
-            */
-
         }
+
+        private void GridModel_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
+        {
+            if (e.PropertyName == "ManualEntry")
+                this.mainGrid.UpdateDataRow(mainGrid.ResolveToRowIndex(mainGrid.CurrentItem));
+        }
+
         /// <summary>
         /// Обработка клика на гиперссылку
         /// </summary>
@@ -60,6 +57,7 @@ namespace TSApp
         // рисуем первую и последнюю строку
         private void MainGrid_QueryUnBoundRow(object sender, Syncfusion.UI.Xaml.Grid.GridUnBoundRowEventsArgs e)
         {
+            const int weekColumnId = 7;
             int index = e.RowColumnIndex.ColumnIndex;
             int rowindex = e.RowColumnIndex.RowIndex;
             if (e.UnBoundAction == UnBoundActions.QueryData)
@@ -72,9 +70,9 @@ namespace TSApp
                         e.Handled = true;
                     }
                     // суббота и воскресенье - нерабочие дни =)
-                    else if (index >= 6 && index < 13)
+                    else if (index >= weekColumnId && index < weekColumnId + 7)
                     {
-                        e.Value = mdl.gridModel.GetWorkDayStart(Helpers.DayOfWeekFromRus(index - 6)).ToString(@"hh\:mm");
+                        e.Value = mdl.gridModel.GetWorkDayStart(Helpers.DayOfWeekFromRus(index - weekColumnId)).ToString(@"hh\:mm");
                         e.Handled = true;
                     }
                 } 
@@ -85,14 +83,13 @@ namespace TSApp
                         e.CellTemplate = App.Current.Resources["BottomCellTemplate"] as DataTemplate;
                         e.Handled = true;
                     }
-                    else if (index >= 6 && index < 13)
+                    else if (index >= weekColumnId && index < weekColumnId + 7)
                     {
-                        e.Value = mdl.gridModel.GetTotalWork(Helpers.DayOfWeekFromRus(index - 6));
-                        e.Value = Helpers.DayOfWeekFromRus(index - 6).ToString();
+                        e.Value = mdl.gridModel.GetTotalWork(Helpers.DayOfWeekFromRus(index - weekColumnId));
+                        //e.Value = Helpers.DayOfWeekFromRus(index - 6).ToString();
                         e.Handled = true;
                     }
                 }
-
             }
             if (e.UnBoundAction == UnBoundActions.CommitData)
             {
@@ -131,10 +128,6 @@ namespace TSApp
             mdl.Reload();
         }
 
-        private void mainGrid_AddNewRowInitiating(object sender, AddNewRowInitiatingEventArgs e)
-        {
-            e.NewObject = new GridEntry(true, 10);
-        }
 
         private void button1_Click(object sender, RoutedEventArgs e)
         {
@@ -145,7 +138,7 @@ namespace TSApp
                 this.longTaskProgress.Maximum = mdl.gridModel.GetChangedCount()*10;
                 longTaskProgress.Value = 0;
                 mdl.Publish();
-            }            
+            }
         }
         private void GridModel_ItemPublished(bool finished, int workItemId)
         {
@@ -196,6 +189,7 @@ namespace TSApp
             var ix = mainGrid.SelectedIndex;
             var row = mainGrid.CurrentItem as GridEntry;
             mdl.gridModel.GridEntries.ResetBindings();
+            var x = JsonConvert.SerializeObject(row.WiTimeEntries[0], Formatting.Indented);
         }
 
         private void InitSettings()
@@ -205,6 +199,11 @@ namespace TSApp
             foreach (var d in Enum.GetValues(typeof(DayOfWeek)))
                 StaticData.weekTimeTable.Add((DayOfWeek)d, TimeSpan.FromHours(10));
             // TODO сделать сохранение и загрузку рабочего графика
+        }
+
+        private void DetailsGrid_AddNewRowInitiating(object sender, AddNewRowInitiatingEventArgs e)
+        {
+            
         }
     }
 }

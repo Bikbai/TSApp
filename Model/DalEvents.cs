@@ -51,7 +51,7 @@ namespace TSApp.Model
         #endregion
 
         #region TimeEntryCreated
-        public delegate void TimeEntryCreateDelegate(TimeEntry te);
+        public delegate void TimeEntryCreateDelegate(ClokifyEntry te);
         /// <summary>
         /// Событие создания новой записи в Клоки
         /// </summary>
@@ -60,7 +60,7 @@ namespace TSApp.Model
         /// Событие создания новой записи в Клоки
         /// </summary>
         /// <param name="TimeEntryId">Идентификатор записи в Клоки</param>
-        public void OnTimeEntryCreated(TimeEntry te)
+        public void OnTimeEntryCreated(ClokifyEntry te)
         {
             if (TimeEntryCreated != null)
                 TimeEntryCreated.Invoke(te);

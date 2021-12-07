@@ -2,6 +2,7 @@
 using Microsoft.Toolkit.Mvvm.ComponentModel;
 using System;
 using System.Collections.Generic;
+using Newtonsoft.Json;
 
 namespace TSApp.Model
 {
@@ -14,8 +15,9 @@ namespace TSApp.Model
         private double originalEstimate; //OriginalEstimate
         private double remainingWork; //RemainingWork
         private double completedWork; //CompletedWork
-        private List<TimeEntry> linkedTimeEntries;
+        private List<ClokifyEntry> linkedTimeEntries;
         private WorkItem linkedWorkItem;
+        private ClokiData _clokiData;
 
         public int Id { get => id; }
         public string Title { get => title; set => title = value; }
@@ -24,8 +26,9 @@ namespace TSApp.Model
         public double OriginalEstimate { get => originalEstimate; set => SetProperty(ref originalEstimate , value); }
         public double RemainingWork { get => remainingWork; set => SetProperty(ref remainingWork , value); }
         public double CompletedWork { get => completedWork; set => SetProperty(ref completedWork, value); }
-        public List<TimeEntry> LinkedTimeEntry { get => linkedTimeEntries; set => SetProperty(ref linkedTimeEntries , value); }
-        public WorkItem LinkedWorkItem { get => linkedWorkItem; set => SetProperty(ref linkedWorkItem , value); }
+        public List<ClokifyEntry> LinkedTimeEntry { get => linkedTimeEntries; set => SetProperty(ref linkedTimeEntries , value); }
+        public WorkItem LinkedWorkItem { get => linkedWorkItem; set => SetProperty(ref linkedWorkItem , value); }        
+        public ClokiData ClokiData { get => _clokiData; }
         public TFSWorkItem()
         {
             id = 100500;
@@ -46,6 +49,8 @@ namespace TSApp.Model
             if (i.Fields.TryGetValue(WIFields.OriginalEstimate, out outVal)) originalEstimate = (double)outVal; else originalEstimate = 0;
             if (i.Fields.TryGetValue(WIFields.RemainingWork, out outVal)) remainingWork = (double)outVal; else remainingWork = 0;
             if (i.Fields.TryGetValue(WIFields.CompletedWork, out outVal)) completedWork = (double)outVal; else completedWork = 0;
+            if (i.Fields.TryGetValue(WIFields.ClokiData, out outVal))
+                _clokiData = JsonConvert.DeserializeObject<ClokiData>((string)outVal);
             linkedWorkItem = i;
         }
 
