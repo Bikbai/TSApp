@@ -9,8 +9,9 @@ namespace TSApp.Model
     /// Класс-обёртка для отображения записи в Клокифай.
     /// </summary>
     [JsonObject(MemberSerialization.OptIn)]
-    public class ClokifyEntry
+    public class ClokifyEntry : ICloneable
     {
+        /// Настройка сериализации сделана для автотестов
         #region Private fields
         [JsonProperty]
         private string id;
@@ -19,9 +20,9 @@ namespace TSApp.Model
         [JsonProperty]
         private TimeSpan workTime;
         [JsonProperty]
-        private DateTimeOffset start;
+        private DateTime start;
         [JsonProperty]
-        private DateTimeOffset end;
+        private DateTime end;
         [JsonProperty]
         private string comment;
         #endregion
@@ -37,8 +38,8 @@ namespace TSApp.Model
             id = te.Id;
             if (te.TimeInterval.End != null) {
                 workTime = (DateTimeOffset)te.TimeInterval.End - (DateTimeOffset)te.TimeInterval.Start;
-                start = (DateTimeOffset)te.TimeInterval.Start;
-                end = (DateTimeOffset)te.TimeInterval.End;
+                start = ((DateTimeOffset)te.TimeInterval.Start).ToLocalTime().DateTime;
+                end = ((DateTimeOffset)te.TimeInterval.End).ToLocalTime().DateTime;
             }
             int idx = 0;
             idx = te.Description.IndexOf('.');
@@ -61,7 +62,7 @@ namespace TSApp.Model
         /// Календарный день записи
         /// </summary>        
         [JsonIgnore]
-        public DateTime Calday { get => (DateTime)start.Date; }
+        public DateTime Calday { get => start.Date; }
         /// <summary>
         /// Идентификатор задачи в TFS
         /// </summary>
@@ -73,11 +74,11 @@ namespace TSApp.Model
         /// <summary>
         /// Начало учтенного периода
         /// </summary>
-        public DateTimeOffset Start { get => start; set => start = value; }
+        public DateTime Start { get => start; set => start = value; }
         /// <summary>
         /// Конец учтённого периода
         /// </summary>
-        public DateTimeOffset End { get => end; set => end = value; }
+        public DateTime End { get => end; set => end = value; }
         /// <summary>
         /// Идентификатор записи в Клоки
         /// </summary>
@@ -89,5 +90,10 @@ namespace TSApp.Model
         public DayOfWeek DayOfWeek { get => Calday.DayOfWeek; }
         public string Comment { get => comment; set => comment = value; }
         public string Description { get; set; }
+
+        public object Clone()
+        {
+            return (ClokifyEntry)MemberwiseClone();
+        }
     }
 }

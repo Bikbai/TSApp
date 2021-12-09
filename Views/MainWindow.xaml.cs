@@ -22,6 +22,7 @@ namespace TSApp
     public partial class MainWindow : Window
     {
         private MainFormModel mdl = new MainFormModel();
+
         public MainWindow()
         {
             InitSettings();
@@ -34,6 +35,13 @@ namespace TSApp
             mainGrid.ItemsSource = mdl.gridModel.GridEntries;
             mdl.gridModel.PropertyChanged += GridModel_PropertyChanged;
             mainGrid.CurrentCellRequestNavigate += MainGrid_CurrentCellRequestNavigate;
+            btnTimer.DataContext = mdl.workTimer;
+            lblTimer.DataContext = mdl.workTimer;
+        }
+
+        private void Timer_Tick(object sender, EventArgs e)
+        {
+
         }
 
         private void GridModel_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
@@ -169,7 +177,6 @@ namespace TSApp
                                     tmpLabel.Content = "/";
                             }
                             ));
-                    
             }
         }
 
@@ -204,6 +211,17 @@ namespace TSApp
         private void DetailsGrid_AddNewRowInitiating(object sender, AddNewRowInitiatingEventArgs e)
         {
             
+        }
+
+        private void btnTimer_Click(object sender, RoutedEventArgs e)
+        {
+            var row = mainGrid.CurrentItem as GridEntry;
+            mdl.workTimer.StartStop(row);
+        }
+
+        private void mainGrid_SelectionChanged(object sender, GridSelectionChangedEventArgs e)
+        {
+            mdl.workTimer.GridEntry = (GridEntry)mainGrid.CurrentItem;
         }
     }
 }

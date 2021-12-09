@@ -200,6 +200,7 @@
       <SubType>Designer</SubType>
     </ApplicationDefinition>
     <Compile Include="Behaviors\Comparers.cs" />
+    <Compile Include="Behaviors\LabelSizeConverter.cs" />
     <Compile Include="Behaviors\RowColorConverter.cs" />
     <Compile Include="Model\ClokiData.cs" />
     <Compile Include="Model\DalEvents.cs" />
@@ -217,6 +218,7 @@
     <Compile Include="Model\TimeData.cs" />
     <Compile Include="Model\WeekData.cs" />
     <Compile Include="ViewModel\TimeEntry.cs" />
+    <Compile Include="ViewModel\WorkTimer.cs" />
     <Compile Include="Views\ParameterForm.xaml.cs">
       <DependentUpon>ParameterForm.xaml</DependentUpon>
     </Compile>

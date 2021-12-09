@@ -12,6 +12,7 @@ namespace TSApp.ViewModel
         private string btnCnxnStatusText = "";
         private string btnCnxnStatusForeColor = "";
         private int presentedWeekNumber = Helpers.CurrentWeekNumber();
+        public WorkTimer workTimer = new WorkTimer();
 
         public int WeekNumber { get => presentedWeekNumber;}
 

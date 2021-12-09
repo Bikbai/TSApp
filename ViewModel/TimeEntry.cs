@@ -16,42 +16,28 @@ namespace TSApp.ViewModel
     {
         #region private fields
         private enum FT { StartTime, EndTime , Work }
-        /// <summary>
-        /// если поле пустое, значит новая запись вручную
-        /// </summary>
-        private string _id;
-        private int _workItemId;
-        private DateTime _calday;
-        private TimeSpan _startTime;
-        private TimeSpan _endTime;
-        private TimeSpan _work;
-        /// <summary>
-        /// Чистый title из tfs workitem
-        /// </summary>
-        private string _title;
-        /// <summary>
-        /// Будет записан в клоки после .//
-        /// </summary>
         private string _comment;
-        private TimeEntry _clone;
+        private ClokifyEntry _entry;
+        private ClokifyEntry _clone;
         #endregion
         #region properties
+        public string Id { get => _entry.Id; }
         public bool IsChanged
         {
             get { return _clone != null; }
             set 
             { 
                 if (_clone == null)
-                    _clone = (TimeEntry)this.MemberwiseClone();
+                    _clone = (ClokifyEntry)_entry.Clone();
                 OnPropertyChanged("IsChanged");
             }
         }
         public DateTime Calday { 
-            get => _calday;
-            set => SetProperty(ref _calday, value);
+            get => _entry.Calday.Date;
         }
         public string Title {
-            get => _title;
+            get => _entry.Description;
+            set => _entry.Description = value;
         }
         public string Comment {
             get => _comment;
@@ -62,33 +48,35 @@ namespace TSApp.ViewModel
             }
         }
         public string StartTime { 
-            get => _startTime.ToString(@"h\:mm");
+            get => _entry.Start.TimeOfDay.ToString(@"h\:mm");
             set
             {
                 if (!ParseTimeEntry(value, out TimeSpan newvalue))
                     return;
                 IsChanged = true;
-                if (newvalue > _endTime)
-                    newvalue = _endTime;
-                SetProperty(ref _startTime, newvalue);
+                if (newvalue > _entry.End.TimeOfDay)
+                    newvalue = _entry.End.TimeOfDay;
+                _entry.Start = Calday + newvalue;
+                OnPropertyChanged("StartTime");
                 RecalcFields(FT.StartTime);
             }
         }
         public string EndTime { 
-            get => _endTime.ToString(@"h\:mm"); 
+            get => _entry.End.TimeOfDay.ToString(@"h\:mm"); 
             set 
             {
                 if (!ParseTimeEntry(value, out TimeSpan newvalue))
                     return;
                 IsChanged = true;
-                if (newvalue < _startTime)
-                    newvalue = _startTime;
-                SetProperty(ref _endTime, newvalue);
+                if (newvalue < _entry.Start.TimeOfDay)
+                    newvalue = _entry.Start.TimeOfDay;
+                _entry.End = Calday + newvalue;
+                OnPropertyChanged("EndTime");
                 RecalcFields(FT.EndTime); 
             }
     }
         public string Work { 
-            get => _work.ToString(@"h\:mm");
+            get => _entry.WorkTime.ToString(@"h\:mm");
             set
             {
                 if (!ParseTimeEntry(value, out TimeSpan newvalue))
@@ -96,11 +84,11 @@ namespace TSApp.ViewModel
                 IsChanged = true;
                 if (newvalue > TimeSpan.FromHours(12) )
                     newvalue = TimeSpan.FromHours(12);
-                SetProperty(ref _work, newvalue);
+                _entry.WorkTime = newvalue;
+                OnPropertyChanged("Work");
                 RecalcFields(FT.Work);
             }
-        }
-        public string Id { get => _id; set => _id = value; }
+        }        
         #endregion
         /// <summary>
         /// Разбираемые форматы ввода: 
@@ -140,15 +128,15 @@ namespace TSApp.ViewModel
             switch (type)
             {
                 case FT.StartTime:
-                    _endTime = _startTime + _work;
+                    _entry.End = _entry.Start + _entry.WorkTime;
                     OnPropertyChanged("EndTime");
                     break;
                 case FT.EndTime:
-                    _work = _endTime - _startTime;
+                    _entry.WorkTime = _entry.End - _entry.Start;
                     OnPropertyChanged("Work");
                     break;
                 case FT.Work:
-                    _endTime = _startTime + _work;
+                    _entry.End = _entry.Start + _entry.WorkTime;
                     OnPropertyChanged("EndTime");
                     break;
             }            
@@ -159,25 +147,19 @@ namespace TSApp.ViewModel
         /// <param name="ce"></param>
         public TimeEntry(ClokifyEntry ce)
         {
-            _id = ce.Id;
-            _workItemId = ce.WorkItemId;
-            _calday = ce.Calday;
-            _startTime = ce.Start.TimeOfDay;
-            _endTime = ce.End.TimeOfDay;
-            _work = ce.WorkTime;
-            _title = ce.Description;
             _comment = ce.Comment;
+            _entry = ce;
         }
         /// <summary>
         /// Создание новой пустой записи для Wi
         /// </summary>
         public TimeEntry(GridEntry ge)
         {
-            _workItemId = ge.WorkItemId;
-            _calday = DateTime.Now;
-            _startTime = DateTime.Now.TimeOfDay;
-            EndTime = DateTime.Now.TimeOfDay.ToString(@"h\:mm");
-            _title = ge.WorkItemId + '.' + ge.Title;
+            _entry = new ClokifyEntry();
+            _entry.WorkItemId  = ge.WorkItemId;
+            _entry.Start = DateTime.Now;
+            _entry.End = DateTime.Now;
+            _entry.Description = ge.WorkItemId + '.' + ge.Title;
         }
 
     }

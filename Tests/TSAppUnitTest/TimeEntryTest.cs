@@ -9,7 +9,7 @@ namespace TSAppUnitTest
     [TestClass]
     public class TimeEntryTest
     {
-        private static string CTE = "{\r\n  \"id\": \"61afaee6be737841a55dc648\",\r\n  \"workItemId\": 11716,\r\n  \"workTime\": \"02:00:00\",\r\n  \"start\": \"2021-12-07T10:00:00+00:00\",\r\n  \"end\": \"2021-12-07T12:00:00+00:00\",\r\n  \"comment\": null\r\n}";
+        private static string CTE = "{\r\n  \"id\": \"61afaee6be737841a55dc648\",\r\n  \"workItemId\": 11716,\r\n  \"workTime\": \"02:00:00\",\r\n  \"start\": \"2021-12-07T10:00:00\",\r\n  \"end\": \"2021-12-07T12:00:00\",\r\n  \"comment\": null\r\n}";
         ClokifyEntry ce = JsonConvert.DeserializeObject<ClokifyEntry>(CTE);
         [TestMethod]
         public void TestStartTime()
@@ -27,9 +27,9 @@ namespace TSAppUnitTest
             TimeEntry te = new TimeEntry((ClokifyEntry)ce);
             // с 10 до 12, 2 часа
             te.EndTime = "17:00";
-            Assert.AreEqual("10:00", te.StartTime);
-            Assert.AreEqual("17:00", te.EndTime);
-            Assert.AreEqual("7:00", te.Work);
+            Assert.AreEqual("10:00", te.StartTime, "StartTime");
+            Assert.AreEqual("17:00", te.EndTime, "EndTime");
+            Assert.AreEqual("7:00", te.Work, "Work");
         }
         [TestMethod]
         public void TestWorkTime()

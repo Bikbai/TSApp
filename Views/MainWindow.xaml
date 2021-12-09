@@ -7,10 +7,14 @@
         xmlns:local="clr-namespace:TSApp" 
         xmlns:beh="clr-namespace:TSApp.Behaviors"
         xmlns:syncfusion="http://schemas.syncfusion.com/wpf" 
-        xmlns:ViewModel="clr-namespace:TSApp.ViewModel" d:DataContext="{d:DesignInstance Type=ViewModel:GridEntry}"
+        xmlns:ViewModel="clr-namespace:TSApp.ViewModel" d:DataContext="{d:DesignInstance Type=ViewModel:WorkTimer}"
     x:Name="window" x:Class="TSApp.MainWindow"
         mc:Ignorable="d"        
-        Title="MainWindow" Height="891.067" Width="2107.671" Loaded="Window_Loaded">
+        Title="MainWindow" Height="891.067" Width="2107.671" Loaded="Window_Loaded"
+    DataContext="{Binding Path=MainFormModel}">
+    <Window.Resources>
+        <beh:LabelSizeConverter x:Key="LabelSizeConverter"/>
+    </Window.Resources>
     <Canvas x:Name="canvas" HorizontalAlignment="Left" 
             Width="{Binding Width, ElementName=window}" 
             VerticalAlignment="Top">
@@ -32,7 +36,7 @@
                 AllowSorting="False" 
                 RowStyle="{DynamicResource RowStyle}"
                 AutoGenerateRelations="False"
-                HideEmptyGridViewDefinition="True"
+                HideEmptyGridViewDefinition="True" SelectionChanged="mainGrid_SelectionChanged"
                 >
                 <local:SfDataGridExt.UnBoundRows>
                     <syncfusion:GridUnBoundRow Position="Top" x:Name="WorkHours"/>
@@ -123,30 +127,11 @@
         <Button x:Name="btnLoad" Content="Обновить" Canvas.Left="12" Canvas.Top="10" 
                 Width="75" Height="40" Click="btnLoad_Click" VerticalAlignment="Top"/>
         <Button x:Name="button1" Content="Publish" Width="75" Canvas.Left="114" Canvas.Top="10" Click="button1_Click" Height="40" VerticalAlignment="Top"/>
-        <Grid x:Name="grid" Height="40" Canvas.Left="316" Canvas.Top="10" Width="576">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="Auto"/>
-                <ColumnDefinition Width="Auto"/>
-                <ColumnDefinition Width="Auto"/>
-            </Grid.ColumnDefinitions>
-            <Label x:Name="label" Content="{Binding LblCurrentWeek, Mode=OneWay}" 
-                   HorizontalAlignment="Center" Margin="0,0,0,0" 
-                   VerticalAlignment="Top" Height="{Binding Height, ElementName=grid}"
-                   Width="Auto" 
-                   Grid.Column="1" FontSize="20"/>
-            <Button x:Name="decreaseWeekNum" 
-                    Content="&lt;" 
-                    HorizontalAlignment="Left" Margin="0,0,0,0" 
-                    VerticalAlignment="Top" Width="41" 
-                    Height="{Binding Height, ElementName=grid}"
-                    Grid.Column="0">
-            </Button>
-            <Button x:Name="button2" Content=">" 
-                    Grid.Column="2" 
-                    HorizontalAlignment="Left" Margin="0,0,0,0" 
-                    VerticalAlignment="Top" Width="41"
-                    Height="{Binding Height, ElementName=grid}"/>
-        </Grid>
-        <Button x:Name="button3" Content="Button" Canvas.Left="1129" Canvas.Top="12" Height="38" Width="93" Click="button3_Click"/>
+        <Button x:Name="button3" Content="Button" Canvas.Left="205" Canvas.Top="13" Height="38" Width="93" Click="button3_Click"/>
+        <Button x:Name="btnTimer" Content="{Binding ButtonLabel}" Canvas.Left="1303" Canvas.Top="8" Width="100" Click="btnTimer_Click" Height="40"
+                />
+        <Label x:Name="lblTimer" Content="{Binding GridEntryTitle, ConverterParameter=400, 
+            Converter={StaticResource LabelSizeConverter}, Mode=OneWay}" Canvas.Left="792" Canvas.Top="9" Width="500"
+               FontSize="16" FontFamily="Segoe UI Symbol" Height="40"/>
     </Canvas>
 </Window>

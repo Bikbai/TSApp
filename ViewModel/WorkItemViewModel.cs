@@ -112,9 +112,11 @@ namespace TSApp.ViewModel
         public double GetTotalWork(DayOfWeek workDay)
         {
             TimeSpan retval = TimeSpan.Zero;
-            foreach(var w in GridEntries)
+            var calday = Helpers.WeekBoundaries(CurrentWeekNumber, true).AddDays(Helpers.RusDayNumberFromDayOfWeek(workDay));
+            var te = Storage.TimeEntries.FindAll(p => p.Calday == calday);
+            foreach (var w in te)
             {
-                retval += w.WorkByDay(workDay);
+                retval += w.WorkTime;
             }
             return Math.Round(retval.TotalHours, 2);
         }
