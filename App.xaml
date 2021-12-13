@@ -8,6 +8,7 @@
     xmlns:sfgrid="clr-namespace:Syncfusion.UI.Xaml.Grid;assembly=Syncfusion.SfGrid.WPF"
     xmlns:syncfusion="http://schemas.syncfusion.com/wpf"
     x:Class="TSApp.App"
+    xmlns:ViewModel="clr-namespace:TSApp.ViewModel"
     StartupUri="./Views/MainWindow.xaml">
     <Application.Resources>
         <utility:TimeSpanConverter x:Key="timeSpanConverter"/>

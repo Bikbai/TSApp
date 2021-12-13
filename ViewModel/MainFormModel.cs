@@ -12,8 +12,10 @@ namespace TSApp.ViewModel
         private string btnCnxnStatusText = "";
         private string btnCnxnStatusForeColor = "";
         private int presentedWeekNumber = Helpers.CurrentWeekNumber();
-        public WorkTimer workTimer = new WorkTimer();
+        private WorkTimer _workTimer = new WorkTimer();
 
+        public TimeEntryGridVM TimeEntriesModel { get; set; }
+        public WorkTimer WorkTimer { get { return _workTimer; } }
         public int WeekNumber { get => presentedWeekNumber;}
 
         public string BtnCnxnStatusText { get => btnCnxnStatusText; set => SetProperty(ref btnCnxnStatusText, value); }
@@ -30,6 +32,7 @@ namespace TSApp.ViewModel
             connection.TimeEntryCreated += gridModel.OnTimeEntryCreateHandler;
             connection.TimeEntryDeleted += gridModel.OnTimeEntryDeleteHandler;
             connection.WorkItemUpdated += gridModel.OnWorkItemUpdatedHandler;
+            TimeEntriesModel = new TimeEntryGridVM();
         }
 
         public void Publish()
@@ -42,7 +45,6 @@ namespace TSApp.ViewModel
         {
             await ResetAndLoadData();            
         }
-
 
         private async void InitCompleteHandler(OnInitCompleteEventArgs args)
         {
@@ -72,6 +74,7 @@ namespace TSApp.ViewModel
             await gridModel.FetchClokiData();
             await gridModel.FetchTfsData();
             gridModel.FillCurrentWork();
+            TimeEntriesModel.Fill();
         }
     }
 }

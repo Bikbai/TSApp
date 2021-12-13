@@ -1,83 +1,130 @@
-﻿<Window
+﻿<syncfusion:ChromelessWindow
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:listCollection="clr-namespace:System.Collections;assembly=mscorlib"
         xmlns:p="clr-namespace:TSApp.Properties"
         xmlns:local="clr-namespace:TSApp" 
         xmlns:beh="clr-namespace:TSApp.Behaviors"
         xmlns:syncfusion="http://schemas.syncfusion.com/wpf" 
-        xmlns:ViewModel="clr-namespace:TSApp.ViewModel" d:DataContext="{d:DesignInstance Type=ViewModel:WorkTimer}"
-    x:Name="window" x:Class="TSApp.MainWindow"
-        mc:Ignorable="d"        
-        Title="MainWindow" Height="891.067" Width="2107.671" Loaded="Window_Loaded"
-    DataContext="{Binding Path=MainFormModel}">
+        xmlns:ViewModel="clr-namespace:TSApp.ViewModel;assembly=TsApp" 
+    d:DataContext="{d:DesignInstance Type=ViewModel:MainFormModel}"
+        x:Name="window" x:Class="TSApp.MainWindow"
+        ResizeMode="NoResize"
+        mc:Ignorable="d" 
+    Height="1000" Loaded="Window_Loaded" 
+    WindowStartupLocation="CenterScreen" 
+    ShowTitle="False" 
+    d:DesignWidth="1562.333" 
+    Width="1485">
     <Window.Resources>
         <beh:LabelSizeConverter x:Key="LabelSizeConverter"/>
     </Window.Resources>
-    <Canvas x:Name="canvas" HorizontalAlignment="Left" 
-            Width="{Binding Width, ElementName=window}" 
-            VerticalAlignment="Top">
-        <Grid Height="747" Canvas.Top="68" Width="{Binding Width, ElementName=canvas}">
+    <syncfusion:ChromelessWindow.RightHeaderItemsSource>
+        <listCollection:ArrayList>
+            <Button x:Name="button"
+                    Content="{Binding BtnCnxnStatusText, Mode=OneWay}" Height="Auto" Width="141" Click="button_Click" HorizontalAlignment="Stretch" VerticalAlignment="Center"/>
+        </listCollection:ArrayList>
+    </syncfusion:ChromelessWindow.RightHeaderItemsSource>
+    <syncfusion:ChromelessWindow.LeftHeaderItemsSource>
+        <listCollection:ArrayList>
+            <Button x:Name="btnLoad"
+                    Content="Обновить" Canvas.Left="12" Canvas.Top="10" 
+                Width="75" Height="Auto" Click="btnLoad_Click" VerticalAlignment="Center" Margin="5,0,5,0" HorizontalAlignment="Center"/>
+            <Button x:Name="button1"
+                    Content="Publish" Width="75" Canvas.Left="114" Canvas.Top="10" Click="button1_Click" Height="Auto" VerticalAlignment="Center" HorizontalAlignment="Center"/>
+            <Button x:Name="button3"
+                    Content="Button" Width="93" Click="button3_Click" HorizontalAlignment="Center" Margin="5,0,5,0" Height="Auto" VerticalAlignment="Center"/>
+            <Label x:Name="lblTimer" Grid.Column="4" d:Content="Название задачи"
+                   Width="500"
+                   Content="{Binding WorkTimer.GridEntryTitle, ConverterParameter=400, Converter={StaticResource LabelSizeConverter}, Mode=OneWay}" 
+                   FontSize="16" FontFamily="Segoe UI Symbol" Height="Auto" HorizontalAlignment="Right" VerticalAlignment="Center"/>
+            <Button x:Name="btnTimer"
+                    Content="{Binding WorkTimer.ButtonLabel}" Width="100" Click="btnTimer_Click" Height="Auto" HorizontalAlignment="Center"/>
+        </listCollection:ArrayList>
+    </syncfusion:ChromelessWindow.LeftHeaderItemsSource>
+    <syncfusion:ChromelessWindow.TaskbarItemInfo>
+        <TaskbarItemInfo>
+            <TaskbarItemInfo.ThumbButtonInfos>
+                <ThumbButtonInfo Description="ZZZ" ImageSource="/Icons/start-48.png"/>
+                <ThumbButtonInfo Description="QQQ" ImageSource="/Icons/b-stop-48.png"/>
+            </TaskbarItemInfo.ThumbButtonInfos>
+        </TaskbarItemInfo>
+    </syncfusion:ChromelessWindow.TaskbarItemInfo>
+    <Grid x:Name="canvas" 
+          HorizontalAlignment="Stretch"
+          Height="Auto"
+          Width="Auto" Margin="1,1,1,1">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" x:Name="Buttonz"/>
+            <RowDefinition Height="0.7*" x:Name="WorkItemz"/>
+            <RowDefinition Height="Auto" x:Name="Splitter"/>
+            <RowDefinition Height="0.3*" x:Name="TimeItemz"/>
+        </Grid.RowDefinitions>
+        <Grid  x:Name="TopTitle">
+            <Border Background="LightGray">
+                <Label Content="Данные за неделю" HorizontalAlignment="Center" FontWeight="Bold"/>
+            </Border>
+        </Grid>
+        <Grid 
+            Grid.Row="1">
             <local:SfDataGridExt 
-                x:Name="mainGrid"
-                ShowColumnWhenGrouped="False"
-                AutoGenerateColumns="False"
-                AutoExpandGroups="True" 
-                FontSize="16" FontFamily="Segoe UI Symbol"
-                RowHeight="30"
-                SelectionUnit="Cell"
-                NavigationMode="Cell"
-                AllowFrozenGroupHeaders="False"
-                EditTrigger="OnTap"
-                Margin="10,10,10,10"
-                ScrollViewer.VerticalScrollBarVisibility="Visible"
-                CurrentCellBeginEdit="mainGrid_CurrentCellBeginEdit"
-                AllowSorting="False" 
-                RowStyle="{DynamicResource RowStyle}"
-                AutoGenerateRelations="False"
-                HideEmptyGridViewDefinition="True" SelectionChanged="mainGrid_SelectionChanged"
-                >
+                            x:Name="mainGrid"
+                            ShowColumnWhenGrouped="False"
+                            AutoGenerateColumns="False"
+                            AutoExpandGroups="True" 
+                            FontSize="16" FontFamily="Segoe UI Symbol"
+                            RowHeight="30"
+                            SelectionUnit="Cell"
+                            NavigationMode="Cell"
+                            AllowFrozenGroupHeaders="False"
+                            EditTrigger="OnTap"
+                            CurrentCellBeginEdit="mainGrid_CurrentCellBeginEdit"
+                            AllowSorting="False" 
+                            RowStyle="{DynamicResource RowStyle}"
+                            AutoGenerateRelations="False"
+                            HideEmptyGridViewDefinition="True" SelectionChanged="mainGrid_SelectionChanged" ScrollViewer.VerticalScrollBarVisibility="Disabled" CurrentCellActivated="mainGrid_CurrentCellActivated"
+                            >
                 <local:SfDataGridExt.UnBoundRows>
                     <syncfusion:GridUnBoundRow Position="Top" x:Name="WorkHours"/>
                     <syncfusion:GridUnBoundRow Position="Bottom" x:Name="Totals"/>
                 </local:SfDataGridExt.UnBoundRows>
                 <local:SfDataGridExt.Columns>
                     <syncfusion:GridTextColumn MappingName ="State" HeaderText="Статус (тип)" 
-                        GroupMode="Default" AllowGrouping="True"/>
+                                    GroupMode="Default" AllowGrouping="True"/>
                     <syncfusion:GridCheckBoxColumn MappingName ="ManualTimeSheet" HeaderText="Руч."
-                                                   AllowEditing="True" Width="40"/>
-                    <syncfusion:GridHyperlinkColumn MappingName ="Title" HeaderText=""
-                        Width="700" AllowEditing="False"/>
+                                                                AllowEditing="True" Width="40"/>
+                    <syncfusion:GridHyperlinkColumn MappingName ="Title" HeaderText="" AllowEditing="False" ColumnSizer="Star"/>
                     <syncfusion:GridTextColumn MappingName ="State" HeaderText="" IsHidden="True" 
-                        AllowEditing="False" Width="0" TextAlignment="Right"/>
+                                    AllowEditing="False" Width="0" TextAlignment="Right"/>
 
                     <syncfusion:GridTextColumn MappingName ="RemainingWork"  HeaderText="Ост."
-                        AllowEditing="True" Width="60" TextAlignment="Right" />
+                                    AllowEditing="True" Width="60" TextAlignment="Right" />
 
                     <syncfusion:GridTextColumn MappingName ="CompletedWorkMon" HeaderText="Пн" 
-                        AllowEditing="True" Width="60" TextAlignment="Right"/>
+                                    AllowEditing="True" Width="60" TextAlignment="Right"/>
 
                     <syncfusion:GridTextColumn MappingName ="CompletedWorkTue" HeaderText="Вт"
-                        AllowEditing="True" Width="60" TextAlignment="Right"/>
+                                    AllowEditing="True" Width="60" TextAlignment="Right"/>
 
                     <syncfusion:GridTextColumn MappingName ="CompletedWorkWed" HeaderText="Ср"
-                        AllowEditing="True" Width="60" TextAlignment="Right"/>
+                                    AllowEditing="True" Width="60" TextAlignment="Right"/>
 
                     <syncfusion:GridTextColumn MappingName ="CompletedWorkThu" HeaderText="Чт"
-                        AllowEditing="True" Width="60" TextAlignment="Right"/>
+                                    AllowEditing="True" Width="60" TextAlignment="Right"/>
 
                     <syncfusion:GridTextColumn MappingName ="CompletedWorkFri" HeaderText="Пт"
-                        AllowEditing="True" Width="60" TextAlignment="Right"/>
+                                    AllowEditing="True" Width="60" TextAlignment="Right"/>
 
                     <syncfusion:GridTextColumn MappingName ="CompletedWorkSun" HeaderText="СБ"
-                        AllowEditing="True" Width="60" TextAlignment="Right"/>
+                                    AllowEditing="True" Width="60" TextAlignment="Right"/>
 
                     <syncfusion:GridTextColumn MappingName ="CompletedWorkSat" HeaderText="ВС"
-                        AllowEditing="True" Width="60" TextAlignment="Right"/>
+                                    AllowEditing="True" Width="60" TextAlignment="Right"/>
 
                     <syncfusion:GridTemplateColumn HeaderText="Суммарно"
-                        AllowEditing="False" Width="120" TextAlignment="Right" CellTemplate="{DynamicResource totalWork}"/>
+                                    AllowEditing="False" Width="120" TextAlignment="Right" CellTemplate="{DynamicResource totalWork}"/>
                 </local:SfDataGridExt.Columns>
                 <local:SfDataGridExt.GroupColumnDescriptions  >
                     <syncfusion:GroupColumnDescription ColumnName="State" SortGroupRecords="True"  />
@@ -90,13 +137,13 @@
                     <syncfusion:GridViewDefinition RelationalColumn="WiTimeEntries">
                         <syncfusion:GridViewDefinition.DataGrid>
                             <syncfusion:SfDataGrid x:Name="DetailsGrid" 
-                                                   AutoGenerateColumns="False"
-                                                   FontSize="16" FontFamily="Segoe UI Symbol"
-                                                   AddNewRowPosition="FixedTop"
-                                                   AddNewRowText = "Добавить новую запись"
-                                                   RowHeight="30" AddNewRowInitiating="DetailsGrid_AddNewRowInitiating"
-                                                   ItemsSource="{Binding WiTimeEntries}"
-                                                   >
+                                                                AutoGenerateColumns="False"
+                                                                FontSize="16" FontFamily="Segoe UI Symbol"
+                                                                AddNewRowPosition="FixedTop"
+                                                                AddNewRowText = "Добавить новую запись"
+                                                                RowHeight="30" AddNewRowInitiating="DetailsGrid_AddNewRowInitiating"
+                                                                ItemsSource="{Binding WiTimeEntries}"
+                                                                >
                                 <syncfusion:SfDataGrid.Columns>
                                     <syncfusion:GridDateTimeColumn MappingName ="Calday" HeaderText="Кал. день" Width="120"/>
                                     <syncfusion:GridTextColumn MappingName ="Title" HeaderText="Описание" Width="600"/>
@@ -112,26 +159,48 @@
                 </syncfusion:SfDataGrid.DetailsViewDefinition>
             </local:SfDataGridExt>
         </Grid>
-        <StatusBar x:Name="statusBar" Height="40" VerticalAlignment="Bottom" Width="{Binding Width, ElementName=window}" Canvas.Top="820">
-            <StatusBarItem Height="40" VerticalAlignment="Center" Width="150">
-                <Button x:Name="button" Content="{Binding BtnCnxnStatusText, Mode=OneWay}" Height="30" Width="141" Click="button_Click"/>
-            </StatusBarItem>
-            <StatusBarItem Height="40" VerticalAlignment="Center" Width="200">
-                <ProgressBar x:Name="longTaskProgress" Height="30" Width="200" Visibility="Visible" Value="10">
-                </ProgressBar>
-            </StatusBarItem>
-            <StatusBarItem Height="40" VerticalAlignment="Center" Width="300">
-                <Label x:Name="tmpLabel" Content="TestContent"/>
-            </StatusBarItem>
-        </StatusBar>
-        <Button x:Name="btnLoad" Content="Обновить" Canvas.Left="12" Canvas.Top="10" 
-                Width="75" Height="40" Click="btnLoad_Click" VerticalAlignment="Top"/>
-        <Button x:Name="button1" Content="Publish" Width="75" Canvas.Left="114" Canvas.Top="10" Click="button1_Click" Height="40" VerticalAlignment="Top"/>
-        <Button x:Name="button3" Content="Button" Canvas.Left="205" Canvas.Top="13" Height="38" Width="93" Click="button3_Click"/>
-        <Button x:Name="btnTimer" Content="{Binding ButtonLabel}" Canvas.Left="1303" Canvas.Top="8" Width="100" Click="btnTimer_Click" Height="40"
-                />
-        <Label x:Name="lblTimer" Content="{Binding GridEntryTitle, ConverterParameter=400, 
-            Converter={StaticResource LabelSizeConverter}, Mode=OneWay}" Canvas.Left="792" Canvas.Top="9" Width="500"
-               FontSize="16" FontFamily="Segoe UI Symbol" Height="40"/>
-    </Canvas>
-</Window>
+        <syncfusion:SfGridSplitter Grid.Row="2"
+            x:Name="splittor" HorizontalAlignment="Stretch" />
+
+        <Grid Grid.Row="3">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+            <Border Background="LightGray">
+                <Label Content="{Binding TimeEntriesModel.CurrentViewedDay, Mode=OneWay}" HorizontalAlignment="Center" FontWeight="Bold"/>
+            </Border>
+            <local:SfDataGridExt Grid.Row="1"
+                        x:Name="TimeEntryGrid"
+                        AutoGenerateColumns="False" 
+                        Margin="1,0,1,0" 
+                        ItemsSource="{Binding TimeEntriesModel.Entries, Mode=OneWay}" 
+                        FontSize="18"
+                        NewItemPlaceholderPosition="AtBeginning"
+                        AutoExpandGroups="True"
+                        ShowColumnWhenGrouped="False"
+                        >
+                <syncfusion:SfDataGrid.GroupSummaryRows>
+                    <syncfusion:GridSummaryRow ShowSummaryInRow="False">
+                        <syncfusion:GridSummaryRow.SummaryColumns>
+                            <syncfusion:GridSummaryColumn Name="TotalWork"
+                                              Format="'Итого отработано - {Sum:c}'"
+                                              MappingName="WorkDbl"
+                                              SummaryType="DoubleAggregate" />
+                        </syncfusion:GridSummaryRow.SummaryColumns>
+                    </syncfusion:GridSummaryRow>
+                </syncfusion:SfDataGrid.GroupSummaryRows>
+
+                <syncfusion:SfDataGrid.Columns>
+                    <syncfusion:GridTextColumn MappingName="CaldayString" HeaderText="День"  Width="100" ColumnSizer="Star"/>
+                    <syncfusion:GridTextColumn MappingName="Title" HeaderText="Название" ColumnSizer="Star"/>
+                    <syncfusion:GridTextColumn MappingName="Comment" HeaderText="Комментарий" ColumnSizer="Star"/>
+                    <syncfusion:GridTextColumn MappingName="StartTime" HeaderText="Начало" Width="100" TextAlignment="Center"/>
+                    <syncfusion:GridTextColumn MappingName="EndTime" HeaderText="Конец" Width="100" TextAlignment="Center"/>
+                    <syncfusion:GridTextColumn MappingName="Work" HeaderText="Работа" Width="100" TextAlignment="Center"/>
+                </syncfusion:SfDataGrid.Columns>
+            </local:SfDataGridExt>
+        </Grid>
+
+    </Grid>
+</syncfusion:ChromelessWindow>

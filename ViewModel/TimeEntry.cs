@@ -32,9 +32,10 @@ namespace TSApp.ViewModel
                 OnPropertyChanged("IsChanged");
             }
         }
-        public DateTime Calday { 
-            get => _entry.Calday.Date;
+        public string CaldayString { 
+            get => _entry.Calday.ToShortDateString();
         }
+        public DateTime Calday { get => _entry.Calday; }
         public string Title {
             get => _entry.Description;
             set => _entry.Description = value;
@@ -56,7 +57,7 @@ namespace TSApp.ViewModel
                 IsChanged = true;
                 if (newvalue > _entry.End.TimeOfDay)
                     newvalue = _entry.End.TimeOfDay;
-                _entry.Start = Calday + newvalue;
+                _entry.Start = _entry.Calday + newvalue;
                 OnPropertyChanged("StartTime");
                 RecalcFields(FT.StartTime);
             }
@@ -70,7 +71,7 @@ namespace TSApp.ViewModel
                 IsChanged = true;
                 if (newvalue < _entry.Start.TimeOfDay)
                     newvalue = _entry.Start.TimeOfDay;
-                _entry.End = Calday + newvalue;
+                _entry.End = _entry.Calday + newvalue;
                 OnPropertyChanged("EndTime");
                 RecalcFields(FT.EndTime); 
             }
@@ -89,6 +90,8 @@ namespace TSApp.ViewModel
                 RecalcFields(FT.Work);
             }
         }        
+        public double WorkDbl { get => _entry.WorkTime.TotalHours; }
+        
         #endregion
         /// <summary>
         /// Разбираемые форматы ввода: 

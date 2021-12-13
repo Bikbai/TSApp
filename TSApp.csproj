@@ -141,6 +141,7 @@
     <Reference Include="Syncfusion.SfGrid.WPF, Version=19.3460.0.43, Culture=neutral, PublicKeyToken=3d67ed1f87d44c89, processorArchitecture=MSIL" />
     <Reference Include="Syncfusion.SfInput.Wpf, Version=19.3460.0.43, Culture=neutral, PublicKeyToken=3d67ed1f87d44c89, processorArchitecture=MSIL" />
     <Reference Include="Syncfusion.Shared.Wpf, Version=19.3460.0.43, Culture=neutral, PublicKeyToken=3d67ed1f87d44c89, processorArchitecture=MSIL" />
+    <Reference Include="Syncfusion.Tools.WPF, Version=19.3460.0.43, Culture=neutral, PublicKeyToken=3d67ed1f87d44c89, processorArchitecture=MSIL" />
     <Reference Include="System" />
     <Reference Include="System.Buffers, Version=4.0.3.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
       <HintPath>..\Clockif\packages\System.Buffers.4.5.1\lib\net461\System.Buffers.dll</HintPath>
@@ -150,6 +151,7 @@
     </Reference>
     <Reference Include="System.ComponentModel.DataAnnotations" />
     <Reference Include="System.Data" />
+    <Reference Include="System.Drawing" />
     <Reference Include="System.IdentityModel.Tokens.Jwt, Version=6.14.1.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <HintPath>packages\System.IdentityModel.Tokens.Jwt.6.14.1\lib\net461\System.IdentityModel.Tokens.Jwt.dll</HintPath>
     </Reference>
@@ -168,6 +170,7 @@
       <HintPath>packages\System.Runtime.CompilerServices.Unsafe.6.0.0\lib\net461\System.Runtime.CompilerServices.Unsafe.dll</HintPath>
     </Reference>
     <Reference Include="System.Runtime.Serialization" />
+    <Reference Include="System.Runtime.Serialization.Formatters.Soap" />
     <Reference Include="System.Threading.Tasks.Extensions, Version=4.2.0.1, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
       <HintPath>..\Clockif\packages\System.Threading.Tasks.Extensions.4.5.4\lib\net461\System.Threading.Tasks.Extensions.dll</HintPath>
     </Reference>
@@ -178,6 +181,7 @@
     <Reference Include="System.Web.Http.WebHost, Version=5.2.7.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <HintPath>..\Clockif\packages\Microsoft.AspNet.WebApi.WebHost.5.2.7\lib\net45\System.Web.Http.WebHost.dll</HintPath>
     </Reference>
+    <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Xml" />
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="System.Core" />
@@ -193,6 +197,7 @@
     <Reference Include="WindowsBase" />
     <Reference Include="PresentationCore" />
     <Reference Include="PresentationFramework" />
+    <Reference Include="WindowsFormsIntegration" />
   </ItemGroup>
   <ItemGroup>
     <ApplicationDefinition Include="App.xaml">
@@ -214,10 +219,10 @@
     <Compile Include="Utility\TimeSpanConverter.cs" />
     <Compile Include="ViewModel\EntryType.cs" />
     <Compile Include="ViewModel\GridEntry.cs" />
-    <Compile Include="ViewModel\ProgressBarVM.cs" />
     <Compile Include="Model\TimeData.cs" />
     <Compile Include="Model\WeekData.cs" />
     <Compile Include="ViewModel\TimeEntry.cs" />
+    <Compile Include="ViewModel\TimeEntryGridVM.cs" />
     <Compile Include="ViewModel\WorkTimer.cs" />
     <Compile Include="Views\ParameterForm.xaml.cs">
       <DependentUpon>ParameterForm.xaml</DependentUpon>
@@ -299,6 +304,26 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Tests\" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Icons\refresh-48.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Views\refresh-48.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Icons\b-start-24.png" />
+    <Resource Include="Icons\b-start-48.png" />
+    <Resource Include="Icons\b-start-96.png" />
+    <Resource Include="Icons\b-stop-24.png" />
+    <Resource Include="Icons\b-stop-48.png" />
+    <Resource Include="Icons\b-stop-96.png" />
+    <Resource Include="Icons\refresh-192.png" />
+    <Resource Include="Icons\refresh-24.png" />
+    <Resource Include="Icons\refresh-96.png" />
+    <Resource Include="Icons\start-24.png" />
+    <Resource Include="Icons\start-48.png" />
+    <Resource Include="Icons\start-96.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

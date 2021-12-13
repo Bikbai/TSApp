@@ -13,16 +13,17 @@ using TSApp.Behaviors;
 using TSApp.ProjectConstans;
 using TSApp.ViewModel;
 using Newtonsoft.Json;
+using Syncfusion.Windows.Shared;
 
 namespace TSApp
 {
     /// <summary>
     /// Interaction logic for MainWindow.xaml
     /// </summary>
-    public partial class MainWindow : Window
+    public partial class MainWindow : ChromelessWindow
     {
         private MainFormModel mdl = new MainFormModel();
-
+        const int weekColumnId = 7;
         public MainWindow()
         {
             InitSettings();
@@ -34,9 +35,9 @@ namespace TSApp
             mainGrid.DataContext = mdl.gridModel.GridEntries;
             mainGrid.ItemsSource = mdl.gridModel.GridEntries;
             mdl.gridModel.PropertyChanged += GridModel_PropertyChanged;
-            mainGrid.CurrentCellRequestNavigate += MainGrid_CurrentCellRequestNavigate;
-            btnTimer.DataContext = mdl.workTimer;
-            lblTimer.DataContext = mdl.workTimer;
+            mainGrid.CurrentCellRequestNavigate += MainGrid_CurrentCellRequestNavigate;            
+//            btnTimer.DataContext = mdl.workTimer;
+//            lblTimer.DataContext = mdl.workTimer;
         }
 
         private void Timer_Tick(object sender, EventArgs e)
@@ -65,7 +66,7 @@ namespace TSApp
         // рисуем первую и последнюю строку
         private void MainGrid_QueryUnBoundRow(object sender, Syncfusion.UI.Xaml.Grid.GridUnBoundRowEventsArgs e)
         {
-            const int weekColumnId = 7;
+            
             int index = e.RowColumnIndex.ColumnIndex;
             int rowindex = e.RowColumnIndex.RowIndex;
             if (e.UnBoundAction == UnBoundActions.QueryData)
@@ -136,50 +137,10 @@ namespace TSApp
             mdl.Reload();
         }
 
-
         private void button1_Click(object sender, RoutedEventArgs e)
         {
-            if (mdl != null && mdl.gridModel != null & mdl.gridModel.GetChangedCount() != 0)
-            {
-                this.mdl.gridModel.ItemPublished += GridModel_ItemPublished;
-                this.longTaskProgress.Visibility = Visibility.Visible;
-                this.longTaskProgress.Maximum = mdl.gridModel.GetChangedCount()*10;
-                longTaskProgress.Value = 0;
-                mdl.Publish();
-            }
+            mdl.gridModel.Publish();
         }
-        private void GridModel_ItemPublished(bool finished, int workItemId)
-        {
-            if (finished)
-            {
-                Application.Current.Dispatcher.BeginInvoke(DispatcherPriority.Background,
-                            new Action(() =>
-                            {
-                            this.longTaskProgress.Visibility = Visibility.Hidden;
-                                if ((string)tmpLabel.Content == "/")
-                                    tmpLabel.Content = ".";
-                                else
-                                    tmpLabel.Content = "/";
-                            }
-                            ));
-                
-                this.mdl.gridModel.ItemPublished -= GridModel_ItemPublished;
-            }
-            else
-            {
-                Application.Current.Dispatcher.BeginInvoke(
-                            DispatcherPriority.Background,
-                            new Action(() => { 
-                                this.longTaskProgress.Value += 10;
-                                if ((string)tmpLabel.Content == "/")
-                                    tmpLabel.Content = ".";
-                                else
-                                    tmpLabel.Content = "/";
-                            }
-                            ));
-            }
-        }
-
         private void mainGrid_CurrentCellBeginEdit(object sender, CurrentCellBeginEditEventArgs e)
         {
             var unboundRow = mainGrid.GetUnBoundRow(e.RowColumnIndex.RowIndex);
@@ -216,12 +177,56 @@ namespace TSApp
         private void btnTimer_Click(object sender, RoutedEventArgs e)
         {
             var row = mainGrid.CurrentItem as GridEntry;
-            mdl.workTimer.StartStop(row);
+            mdl.WorkTimer.StartStop(row);
         }
 
         private void mainGrid_SelectionChanged(object sender, GridSelectionChangedEventArgs e)
         {
-            mdl.workTimer.GridEntry = (GridEntry)mainGrid.CurrentItem;
+            mdl.WorkTimer.GridEntry = (GridEntry)mainGrid.CurrentItem;
+        }
+
+        private void TimeEntryGrid_GroupExpanded(object sender, GroupChangedEventArgs e)
+        {
+
+        }
+
+        private void mainGrid_CurrentCellActivated(object sender, CurrentCellActivatedEventArgs e)
+        {
+            var dayColumn = e.CurrentRowColumnIndex.ColumnIndex;
+            DateTime chosenDay = Helpers.WeekBoundaries(mdl.WeekNumber, true).AddDays(dayColumn - 7).Date;
+
+            if (mdl.TimeEntriesModel.Calday == chosenDay)
+                return;
+
+            if (dayColumn >= weekColumnId && dayColumn < weekColumnId + 7)
+            {
+                mdl.TimeEntriesModel.Calday = chosenDay;
+                TimeEntryGrid.View.Filter = this.FilterRecords;
+                TimeEntryGrid.View.RefreshFilter();                
+            }
+            else
+            {
+                mdl.TimeEntriesModel.Calday = DateTime.MinValue;
+                TimeEntryGrid.View.Filter = null;
+                TimeEntryGrid.View.RefreshFilter();
+            }
+
+        }
+
+        /// <summary>
+        /// Фильтр данных клокифая
+        /// </summary>
+        /// <param name="args"></param>
+        public bool FilterRecords(object o)
+        {
+            var item = o as TimeEntry;
+
+            if (item != null)
+            {
+                if (item.Calday.Equals(mdl.TimeEntriesModel.Calday))
+                    return true;
+            }
+            return false;
         }
     }
 }
