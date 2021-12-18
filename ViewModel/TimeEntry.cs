@@ -4,6 +4,7 @@ using Microsoft.VisualStudio.Services.WebApi.Patch.Json;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Globalization;
 using TSApp.Model;
 
@@ -16,29 +17,29 @@ namespace TSApp.ViewModel
     {
         #region private fields
         private enum FT { StartTime, EndTime , Work }
-        private string _comment;
-        private ClokifyEntry _entry;
+        private string _comment;        
         private ClokifyEntry _clone;
         #endregion
+        public readonly ClokifyEntry innerCE;
         #region properties
-        public string Id { get => _entry.Id; }
+        public string Id { get => innerCE.Id; }
         public bool IsChanged
         {
             get { return _clone != null; }
             set 
             { 
                 if (_clone == null)
-                    _clone = (ClokifyEntry)_entry.Clone();
+                    _clone = (ClokifyEntry)innerCE.Clone();
                 OnPropertyChanged("IsChanged");
             }
         }
         public string CaldayString { 
-            get => _entry.Calday.ToShortDateString();
+            get => innerCE.Calday.ToShortDateString();
         }
-        public DateTime Calday { get => _entry.Calday; }
+        public DateTime Calday { get => innerCE.Calday; }
         public string Title {
-            get => _entry.Description;
-            set => _entry.Description = value;
+            get => innerCE.Description;
+            set => innerCE.Description = value;
         }
         public string Comment {
             get => _comment;
@@ -49,35 +50,35 @@ namespace TSApp.ViewModel
             }
         }
         public string StartTime { 
-            get => _entry.Start.TimeOfDay.ToString(@"h\:mm");
+            get => innerCE.Start.TimeOfDay.ToString(@"h\:mm");
             set
             {
                 if (!ParseTimeEntry(value, out TimeSpan newvalue))
                     return;
                 IsChanged = true;
-                if (newvalue > _entry.End.TimeOfDay)
-                    newvalue = _entry.End.TimeOfDay;
-                _entry.Start = _entry.Calday + newvalue;
+                if (newvalue > innerCE.End.TimeOfDay)
+                    newvalue = innerCE.End.TimeOfDay;
+                innerCE.Start = innerCE.Calday + newvalue;
                 OnPropertyChanged("StartTime");
                 RecalcFields(FT.StartTime);
             }
         }
         public string EndTime { 
-            get => _entry.End.TimeOfDay.ToString(@"h\:mm"); 
+            get => innerCE.End.TimeOfDay.ToString(@"h\:mm"); 
             set 
             {
                 if (!ParseTimeEntry(value, out TimeSpan newvalue))
                     return;
                 IsChanged = true;
-                if (newvalue < _entry.Start.TimeOfDay)
-                    newvalue = _entry.Start.TimeOfDay;
-                _entry.End = _entry.Calday + newvalue;
+                if (newvalue < innerCE.Start.TimeOfDay)
+                    newvalue = innerCE.Start.TimeOfDay;
+                innerCE.End = innerCE.Calday + newvalue;
                 OnPropertyChanged("EndTime");
                 RecalcFields(FT.EndTime); 
             }
     }
         public string Work { 
-            get => _entry.WorkTime.ToString(@"h\:mm");
+            get => innerCE.WorkTime.ToString(@"h\:mm");
             set
             {
                 if (!ParseTimeEntry(value, out TimeSpan newvalue))
@@ -85,13 +86,15 @@ namespace TSApp.ViewModel
                 IsChanged = true;
                 if (newvalue > TimeSpan.FromHours(12) )
                     newvalue = TimeSpan.FromHours(12);
-                _entry.WorkTime = newvalue;
+                innerCE.WorkTime = newvalue;
                 OnPropertyChanged("Work");
                 RecalcFields(FT.Work);
             }
         }        
-        public double WorkDbl { get => _entry.WorkTime.TotalHours; }
-        
+        public double GetWorkDouble() { return innerCE.WorkTime.TotalHours; }
+        public TimeSpan GetWorkTimeSpan() { return innerCE.WorkTime; }
+
+        public ClokifyEntry Entry { get => innerCE; }
         #endregion
         /// <summary>
         /// Разбираемые форматы ввода: 
@@ -131,15 +134,15 @@ namespace TSApp.ViewModel
             switch (type)
             {
                 case FT.StartTime:
-                    _entry.End = _entry.Start + _entry.WorkTime;
+                    innerCE.End = innerCE.Start + innerCE.WorkTime;
                     OnPropertyChanged("EndTime");
                     break;
                 case FT.EndTime:
-                    _entry.WorkTime = _entry.End - _entry.Start;
+                    innerCE.WorkTime = innerCE.End - innerCE.Start;
                     OnPropertyChanged("Work");
                     break;
                 case FT.Work:
-                    _entry.End = _entry.Start + _entry.WorkTime;
+                    innerCE.End = innerCE.Start + innerCE.WorkTime;
                     OnPropertyChanged("EndTime");
                     break;
             }            
@@ -151,19 +154,15 @@ namespace TSApp.ViewModel
         public TimeEntry(ClokifyEntry ce)
         {
             _comment = ce.Comment;
-            _entry = ce;
+            innerCE = ce;
         }
-        /// <summary>
-        /// Создание новой пустой записи для Wi
-        /// </summary>
-        public TimeEntry(GridEntry ge)
+        public TimeEntry(DateTime calday, DateTime start, TimeSpan work, int workItemId, string title)
         {
-            _entry = new ClokifyEntry();
-            _entry.WorkItemId  = ge.WorkItemId;
-            _entry.Start = DateTime.Now;
-            _entry.End = DateTime.Now;
-            _entry.Description = ge.WorkItemId + '.' + ge.Title;
+            innerCE = new ClokifyEntry();
+            innerCE.Start = start;
+            this.Title = workItemId + "." + title;
+            this.Work = work.ToString(@"h\:mm");
+            innerCE.WorkItemId = workItemId;
         }
-
     }
 }

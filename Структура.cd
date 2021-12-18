@@ -1,42 +1,7 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <ClassDiagram MajorVersion="1" MinorVersion="1">
-  <Class Name="TSApp.Model.TimeData">
-    <Position X="14" Y="3" Width="1.75" />
-    <Compartments>
-      <Compartment Name="Methods" Collapsed="true" />
-    </Compartments>
-    <TypeIdentifier>
-      <HashCode>AAwAAAAEAAAAAAAoAAAAAAAAAAAAAAAABAAEAAAAAAA=</HashCode>
-      <FileName>Model\TimeData.cs</FileName>
-    </TypeIdentifier>
-  </Class>
-  <Class Name="TSApp.Model.TimeEntry">
-    <Position X="14" Y="6.75" Width="1.75" />
-    <Compartments>
-      <Compartment Name="Fields" Collapsed="true" />
-      <Compartment Name="Methods" Collapsed="true" />
-      <Compartment Name="Properties" Collapsed="true" />
-    </Compartments>
-    <TypeIdentifier>
-      <HashCode>AAYCAAAGACAAAAAoIAAACAAAAAgEAAAABAAEAAAAAgA=</HashCode>
-      <FileName>Model\TimeEntry.cs</FileName>
-    </TypeIdentifier>
-  </Class>
-  <Class Name="TSApp.Model.WeekData">
-    <Position X="14" Y="0.5" Width="1.75" />
-    <Compartments>
-      <Compartment Name="Methods" Collapsed="true" />
-    </Compartments>
-    <TypeIdentifier>
-      <HashCode>AAAAIAAAAAAEAAgAAAAAIAAAAAAAAAAAAAAgAQAAAAA=</HashCode>
-      <FileName>Model\WeekData.cs</FileName>
-    </TypeIdentifier>
-    <ShowAsCollectionAssociation>
-      <Property Name="TimeDataDaily" />
-    </ShowAsCollectionAssociation>
-  </Class>
-  <Class Name="TSApp.Model.DAL">
-    <Position X="3.5" Y="0.5" Width="1.75" />
+  <Class Name="TSApp.Model.DAL" Collapsed="true">
+    <Position X="4.75" Y="8.75" Width="1.75" />
     <NestedTypes>
       <Delegate Name="TSApp.Model.DAL.TimeEntryDeleteDelegate" Collapsed="true">
         <TypeIdentifier>
@@ -71,8 +36,16 @@
   </Class>
   <Class Name="TSApp.ViewModel.GridEntry">
     <Position X="11" Y="0.5" Width="2" />
+    <Members>
+      <Field Name="_remainingWork" Hidden="true" />
+      <Field Name="_state" Hidden="true" />
+      <Field Name="_workItem" Hidden="true" />
+      <Field Name="restTotalWork" Hidden="true" />
+    </Members>
     <Compartments>
       <Compartment Name="Properties" Collapsed="true" />
+      <Compartment Name="Fields" Collapsed="true" />
+      <Compartment Name="Methods" Collapsed="true" />
     </Compartments>
     <NestedTypes>
       <Enum Name="TSApp.ViewModel.GridEntry.CMD" Collapsed="true">
@@ -82,15 +55,12 @@
       </Enum>
     </NestedTypes>
     <TypeIdentifier>
-      <HashCode>ABAAMAAgAKDeBcQBRgQIKCCIAAwAAKAADSAIBAAAAMQ=</HashCode>
+      <HashCode>ABACIAAgAKBMFEQBBgQIKCAIAAQAAKAALQAIBAAAAIQ=</HashCode>
       <FileName>ViewModel\GridEntry.cs</FileName>
     </TypeIdentifier>
-    <ShowAsAssociation>
-      <Field Name="workDaily" />
-    </ShowAsAssociation>
     <Lollipop Position="0.2" />
   </Class>
-  <Class Name="TSApp.ViewModel.WorkItemViewModel">
+  <Class Name="TSApp.ViewModel.WorkItemViewModel" Collapsed="true">
     <Position X="7" Y="0.5" Width="2.75" />
     <NestedTypes>
       <Delegate Name="TSApp.ViewModel.WorkItemViewModel.ItemPublishedDelegate" Collapsed="true">
@@ -100,13 +70,55 @@
       </Delegate>
     </NestedTypes>
     <TypeIdentifier>
-      <HashCode>AAIAAAAAAAAAIAkACEAAIIAABCgoEAARACECgAAASAA=</HashCode>
+      <HashCode>ACAAAAAAAAAAIAEACEAAIIAABCAoEAARAAECgAAASAA=</HashCode>
       <FileName>ViewModel\WorkItemViewModel.cs</FileName>
     </TypeIdentifier>
     <ShowAsCollectionAssociation>
       <Field Name="_gridEntries" />
-      <Field Name="_timeEntries" />
     </ShowAsCollectionAssociation>
+  </Class>
+  <Class Name="TSApp.ViewModel.TimeEntryViewModel">
+    <Position X="7" Y="2.5" Width="2.5" />
+    <TypeIdentifier>
+      <HashCode>IAAAAQAAAAAAACkIBAAAAAAAACAACAAAAAAAgAAAAAA=</HashCode>
+      <FileName>ViewModel\TimeEntryViewModel.cs</FileName>
+    </TypeIdentifier>
+    <ShowAsCollectionAssociation>
+      <Property Name="Entries" />
+    </ShowAsCollectionAssociation>
+  </Class>
+  <Class Name="TSApp.ViewModel.MainFormModel">
+    <Position X="2.5" Y="0.5" Width="2.75" />
+    <TypeIdentifier>
+      <HashCode>QAAAAAAAAAAEBEEAAUAAAQAAAAgAIAAACAAAYwAAAAA=</HashCode>
+      <FileName>ViewModel\MainFormModel.cs</FileName>
+    </TypeIdentifier>
+    <ShowAsAssociation>
+      <Property Name="TimeEntriesModel" />
+      <Property Name="GridModel" />
+    </ShowAsAssociation>
+  </Class>
+  <Class Name="TSApp.ViewModel.TimeEntry">
+    <Position X="13.5" Y="4" Width="2" />
+    <NestedTypes>
+      <Enum Name="TSApp.ViewModel.TimeEntry.FT" Collapsed="true">
+        <TypeIdentifier>
+          <NewMemberFileName>ViewModel\TimeEntry.cs</NewMemberFileName>
+        </TypeIdentifier>
+      </Enum>
+    </NestedTypes>
+    <TypeIdentifier>
+      <HashCode>AAgCIAIEEAACAEAIAAAIAAABIAggAACAAAAAYAAAAAA=</HashCode>
+      <FileName>ViewModel\TimeEntry.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="TSApp.Model.ClokifyEntry">
+    <Position X="3" Y="5.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAYCAAAGACAgAAAoAAAACAAAAAgEAAAABAAEAAAAAhA=</HashCode>
+      <FileName>Model\ClokifyEntry.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" />
   </Class>
   <Font Name="Segoe UI" Size="9" />
 </ClassDiagram>

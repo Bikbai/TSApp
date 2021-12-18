@@ -5,25 +5,25 @@ namespace TSApp.Model
 {
     public class WeekData
     {
-        public Dictionary<DayOfWeek, TimeData> TimeDataDaily { get; set; }
+        public Dictionary<DayOfWeek, WorkItemTimeData> WorkDataDaily { get; set; }
         public int WeekNumber;
         public WeekData(int weekNumber, int workItemId)
         {
             WeekNumber = weekNumber == 0 ? 1 : weekNumber;
-            TimeDataDaily = new Dictionary<DayOfWeek, TimeData>();
+            WorkDataDaily = new Dictionary<DayOfWeek, WorkItemTimeData>();
             foreach(var d in Enum.GetValues(typeof(DayOfWeek)))
             {
                 // инициализируем коллекцию как массив, пустыми значениями
-                TimeDataDaily.Add((DayOfWeek)d, null);
+                WorkDataDaily.Add((DayOfWeek)d, null);
             }
         }
         public bool IsChanged
         {
             get
             {
-                if (TimeDataDaily.Count == 0)
+                if (WorkDataDaily.Count == 0)
                     return false;
-                foreach (var data in TimeDataDaily)
+                foreach (var data in WorkDataDaily)
                 {
                     if (data.Value == null)
                         continue;
@@ -34,13 +34,11 @@ namespace TSApp.Model
             }
         }
         /// <summary>
-        /// Добавление сведений из TimeEntry к учтённому времени
+        /// Добавление сведений из ClokifyEntry к учтённому времени
         /// </summary>
-        /// <param name="workItemId">TFS WorkItem ID</param>
-        /// <param name="work">Учтённые часы</param>
-        /// <param name="te">Учитываемый Clokify TimeEntry</param>
-        /// <param name="applyChanges"></param>
-        public void AppendTimeEntry(ClokifyEntry te)
+        /// <param name="te"></param>
+        /// <exception cref="ArgumentException"></exception>
+        public void ApplyTimeData(ClokifyEntry te)
         {
             int workItemId = te.WorkItemId;
             if (workItemId == -1)
@@ -50,21 +48,15 @@ namespace TSApp.Model
             TimeSpan work = end.Subtract(start);
             var workDay = te.DayOfWeek;
 
-            if (TimeDataDaily[workDay] == null)
+            if (WorkDataDaily[workDay] == null)
             { 
-                TimeDataDaily[workDay] = new TimeData(start.Date, work, workItemId);
+                WorkDataDaily[workDay] = new WorkItemTimeData(start.Date, work, workItemId);
             } 
             else
             {
-                TimeDataDaily[workDay].Work += work;
-                TimeDataDaily[workDay].OriginalWork += work;
+                WorkDataDaily[workDay].Work += work;
+                WorkDataDaily[workDay].OriginalWork += work;
             }
-
-            if (TimeDataDaily[workDay].TimeEntries == null)
-            {
-                TimeDataDaily[workDay].TimeEntries = new List<ClokifyEntry>();                
-            }
-            TimeDataDaily[workDay].TimeEntries.Add(te);
         }
         /// <summary>
         /// Получить текущие трудозатраты за неделю
@@ -73,7 +65,7 @@ namespace TSApp.Model
         public TimeSpan GetTotalWork()
         {
             TimeSpan retval = TimeSpan.Zero;
-            foreach (var time in TimeDataDaily)
+            foreach (var time in WorkDataDaily)
             {
                 if (time.Value == null) continue;
                 retval += time.Value.Work;
@@ -87,7 +79,7 @@ namespace TSApp.Model
         public TimeSpan GetOriginalTotalWork()
         {
             TimeSpan retval = TimeSpan.Zero;
-            foreach (var time in TimeDataDaily)
+            foreach (var time in WorkDataDaily)
             {
                 if (time.Value == null) continue ;
                 retval += time.Value.OriginalWork;

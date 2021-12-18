@@ -13,6 +13,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using TSApp.Model;
 using TSApp.ProjectConstans;
+using TSApp.ViewModel;
 
 namespace TSApp.Model
 {
@@ -146,46 +147,41 @@ namespace TSApp.Model
                 throw new Exception("Нет данных");
             return result;
         }
-        /// <summary>
-        /// Пересоздание TimeEntry по одному GridEntry, т.е. за все дни чохом.
-        /// </summary>
-        /// <param name="entries">Пересоздаваемые TE</param>
-        /// <param name="wiTitle">Текст, который будет записан в Клоки</param>
-        /// <returns></returns>
-        /// <exception cref="Exception"></exception>
-        public bool UpdateClokiEntries(List<TimeData> entries, string wiTitle)
-        {
+
+        public async Task<UpdatedTimeEntry> UpdateClokiEntry(ClokifyEntry entry)
+        {            
+            if (entry == null)
+                return null;
+            UpdatedTimeEntry retval = new UpdatedTimeEntry(entry);
             IRestResponse r;
-            TimeEntryDtoImpl x;
-            if (entries == null || entries.Count == 0)
-                return false;
-            foreach (var e in entries)
-            {                
-                // удаляем старые записи, как ненужные - пересоздадим
-                if (e.TimeEntries != null && e.TimeEntries.Count != 0)
-                {
-                    bool teDeleted = false;
-                    foreach (var t in e.TimeEntries)
-                    {
-                        r = clockify.DeleteTimeEntryAsync(StaticData.WorkspaceId, t.Id).Result;
-                        if (!r.IsSuccessful)
-                            throw new Exception("Ошибка при удалении Clokify TimeEntry");
-                        teDeleted = true;
-                    }
-                    if (teDeleted)
-                        OnTimeEntryDeleted(e.Calday, e.WorkItemId);
-                }
-                // Обнуление = удаление, нулевой Item не создаём
-                if (e.Work == TimeSpan.Zero)
-                    continue;
-                var rq = TimeEntryRequestFabric.GetRequest(e);
-                rq.Description = wiTitle + '.' + e.Comment;
-                x = clockify.CreateTimeEntryAsync(StaticData.WorkspaceId, rq).Result.Data;
-                if (x == null)
-                    throw new Exception("Ошибка при создании Clokify TimeEntry");
-                OnTimeEntryCreated(new ClokifyEntry(x));
+
+            if (entry.WorkTime == TimeSpan.Zero && entry.Id == "")
+            {
+                retval.Faulted = true;
+                retval.Description = "Нулевой WorkTime у создаваемого TE";
+                return retval;
             }
-            return true;
+
+            if (entry.WorkTime == TimeSpan.Zero )
+            {
+                r = await clockify.DeleteTimeEntryAsync(StaticData.WorkspaceId, entry.Id);                
+                if (!r.IsSuccessful)
+                {
+                    retval.Faulted = true;
+                    retval.Description = r.ErrorMessage;
+                }
+                return retval;
+            }
+            var rq = TimeEntryRequestFabric.GetRequest(entry);
+            var x = await clockify.CreateTimeEntryAsync(StaticData.WorkspaceId, rq);
+            if (!x.IsSuccessful)
+            {
+                retval.Faulted = true;
+                retval.Description = x.ErrorMessage;
+                return retval;
+            }
+            retval.updated = new ClokifyEntry(x.Data);
+            return retval;
         }
 
         public async Task<int> UpdateTFSEntry(int id, JsonPatchDocument patch) {
@@ -215,7 +211,7 @@ namespace TSApp.Model
             WorkItemTrackingHttpClient witClient = tfsConnection.GetClient<WorkItemTrackingHttpClient>();
 
             // Get 2 levels of query hierarchy items
-            List<QueryHierarchyItem> queryHierarchyItems = witClient.GetQueriesAsync(teamProjectName, depth: 2).Result;
+            List<QueryHierarchyItem> queryHierarchyItems = await witClient.GetQueriesAsync(teamProjectName, depth: 2);
 
             List<WorkItem> workItems = new List<WorkItem>();
 
@@ -281,5 +277,14 @@ namespace TSApp.Model
             var rm = clockify.DeleteTimeEntryAsync(StaticData.WorkspaceId, Id).Result;
         }
 
+    }
+
+    public class UpdatedTimeEntry
+    {
+        public ClokifyEntry timeEntry { get;}
+        public ClokifyEntry updated { get; set; }
+        public bool Faulted { get; set; }
+        public string Description { get; set; }
+        public UpdatedTimeEntry(ClokifyEntry te) { timeEntry = te; Faulted = false; }
     }
 }

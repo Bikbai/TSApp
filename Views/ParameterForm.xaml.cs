@@ -26,6 +26,7 @@ namespace TSApp
             InitializeComponent();
             model = new ParameterModel();
             this.DataContext = model;
+            this.ShowDialog();
         }
 
         private void button_PreviewKeyUp(object sender, KeyEventArgs e)

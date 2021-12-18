@@ -1,4 +1,5 @@
-﻿using Microsoft.Toolkit.Mvvm.ComponentModel;
+﻿using Microsoft.TeamFoundation.WorkItemTracking.WebApi.Models;
+using Microsoft.Toolkit.Mvvm.ComponentModel;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -10,34 +11,32 @@ namespace TSApp.ViewModel
 {
     public class WorkItemViewModel : ObservableObject
     {
-        private int currentWeekNumber = 0;
+        #region private fields
         /// <summary>
         /// хранилище задач с привязанными к ним TimeEntry
         /// </summary>
         private BindingList<GridEntry> _gridEntries = new BindingList<GridEntry>();
-
+        private int currentWeekNumber = 0;
         private Dictionary<DayOfWeek, TimeSpan> _defaultWorkdayStart = new Dictionary<DayOfWeek, TimeSpan>();
+        #endregion
 
-        private DAL Connection;
-
-        public BindingList<GridEntry> GridEntries { get => _gridEntries; } //  set => SetProperty(ref _gridEntries, value);
-        //        public List<TimeEntry> TimeEntries { get => _timeEntries; set => SetProperty(ref _timeEntries, value); }
+        public BindingList<GridEntry> GridEntries { get => _gridEntries; } 
         public int CurrentWeekNumber { get => currentWeekNumber; set => currentWeekNumber = value; }
+        public DAL Connection { get; set; }
 
+        #region инициализация
         public WorkItemViewModel()
         {
             Init();
             currentWeekNumber = Helpers.CurrentWeekNumber();
         }
-
-        public WorkItemViewModel(int? WeekNumber, DAL connection)
-        {
-            Connection = connection;
+        public WorkItemViewModel(int? WeekNumber, DAL conn)
+        {            
             Init();
+            Connection = conn;
             if (WeekNumber == null)
                 currentWeekNumber = Helpers.CurrentWeekNumber();
         }
-
         private void Init()
         {
             foreach (DayOfWeek i in Enum.GetValues(typeof(DayOfWeek)))
@@ -46,11 +45,6 @@ namespace TSApp.ViewModel
                     throw new NotSupportedException("Settings.Default.defaultWorkDayStart is null");
                 _defaultWorkdayStart[i] = Settings.Default.defaultWorkDayStart;
             }
-            this.ItemPublished += WorkItemViewModel_ItemPublished;
-        }
-
-        private void WorkItemViewModel_ItemPublished(bool finished, int workItemId)
-        {
         }
 
         public int GetChangedCount() 
@@ -65,100 +59,47 @@ namespace TSApp.ViewModel
         {
             _defaultWorkdayStart[i] = value;
         }
+        #endregion
 
         /// <summary>
         /// Полная очистка и загрузка задач из TFS
         /// </summary>
         /// <returns></returns>
-        public async Task<bool> FetchTfsData()
+        public async Task<bool> Fill()
         {
+            List<WorkItem> queryResult;
             GridEntries.Clear();
-            var x = await Connection.QueryTfsTasks();
+            try
+            {
+                queryResult = await Connection.QueryTfsTasks();
+            }
+            catch (Exception ex)
+            {
+                throw new InvalidOperationException(ex.Message);
+            }
+            
             Dictionary<object, TimeSpan> workDaily = new Dictionary<object, TimeSpan>();
-            foreach (var item in x)
+            foreach (var item in queryResult)
             {
                 var tItem = new TFSWorkItem(item);
                 var ge = new GridEntry(tItem, currentWeekNumber);
-                ge.ManualEntryChanged += ManualEntryChanged;
+                ge.TimeChanged += Ge_TimeChanged;
                 GridEntries.Add(ge);
             }
             return true;
         }
 
-        private void ManualEntryChanged()
+        private void Ge_TimeChanged(WITimeChangedEventData td)
         {
-            OnPropertyChanged("ManualEntry");
+            td.caldayStartTime = _defaultWorkdayStart[td.Calday.DayOfWeek];
+            OnTimeChanged(td);
         }
+
 
         /// <summary>
-        /// Полная загрузка последних 7 дней Time Entry из Клокифая
+        /// Публикация изменений в TFS
         /// </summary>
         /// <returns></returns>
-        public async Task<bool> FetchClokiData()
-        {
-            Storage.TimeEntries.Clear();
-            var x = await Connection.FindAllTimeEntriesForUser(null, DateTime.Now.AddDays(-90));
-            foreach (var item in x)
-                Storage.TimeEntries.Add(item);
-            return true;
-        }
-
-        /// <summary>
-        /// Служебный метод - получение трудозатрат за день
-        /// </summary>
-        /// <param name="workDay"></param>
-        /// <returns></returns>
-        /// 
-        public double GetTotalWork(DayOfWeek workDay)
-        {
-            TimeSpan retval = TimeSpan.Zero;
-            var calday = Helpers.WeekBoundaries(CurrentWeekNumber, true).AddDays(Helpers.RusDayNumberFromDayOfWeek(workDay));
-            var te = Storage.TimeEntries.FindAll(p => p.Calday == calday);
-            foreach (var w in te)
-            {
-                retval += w.WorkTime;
-            }
-            return Math.Round(retval.TotalHours, 2);
-        }
-
-        private void FillItemCurrentWork(GridEntry gridEntry)
-        {
-            //и собираем затраченное время по дням недели
-            var workItemTimeEntries = Storage.TimeEntries.Where(p => p.WorkItemId == gridEntry.WorkItemId).ToList();
-            TimeSpan restWork = TimeSpan.Zero;
-            foreach (var te in workItemTimeEntries)
-            {
-                // учитываем задачи, которые попали в текущую неделю
-                DateTime start = ((DateTimeOffset)te.Start).DateTime;
-                DateTime end = ((DateTimeOffset)te.End).DateTime;
-                if (start >= Helpers.WeekBoundaries(CurrentWeekNumber, true) &&
-                    start <= Helpers.WeekBoundaries(CurrentWeekNumber, false))
-                {
-                    gridEntry.AppendTimeEntry(te);
-                }
-                else
-                {
-                    // не в текущем периоде - в сумму чохом
-                    restWork += end.Subtract(start);
-                }
-            }
-            gridEntry.RestTotalWork = restWork;
-            return;
-        }
-
-        public bool FillCurrentWork ()
-        {
-            if (GridEntries == null)
-                return false;
-            // шуршим по всем timeEntry для каждой задачи  
-            foreach (var t in GridEntries)
-            {
-                FillItemCurrentWork(t);
-            }
-            // апдейт грида
-            this.GridEntries.ResetBindings();
-            return true;
-        }
         public async Task<bool> Publish()
         {
             List<Task> Workers = new List<Task>();
@@ -171,8 +112,6 @@ namespace TSApp.ViewModel
                 {
                     try 
                     {
-                        // сначала ждём апдейта клоки
-                        var cl =  Connection.UpdateClokiEntries(w.GetClokiUpdateData(), w.Title);
                         // асинхронно передаём в TFS
                         Workers.Add(Connection.UpdateTFSEntry(w.WorkItemId, w.GetTfsUpdateData()));
                     }
@@ -188,7 +127,9 @@ namespace TSApp.ViewModel
             OnItemPublished(true, 0);
             return x;
         }
-
+        
+        
+        #region events
         public delegate void ItemPublishedDelegate(bool finished, int workItemId);
         /// <summary>
         /// Событие публикации WI в недра TFS, возвращает ID после публикации (finished == false), 
@@ -205,6 +146,17 @@ namespace TSApp.ViewModel
             if (ItemPublished != null)
                 ItemPublished.Invoke(finished, workItemId);
         }
+
+        public delegate void TimeChangedDelegate(WITimeChangedEventData td);
+        public event TimeChangedDelegate TimeChanged;
+        private void OnTimeChanged(WITimeChangedEventData td)
+        {
+            if (TimeChanged != null)
+                TimeChanged.Invoke(td);
+        }
+
+        #endregion
+
         /// <summary>
         /// Обновляем сведения о TFS WI и пересчитываем учтённое время.
         /// </summary>
@@ -218,12 +170,6 @@ namespace TSApp.ViewModel
 
         public void OnTimeEntryDeleteHandler(DateTime CalDay, int workItemId)
         {
-            // чистим локальное хранилище
-            var cnt = Storage.TimeEntries.Where(p => p.WorkItemId == workItemId && p.Calday == CalDay).ToList();
-            if (cnt.Count == 0)
-                throw new Exception("OnTimeEntryDeleteHandler: Ошибка при очистке хранилища TimeEntry - не найдено записей!");
-            foreach (var c in cnt)
-                Storage.TimeEntries.Remove(c);
             var ge = GridEntries.First(p => p.WorkItemId == workItemId);
             ge.RemoveTimeEntries(CalDay, workItemId);            
         }
@@ -233,19 +179,7 @@ namespace TSApp.ViewModel
         /// <param name="te"></param>
         public void OnTimeEntryCreateHandler(ClokifyEntry te)
         {
-            if (te.WorkTime == TimeSpan.Zero)
-                return;
-            Storage.TimeEntries.Add(te);
-            if (te.WorkItemId != -1) 
-            {
-                var ge = GridEntries.First(p => p.WorkItemId == te.WorkItemId);
-                if (ge != null)
-                {
-                    // сначала чистим данные за день - их надо перезаписать полученным единственным TE
-                    ge.RemoveTimeEntries(te.Calday, te.WorkItemId);
-                    ge.AppendTimeEntry(te);
-                }
-            }
         }
+        
     }
 }

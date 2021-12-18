@@ -14,16 +14,16 @@
         <utility:TimeSpanConverter x:Key="timeSpanConverter"/>
         <DataTemplate x:Key="TopCellTemplate">
                 <TextBlock 
-                    Width="690"
+                    Width="610"
                     Text="Начало рабочего дня:"
-                    TextAlignment="Right" IsEnabled="False" Margin="0,0,10,0"
+                    TextAlignment="Right" IsEnabled="False" FontWeight="Bold" Margin="0,0,10,0"
                    />
         </DataTemplate>
         <DataTemplate x:Key="BottomCellTemplate">
             <TextBlock
-                    Width="690"
-                    Text="Итого:"
-                    TextAlignment="Right" FontWeight="Bold"
+                    Width="620"
+                    Text="Итого рабочего времени, с учётом закрытых задач:"
+                    TextAlignment="Right" IsEnabled="False" FontWeight="Bold" 
                    />
         </DataTemplate>
         <DataTemplate x:Key="totalWork">

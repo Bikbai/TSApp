@@ -4,6 +4,7 @@ using Microsoft.VisualStudio.Services.WebApi.Patch.Json;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using TSApp.Model;
 
 namespace TSApp.ViewModel
@@ -22,42 +23,10 @@ namespace TSApp.ViewModel
         private double _remainingWork = 0;
 
         private string _state = "";
-
-        private List<TimeEntry> _wiTimeEntries = new List<TimeEntry>();
-
-        private bool _manualTimeSheeet = false;
         #endregion
 
         #region properties
         public EntryType Type { get; set; } // тип строки
-        /// <summary>
-        /// признак распределения времени вручную
-        /// </summary>
-        public bool ManualTimeSheet
-        {
-            get => _manualTimeSheeet;    
-            set
-            {
-                SetProperty(ref _manualTimeSheeet, value);
-                if (_manualTimeSheeet)
-                {
-                    var wiTe = Storage.TimeEntries.FindAll(p => p.WorkItemId == WorkItemId);
-                    foreach (var te in wiTe)
-                        _wiTimeEntries.Add(new TimeEntry(te));
-                }
-                else
-                    _wiTimeEntries.Clear();
-                OnPropertyChanged("WiTimeEntries");
-                OnManualEntryChanged();
-            } 
-        }
-        /// <summary>
-        /// поддержка мастер-деталь
-        /// </summary>
-        public List<TimeEntry> WiTimeEntries
-        {
-            get => _wiTimeEntries;
-        }
 
         /// <summary>
         /// Статус/тип. Т.к. в гриде будет микс из задач и просто времени из клоки - вот такая странность
@@ -91,11 +60,11 @@ namespace TSApp.ViewModel
             get => GetTimeData(DayOfWeek.Friday);
             set => ApplyValue(value, DayOfWeek.Friday); }
         public string CompletedWorkSun { 
-            get => GetTimeData(DayOfWeek.Sunday);
-            set => ApplyValue(value, DayOfWeek.Sunday); }
-        public string CompletedWorkSat { 
             get => GetTimeData(DayOfWeek.Saturday);
             set => ApplyValue(value, DayOfWeek.Saturday); }
+        public string CompletedWorkSat { 
+            get => GetTimeData(DayOfWeek.Sunday);
+            set => ApplyValue(value, DayOfWeek.Sunday); }
         #endregion
         public int WeekNumber { get => workDaily.WeekNumber; set => workDaily.WeekNumber = value; }
         public double OriginalEstimate { get => _workItem.OriginalEstimate;}
@@ -136,8 +105,6 @@ namespace TSApp.ViewModel
             _workItem = item;
             workDaily = new WeekData(week, item.Id);
             State = item.State;
-            if (item.ClokiData != null && item.ClokiData.ManualEntry)
-                ManualTimeSheet = true;
         }
         #endregion
 
@@ -149,16 +116,16 @@ namespace TSApp.ViewModel
         /// <param name="te"></param>
         public void AppendTimeEntry(ClokifyEntry te)
         {
-            workDaily.AppendTimeEntry(te);
+            workDaily.ApplyTimeData(te);
             OnPropertyChanged("IsChanged");
         }
         public TimeSpan WorkByDay(DayOfWeek workDay)
         {
-            TimeData td;
-            if (workDaily.TimeDataDaily == null || workDaily.TimeDataDaily.Count == 0)
+            WorkItemTimeData td;
+            if (workDaily.WorkDataDaily == null || workDaily.WorkDataDaily.Count == 0)
                 return TimeSpan.Zero;
 
-            if (workDaily.TimeDataDaily.TryGetValue(workDay, out td) && td != null)
+            if (workDaily.WorkDataDaily.TryGetValue(workDay, out td) && td != null)
                 return td.Work;
             else return TimeSpan.Zero; 
         }
@@ -212,20 +179,25 @@ namespace TSApp.ViewModel
         {
             // текущее значение
             double currentValue = 0;
-            if (workDaily.TimeDataDaily[dayOfWeek] != null)
-                currentValue = workDaily.TimeDataDaily[dayOfWeek].Work.TotalHours;
+            if (workDaily.WorkDataDaily[dayOfWeek] != null)
+                currentValue = workDaily.WorkDataDaily[dayOfWeek].Work.TotalHours;
             else
-                workDaily.TimeDataDaily[dayOfWeek] = new TimeData(Helpers.RusDayNumberFromDayOfWeek(dayOfWeek), TimeSpan.Zero, this._workItem.Id, WeekNumber);
+                workDaily.WorkDataDaily[dayOfWeek] = new WorkItemTimeData(Helpers.RusDayNumberFromDayOfWeek(dayOfWeek), TimeSpan.Zero, this._workItem.Id, WeekNumber);
 
             double val = ParseInput(inputValue, currentValue);
 
             if (val == currentValue)
                 return;
 
-            workDaily.TimeDataDaily[dayOfWeek].Work = TimeSpan.FromHours(val);
+            workDaily.WorkDataDaily[dayOfWeek].Work = TimeSpan.FromHours(val);
             // стреляем событием, чтобы грид пересчитал и тоталсы
             OnPropertyChanged("IsChanged");
             OnPropertyChanged("TotalWork");
+            OnTimeChanged(
+                new WITimeChangedEventData(TimeSpan.FromHours(val- currentValue), 
+                                           dayOfWeek, 
+                                           this.WorkItem,
+                                           workDaily.WorkDataDaily[dayOfWeek].Calday));
         }
         public int CompareTo(object obj)
         {
@@ -244,7 +216,7 @@ namespace TSApp.ViewModel
             TimeSpan totals = OriginalTotalWork;
             double remnWork = _workItem.RemainingWork;
             TimeSpan delta = TimeSpan.Zero;
-            foreach (var td in workDaily.TimeDataDaily)
+            foreach (var td in workDaily.WorkDataDaily)
             {
                 if (td.Value == null) continue;
                 // если модифицировано время в таймшите
@@ -270,10 +242,11 @@ namespace TSApp.ViewModel
                 Path = "/fields/" + WIFields.CompletedWork,
                 Value = Math.Round((totals + delta).TotalHours, 2).ToString("0.00", System.Globalization.CultureInfo.InvariantCulture)
             });
-
-            ClokiData cd = new ClokiData();
-            cd.ManualEntry = ManualTimeSheet;
-            cd.TimeEntryIds = new List<string>();
+                     
+            /// TODO: Сохранение ссылки на Cloki в workitem
+            /// Непонятно, правда, зачем
+            /// 
+            /*
             foreach (var te in WiTimeEntries)
                 cd.TimeEntryIds.Add(te.Id);
 
@@ -283,22 +256,7 @@ namespace TSApp.ViewModel
                 Path = "/fields/" + WIFields.ClokiData,
                 Value = JsonConvert.SerializeObject(cd)
             });
-            return result;
-        }
-        /// <summary>
-        /// Метод получения списка TE для перезаливки в Клоки
-        /// </summary>
-        /// <returns></returns>
-        public List<TimeData> GetClokiUpdateData()
-        {
-            List<TimeData> result = new List<TimeData>();
-
-            foreach (var w in workDaily.TimeDataDaily)
-            {
-                if (w.Value == null) continue;
-                if (w.Value.OriginalWork != w.Value.Work)
-                    result.Add(w.Value);
-            }
+            */
             return result;
         }
         /// <summary>
@@ -309,9 +267,9 @@ namespace TSApp.ViewModel
         /// <returns>false, если ничего не получилось</returns>
         public bool RemoveTimeEntries(DateTime calDay, int workItemId)
         {
-            if (!workDaily.TimeDataDaily.TryGetValue(calDay.DayOfWeek, out var result))
+            if (!workDaily.WorkDataDaily.TryGetValue(calDay.DayOfWeek, out var result))
                 return false;
-            workDaily.TimeDataDaily[calDay.DayOfWeek] = new TimeData(calDay, TimeSpan.Zero, workItemId);
+            workDaily.WorkDataDaily[calDay.DayOfWeek] = new WorkItemTimeData(calDay, TimeSpan.Zero, workItemId);
             OnPropertyChanged("IsChanged");
             return true;
         }
@@ -323,9 +281,9 @@ namespace TSApp.ViewModel
         /// <returns></returns>
         private string GetTimeData(DayOfWeek day)
         {
-            if (workDaily.TimeDataDaily == null)
+            if (workDaily.WorkDataDaily == null)
                 return "";
-            if (workDaily.TimeDataDaily.TryGetValue(day, out TimeData td) && td != null)
+            if (workDaily.WorkDataDaily.TryGetValue(day, out WorkItemTimeData td) && td != null)
                 return td.Work.TotalHours.ToString("0.00");
             else
                 return "";
@@ -333,14 +291,31 @@ namespace TSApp.ViewModel
         #endregion
 
         #region events
-        public delegate void OnManualEntryDelegate();
-        public event OnManualEntryDelegate ManualEntryChanged;
-        private void OnManualEntryChanged()
+        public delegate void TimeChangedDelegate(WITimeChangedEventData td);
+        public event TimeChangedDelegate TimeChanged;
+        public void OnTimeChanged(WITimeChangedEventData td)
         {
-            if (ManualEntryChanged != null)
-                ManualEntryChanged.Invoke();
+            if (TimeChanged != null)
+                TimeChanged.Invoke(td);
         }
         #endregion
 
+    }
+
+    public class WITimeChangedEventData : EventArgs
+    {
+        public DateTime Calday;
+        public TimeSpan Delta;
+        public DayOfWeek WeekNo;
+        public TFSWorkItem Wi;
+        public TimeSpan caldayStartTime;
+
+        public WITimeChangedEventData(TimeSpan delta, DayOfWeek weekNo, TFSWorkItem wi, DateTime calday)
+        {
+            Delta = delta;
+            WeekNo = weekNo;
+            Wi = wi;
+            Calday = calday;
+        }
     }
 }

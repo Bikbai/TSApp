@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using TSApp.ProjectConstans;
 
@@ -10,13 +11,13 @@ namespace TSApp.Model
 {
     internal static class TimeEntryRequestFabric
     {
-        public static TimeEntryRequest GetRequest(TimeData td)
+        public static TimeEntryRequest GetRequest(ClokifyEntry ce)
         {
             var rq = GetRequest();
-            DateTimeOffset dt = (td.Calday + StaticData.weekTimeTable[td.DayOfWeek]).ToUniversalTime();
-            rq.Start = dt;
-            rq.Description = td.WorkItemId.ToString();
-            rq.End = dt.AddHours(td.Work.TotalHours).ToUniversalTime();
+            rq.ID = ce.Id;
+            rq.Start = ce.Start;
+            rq.Description = ce.Description;
+            rq.End = ce.End;
             return rq;
         }
 

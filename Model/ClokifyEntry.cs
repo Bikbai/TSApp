@@ -96,4 +96,12 @@ namespace TSApp.Model
             return (ClokifyEntry)MemberwiseClone();
         }
     }
+
+    public static class ClokifyEntryFactory
+    {
+        public static ClokifyEntry BuildFromJson(string json)
+        {
+            return JsonConvert.DeserializeObject<ClokifyEntry>(json);
+        }
+    }
 }
