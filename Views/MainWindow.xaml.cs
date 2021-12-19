@@ -26,6 +26,7 @@ namespace TSApp
         private MainFormModel mdl;
         const int weekColumnId = 4;
         ParameterForm parameterForm;
+        TimeEntryFilter filter = new TimeEntryFilter();
         public MainWindow()
         {
             InitSettings();
@@ -46,8 +47,9 @@ namespace TSApp
             mainGrid.DataContext = mdl.WorkItemsModel.GridEntries;
             mainGrid.ItemsSource = mdl.WorkItemsModel.GridEntries;
 
-//            btnTimer.DataContext = mdl.workTimer;
-//            lblTimer.DataContext = mdl.workTimer;
+            
+            //            btnTimer.DataContext = mdl.workTimer;
+            //            lblTimer.DataContext = mdl.workTimer;
         }
 
         private void Connection_OnInitComplete(OnInitCompleteEventArgs args)
@@ -97,6 +99,11 @@ namespace TSApp
         private void btnPublish_Click(object sender, RoutedEventArgs e)
         {
             mdl.Publish();
+        }
+
+        private void TimeEntryGrid_Loaded(object sender, RoutedEventArgs e)
+        {
+            TimeEntryGrid.View.Filter = this.filter.FilterRecords;
         }
     }
 }

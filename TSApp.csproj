@@ -207,6 +207,7 @@
     <Compile Include="Behaviors\Comparers.cs" />
     <Compile Include="Behaviors\LabelSizeConverter.cs" />
     <Compile Include="Behaviors\RowColorConverter.cs" />
+    <Compile Include="Behaviors\TimeEntryFilter.cs" />
     <Compile Include="Model\DalEvents.cs" />
     <Compile Include="Model\Storage.cs" />
     <Compile Include="Model\TimeEntryRequestFabric.cs" />
@@ -215,6 +216,7 @@
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
       <DependentUpon>Settings.settings</DependentUpon>
     </Compile>
+    <Compile Include="Utility\SummaryConverter.cs" />
     <Compile Include="Utility\TimeSpanConverter.cs" />
     <Compile Include="ViewModel\EntryType.cs" />
     <Compile Include="ViewModel\GridEntry.cs" />
@@ -223,7 +225,7 @@
     <Compile Include="ViewModel\TimeEntry.cs" />
     <Compile Include="ViewModel\TimeEntryViewModel.cs" />
     <Compile Include="ViewModel\WorkTimer.cs" />
-    <Compile Include="Views\MainGridEvents.cs" />
+    <Compile Include="Views\MainGridEventHandlers.cs" />
     <Compile Include="Views\ParameterForm.xaml.cs">
       <DependentUpon>ParameterForm.xaml</DependentUpon>
     </Compile>

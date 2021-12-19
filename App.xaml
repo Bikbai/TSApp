@@ -12,6 +12,7 @@
     StartupUri="./Views/MainWindow.xaml">
     <Application.Resources>
         <utility:TimeSpanConverter x:Key="timeSpanConverter"/>
+        <utility:SummaryConverter x:Key="summaryConverter"/>
         <DataTemplate x:Key="TopCellTemplate">
                 <TextBlock 
                     Width="610"

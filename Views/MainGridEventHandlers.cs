@@ -71,44 +71,25 @@ namespace TSApp
         {
             var dayColumn = e.CurrentRowColumnIndex.ColumnIndex;
             var rowId = e.CurrentRowColumnIndex.RowIndex;
-            if (rowId > 1)
-                mdl.WorkTimer.GridEntry = (GridEntry)mainGrid.CurrentItem;
-
-            DateTime chosenDay = Helpers.WeekBoundaries(mdl.WeekNumber, true).AddDays(dayColumn - weekColumnId).Date;
-
-            if (mdl.TimeEntriesModel.Calday == chosenDay)
-                return;
+            var ge = (GridEntry)mainGrid.CurrentItem;
+            DateTime? chosenDay = null;
+            mdl.WorkTimer.GridEntry = ge;
 
             if (dayColumn >= weekColumnId && dayColumn < weekColumnId + 7)
-            {
-                mdl.TimeEntriesModel.Calday = chosenDay;
-                TimeEntryGrid.View.Filter = this.FilterRecords;
-                TimeEntryGrid.View.RefreshFilter();
-            }
+                chosenDay = Helpers.WeekBoundaries(mdl.WeekNumber, true).AddDays(dayColumn - weekColumnId).Date;
             else
-            {
-                mdl.TimeEntriesModel.Calday = DateTime.MinValue;
-                TimeEntryGrid.View.Filter = null;
-                TimeEntryGrid.View.RefreshFilter();
-            }
+                chosenDay = null;
 
+            mdl.TimeEntriesModel.Calday = chosenDay;
+
+            if (ge == null)
+                filter.WorkItemId = null;
+            else
+                filter.WorkItemId = ge.WorkItemId;
+            filter.Calday = chosenDay;
+            TimeEntryGrid.View.RefreshFilter();
         }
 
-        /// <summary>
-        /// Фильтр данных клокифая
-        /// </summary>
-        /// <param name="args"></param>
-        public bool FilterRecords(object o)
-        {
-            var item = o as TimeEntry;
-
-            if (item != null)
-            {
-                if (item.Calday.Equals(mdl.TimeEntriesModel.Calday))
-                    return true;
-            }
-            return false;
-        }
         /// <summary>
         /// Подавление попытки редактировать строку итогов
         /// </summary>

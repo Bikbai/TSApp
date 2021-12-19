@@ -33,6 +33,8 @@ namespace TSApp.Model
 
         public DAL(Settings s)
         {
+            APIkey = Settings.Default.ApiKey;
+
             Settings.Default.SettingsLoaded += SettingsLoadedHandler;
             if (s == null)
                 OnInitCompleted(CONN_RESULT.ERROR, "Не настроены параметры подключения.");

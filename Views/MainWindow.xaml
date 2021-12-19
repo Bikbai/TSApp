@@ -155,29 +155,44 @@
                         NewItemPlaceholderPosition="AtBeginning"
                         AutoExpandGroups="True"
                         ShowColumnWhenGrouped="False"
-                        LiveDataUpdateMode ="AllowDataShaping"
+                        LiveDataUpdateMode ="AllowDataShaping" Loaded="TimeEntryGrid_Loaded"
                         >
-                <syncfusion:SfDataGrid.GroupSummaryRows>
-                    <syncfusion:GridSummaryRow ShowSummaryInRow="True">
+                <syncfusion:SfDataGrid.TableSummaryRows>
+                    <syncfusion:GridTableSummaryRow ShowSummaryInRow="True"
+                                                    Title=" Total work done: {TotalWork}"
+                                                    Position="Top" 
+                                                    CalculationUnit="AllRows"
+                                                    >
                         <syncfusion:GridSummaryRow.SummaryColumns>
                             <syncfusion:GridSummaryColumn Name="TotalWork"
-                                              Format="'Итого отработано - {Sum:c}'"
+                                              Format="'Total: {Sum:c}'"
                                               MappingName="WorkDbl"
                                               SummaryType="DoubleAggregate" />
                         </syncfusion:GridSummaryRow.SummaryColumns>
-                    </syncfusion:GridSummaryRow>
-                </syncfusion:SfDataGrid.GroupSummaryRows>
+                        <syncfusion:GridSummaryRow.TitleTemplate>
+                            <DataTemplate>
+                                <TextBlock HorizontalAlignment="Right"
+                                           Width="Auto"
+                                           Text="{Binding Converter={StaticResource summaryConverter}, ConverterParameter= {x:Reference Name= TimeEntryGrid}}" 
+                                           FontWeight="Bold"
+                                           FontSize="16"></TextBlock>
+                            </DataTemplate>
+                        </syncfusion:GridSummaryRow.TitleTemplate>
+                    </syncfusion:GridTableSummaryRow>
+                </syncfusion:SfDataGrid.TableSummaryRows>
                 <syncfusion:SfDataGrid.Columns>
                     <syncfusion:GridTextColumn MappingName="CaldayString" HeaderText="День"  Width="100" ColumnSizer="Star"/>
                     <syncfusion:GridTextColumn MappingName="Title" HeaderText="Название" ColumnSizer="Star"/>
-                    <syncfusion:GridTextColumn MappingName="Comment" HeaderText="Комментарий" ColumnSizer="Star"/>
-                    <syncfusion:GridTextColumn MappingName="StartTime" HeaderText="Начало" Width="100" TextAlignment="Center"/>
-                    <syncfusion:GridTextColumn MappingName="EndTime" HeaderText="Конец" Width="100" TextAlignment="Center"/>
-                    <syncfusion:GridTextColumn MappingName="Work" HeaderText="Работа" Width="100" TextAlignment="Center"/>
-                    <syncfusion:GridTextColumn MappingName="Calday" HeaderText="День"  IsHidden="True" Width="0" ColumnSizer="Star"/>
+                    <syncfusion:GridTextColumn MappingName="Comment" HeaderText="Комментарий" ColumnSizer="Star" AllowEditing="True"/>
+                    <syncfusion:GridTextColumn MappingName="StartTime" HeaderText="Начало" Width="100" TextAlignment="Center" AllowEditing="True"/>
+                    <syncfusion:GridTextColumn MappingName="EndTime" HeaderText="Конец" Width="100" TextAlignment="Center" AllowEditing="True"/>
+                    <syncfusion:GridTextColumn MappingName="Work" HeaderText="Работа" Width="100" TextAlignment="Center" AllowEditing="True"/>
+                    <syncfusion:GridTextColumn MappingName="Calday" HeaderText="День" IsHidden="True" Width="0" ColumnSizer="Star"/>
+                    <syncfusion:GridTextColumn MappingName="WorkDbl" HeaderText="День" IsHidden="True" Width="0" ColumnSizer="Star"/>
                 </syncfusion:SfDataGrid.Columns>
                 <syncfusion:SfDataGrid.SortColumnDescriptions>
                     <syncfusion:SortColumnDescription ColumnName="Calday" SortDirection="Descending" />
+                    <syncfusion:SortColumnDescription ColumnName="StartTime" SortDirection="Descending" />
                 </syncfusion:SfDataGrid.SortColumnDescriptions>
             </local:SfDataGridExt>
         </Grid>

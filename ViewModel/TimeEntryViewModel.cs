@@ -14,12 +14,12 @@ namespace TSApp.ViewModel
     public class TimeEntryViewModel : ObservableObject
     {
         private static string CTE = "{\r\n  \"id\": \"61afaee6be737841a55dc648\",\r\n  \"workItemId\": 11716,\r\n  \"workTime\": \"02:00:00\",\r\n  \"start\": \"2021-12-07T10:00:00\",\r\n  \"end\": \"2021-12-07T12:00:00\",\r\n  \"comment\": null\r\n}";
-        private DateTime _date = DateTime.Now.Date;
+        private DateTime? _date = DateTime.Now.Date;
 
         private List<TimeEntry> _entries;
         private BindingList<TimeEntry> _BLEntries;
 
-        public DateTime Calday
+        public DateTime? Calday
         {
             get => _date;
             set
@@ -36,8 +36,8 @@ namespace TSApp.ViewModel
         public string CurrentViewedDay { get
             {
                 string retval = "Учтённые данные рабочего времени за: ";
-                if (_date != DateTime.MinValue)
-                    return retval + _date.ToShortDateString();
+                if (_date != null)
+                    return retval + ((DateTime)_date).ToShortDateString();
                 else return retval + "весь период.";
             }
         }
@@ -93,12 +93,23 @@ namespace TSApp.ViewModel
                 {
                     lastTE.First().Work = (lastTE.First().Entry.WorkTime+td.Delta).ToString(@"h\:mm");
                 }
-            }
-            // если по текущей - уменьшаем до нуля все задачи, пока не кончатся
+            } else
+            // отрицательная дельта - уменьшаем задачи от последней до первой
             foreach (var lte in lastTE) 
-            { 
-
+            {
+                if (!lte.innerCE.WorkItemId.Equals(td.Wi.Id) || lte.innerCE.WorkTime == TimeSpan.Zero)
+                    continue;                
+                if (lte.innerCE.WorkTime + td.Delta <= TimeSpan.Zero)
+                {
+                    td.Delta = td.Delta + lte.innerCE.WorkTime;
+                    lte.Work = "0";
+                }
+                else
+                {
+                    lte.Work = (lte.innerCE.WorkTime + td.Delta).ToString(@"h\:mm");
+                }                
             }
+            _entries = _entries.OrderByDescending(p => p.Calday).ThenBy(p => p.StartTime).ToList();
             Entries.ResetBindings();
             return;
 

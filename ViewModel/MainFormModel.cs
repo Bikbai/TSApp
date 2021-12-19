@@ -53,16 +53,19 @@ namespace TSApp.ViewModel
             
         }
 
-        public void Publish()
+        public async void Publish()
         {
             /// TODO: прогресс-бар апдейта
             List<Task<UpdatedTimeEntry> > tasks = new List<Task<UpdatedTimeEntry>>();
-            foreach(var te in TimeEntriesModel.GetChanges())
+            foreach (var te in TimeEntriesModel.GetChanges())
+            {
+                // удаление и добавление реализовано логикой внутри вызванного метода
                 tasks.Add(Connection.UpdateClokiEntry(te.Entry));
+            }
 
             while (tasks.Count > 0)
             {                
-                var ft = Task.WhenAny(tasks).Result;
+                var ft = await Task.WhenAny(tasks);
                 if (ft.IsFaulted || ft.Result.Faulted)
                     throw new Exception(ft.Result == null ? ft.Exception.Message : ft.Result.Description);                
                 tasks.Remove(ft);

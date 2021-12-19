@@ -15,9 +15,9 @@ namespace TSApp.Model
         {
             var rq = GetRequest();
             rq.ID = ce.Id;
-            rq.Start = ce.Start;
+            rq.Start = ce.Start.ToUniversalTime();
             rq.Description = ce.Description;
-            rq.End = ce.End;
+            rq.End = ce.End.ToUniversalTime();
             return rq;
         }
 

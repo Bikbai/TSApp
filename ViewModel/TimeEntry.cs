@@ -91,6 +91,7 @@ namespace TSApp.ViewModel
                 RecalcFields(FT.Work);
             }
         }        
+        public double WorkDbl { get => innerCE.WorkTime.TotalHours; }
         public double GetWorkDouble() { return innerCE.WorkTime.TotalHours; }
         public TimeSpan GetWorkTimeSpan() { return innerCE.WorkTime; }
 
