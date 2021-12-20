@@ -134,7 +134,7 @@ namespace TSApp.Model
             var ret = await clockify.FindAllTimeEntriesForUserAsync(StaticData.WorkspaceId, StaticData.UserId,
                                                            query,
                                                            queryFrom, null,
-                                                           StaticData.ProjectId, null, null, null, null, null, null, 1, 5000);
+                                                           null, null, null, null, null, null, null, 1, 5000);
             if (ret == null || ret.Data == null)
                 return result;
             
@@ -174,33 +174,46 @@ namespace TSApp.Model
                 }
                 return retval;
             }
-            var rq = TimeEntryRequestFabric.GetRequest(entry);
-            var x = await clockify.CreateTimeEntryAsync(StaticData.WorkspaceId, rq);
-            if (!x.IsSuccessful)
+            bool updateMode = entry.Id == string.Empty ? false : true;
+            
+            IRestResponse<TimeEntryDtoImpl> result;
+            if (updateMode)
+            {
+                var rq = TimeEntryRequestFabric.GetCreateRequest(entry);
+                result = await clockify.CreateTimeEntryAsync(StaticData.WorkspaceId, rq);
+            }
+            else
+            {
+                var rq = TimeEntryRequestFabric.GetUpdateRequest(entry);
+                result = await clockify.UpdateTimeEntryAsync(StaticData.WorkspaceId, StaticData.WorkspaceId, rq);
+            }
+            if (!result.IsSuccessful)
             {
                 retval.Faulted = true;
-                retval.Description = x.ErrorMessage;
+                retval.Description = result.ErrorMessage;
                 return retval;
             }
-            retval.updated = new ClokifyEntry(x.Data);
+            retval.updated = new ClokifyEntry(result.Data);
             return retval;
         }
 
-        public async Task<int> UpdateTFSEntry(int id, JsonPatchDocument patch) {
+        public async Task<TFSWorkItem> UpdateTFSEntry(int id, JsonPatchDocument patch) {
             WorkItemTrackingHttpClient witClient = tfsConnection.GetClient<WorkItemTrackingHttpClient>();
             try
             {
                 WorkItem result = await witClient.UpdateWorkItemAsync(patch, id);
-                // кидаем событие для перезагрузки содержимого GridEntry
-                OnWorkItemUpdated(new TFSWorkItem(result));
-                return id;
+                // кидаем событие для перезагрузки содержимого GridEntry                
+                if (result != null)
+                    return new TFSWorkItem(result);
+                else 
+                    return null;
+
             }
             catch (AggregateException ex)
             {
                 Console.WriteLine("Error updating workitem: {0}", ex.InnerException.Message);
-                return 0;
             }
-
+            return null;
         }
 
 
@@ -267,18 +280,6 @@ namespace TSApp.Model
 //            OnTfsQueryCompleted();
             return workItems;
         }
-
-        public void TestClokiCreate()
-        {
-            var rq = TimeEntryRequestFabric.GetRequest();
-            rq.Description = "Test";
-            rq.Start = DateTime.Now;
-            rq.End = DateTime.Now.AddMinutes(15);
-            var ct = clockify.CreateTimeEntryAsync(StaticData.WorkspaceId, rq).Result;
-            var Id = ct.Data.Id;
-            var rm = clockify.DeleteTimeEntryAsync(StaticData.WorkspaceId, Id).Result;
-        }
-
     }
 
     public class UpdatedTimeEntry

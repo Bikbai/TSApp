@@ -11,7 +11,7 @@
         public static string ActivateDate => "Microsoft.VSTS.Common.ActivatedDate";
         public static string Comment => "System.Comment";
         public static string ClokiData => "Cloki.Extdata";
-
+        public static string AreaPath => "System.AreaPath";
 
     }
 }

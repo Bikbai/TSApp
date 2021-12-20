@@ -26,8 +26,6 @@ namespace TSApp.ViewModel
         #endregion
 
         #region properties
-        public EntryType Type { get; set; } // тип строки
-
         /// <summary>
         /// Статус/тип. Т.к. в гриде будет микс из задач и просто времени из клоки - вот такая странность
         /// </summary>
@@ -78,7 +76,20 @@ namespace TSApp.ViewModel
         /// Суммарные трудозатраты, до модификации
         /// </summary>
         public TimeSpan OriginalTotalWork { get => RestTotalWork + workDaily.GetOriginalTotalWork(); }
-        public bool IsChanged { get => workDaily.IsChanged; }
+        public bool IsChanged { 
+            get => workDaily.IsChanged; 
+            set
+            {
+                if (value == false)
+                    foreach (var item in workDaily.WorkDataDaily)
+                    {
+                        if (item.Value == null)
+                            continue;
+                        item.Value.OriginalWork = item.Value.Work;
+                        OnPropertyChanged("IsChanged");
+                    }
+            }
+        }
         /// <summary>
         /// Суммарные трудозатраты, учтённые в прочих неделях
         /// </summary>
@@ -87,21 +98,11 @@ namespace TSApp.ViewModel
         public TFSWorkItem WorkItem { get => _workItem; set { SetProperty(ref _workItem, value); OnPropertyChanged("CompletedWork"); } }
 
         #endregion
-
+        
         #region constructors
-        public GridEntry(bool isTimeEntry, int weekNumber)
-        {
-            if (!isTimeEntry)
-                throw new ArgumentException("Only EntryType.timeEntry supported.", nameof(isTimeEntry));
-            Type = EntryType.timeEntry;
-            workDaily.WeekNumber = weekNumber;
-            this.State = "Clokify";
-        }
-
         public GridEntry(TFSWorkItem item, int week)
         {
             _remainingWork = item.RemainingWork;
-            Type = EntryType.workItem;
             _workItem = item;
             workDaily = new WeekData(week, item.Id);
             State = item.State;
@@ -190,9 +191,13 @@ namespace TSApp.ViewModel
                 return;
 
             workDaily.WorkDataDaily[dayOfWeek].Work = TimeSpan.FromHours(val);
+
+            _remainingWork -= (val - currentValue);
+            if (_remainingWork < 0) _remainingWork = 0;
             // стреляем событием, чтобы грид пересчитал и тоталсы
             OnPropertyChanged("IsChanged");
             OnPropertyChanged("TotalWork");
+            OnPropertyChanged("RemainingWork");
             OnTimeChanged(
                 new WITimeChangedEventData(TimeSpan.FromHours(val- currentValue), 
                                            dayOfWeek, 
@@ -243,20 +248,6 @@ namespace TSApp.ViewModel
                 Value = Math.Round((totals + delta).TotalHours, 2).ToString("0.00", System.Globalization.CultureInfo.InvariantCulture)
             });
                      
-            /// TODO: Сохранение ссылки на Cloki в workitem
-            /// Непонятно, правда, зачем
-            /// 
-            /*
-            foreach (var te in WiTimeEntries)
-                cd.TimeEntryIds.Add(te.Id);
-
-            result.Add(new JsonPatchOperation()
-            {
-                Operation = Operation.Replace,
-                Path = "/fields/" + WIFields.ClokiData,
-                Value = JsonConvert.SerializeObject(cd)
-            });
-            */
             return result;
         }
         /// <summary>

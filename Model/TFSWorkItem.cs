@@ -3,6 +3,7 @@ using Microsoft.Toolkit.Mvvm.ComponentModel;
 using System;
 using System.Collections.Generic;
 using Newtonsoft.Json;
+using TSApp.ProjectConstans;
 
 namespace TSApp.Model
 {
@@ -17,8 +18,17 @@ namespace TSApp.Model
         private double completedWork; //CompletedWork
         private List<ClokifyEntry> linkedTimeEntries;
         private WorkItem linkedWorkItem;
-        private ClokifyEntry _clokiData;
 
+        public string ClokiProjectId { get
+            {
+                string[] s = AreaPath.Split(new string[] { @"\" }, StringSplitOptions.RemoveEmptyEntries);
+                if (s.Length > 2 && StaticData.Projects.TryGetValue(s[1], out var projectId)) {
+                    return projectId;
+                }
+                throw new ArgumentException("ProjectId returns null");
+            } 
+        }
+        public string AreaPath { get; set; }
         public int Id { get => id; }
         public string Title { get => title; set => title = value; }
         public string State { get => state;}
@@ -28,7 +38,6 @@ namespace TSApp.Model
         public double CompletedWork { get => completedWork; set => SetProperty(ref completedWork, value); }
         public List<ClokifyEntry> LinkedTimeEntry { get => linkedTimeEntries; set => SetProperty(ref linkedTimeEntries , value); }
         public WorkItem LinkedWorkItem { get => linkedWorkItem; set => SetProperty(ref linkedWorkItem , value); }        
-        public ClokifyEntry ClokiData { get => _clokiData; }
         public TFSWorkItem()
         {
             id = 100500;
@@ -48,17 +57,17 @@ namespace TSApp.Model
             if (i.Fields.TryGetValue(WIFields.ActivateDate, out outVal)) activated = (DateTime)outVal; else activated = null;
             if (i.Fields.TryGetValue(WIFields.OriginalEstimate, out outVal)) originalEstimate = (double)outVal; else originalEstimate = 0;
             if (i.Fields.TryGetValue(WIFields.RemainingWork, out outVal)) remainingWork = (double)outVal; else remainingWork = 0;
-            if (i.Fields.TryGetValue(WIFields.CompletedWork, out outVal)) completedWork = (double)outVal; else completedWork = 0;            
-            /// TODO: реанимация сохранения TimeEntry, если нужно. Вроде как, не нужно.
-            //if (i.Fields.TryGetValue(WIFields.ClokiData, out outVal))
-              //  _clokiData = ClokifyEntryFactory.BuildFromJson((string)outVal);
+            if (i.Fields.TryGetValue(WIFields.CompletedWork, out outVal)) completedWork = (double)outVal; else completedWork = 0;
+            if (i.Fields.TryGetValue(WIFields.AreaPath, out outVal)) 
+                AreaPath = (string)outVal; 
+            else 
+                AreaPath = string.Empty;
             linkedWorkItem = i;
         }
 
         public object Clone()
         {
             return MemberwiseClone();
-        }
-
+        }        
     }
 }

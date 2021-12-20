@@ -122,7 +122,7 @@ namespace TSApp.ViewModel
                 // числа из трех знаков - часы и минуты (2399)
                 if (intValue < 2399)
                 {
-                    tsValue = new TimeSpan(intValue/100*60, intValue - 100*intValue/100, 0);
+                    tsValue = new TimeSpan(intValue/100, intValue - intValue/100*100, 0);
                     return true;
                 }
             }
@@ -157,13 +157,14 @@ namespace TSApp.ViewModel
             _comment = ce.Comment;
             innerCE = ce;
         }
-        public TimeEntry(DateTime calday, DateTime start, TimeSpan work, int workItemId, string title)
+        public TimeEntry(DateTime calday, DateTime start, TimeSpan work, int workItemId, string title, string projectId)
         {
             innerCE = new ClokifyEntry();
             innerCE.Start = start;
             this.Title = workItemId + "." + title;
             this.Work = work.ToString(@"h\:mm");
             innerCE.WorkItemId = workItemId;
+            innerCE.ProjectId = projectId;
         }
     }
 }

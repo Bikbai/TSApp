@@ -39,24 +39,21 @@ namespace TSApp.ViewModel
             Connection.TimeEntryDeleted += WorkItemsModel.OnTimeEntryDeleteHandler;
             Connection.WorkItemUpdated += WorkItemsModel.OnWorkItemUpdatedHandler;
 
-            TimeEntriesModel.Entries.ListChanged += Entries_ListChanged;
         }
 
-        private void Entries_ListChanged(object sender, System.ComponentModel.ListChangedEventArgs e)
-        {
-            var x = e.ListChangedType;
-        }
-
+        /// <summary>
+        /// Пробрасываем событие изменения времени в TE
+        /// </summary>
+        /// <param name="td"></param>
         private void WorkItemsModel_TimeChanged(WITimeChangedEventData td)
         {
-            TimeEntriesModel.OnTimeChangedHandler(td);
-            
+            TimeEntriesModel.OnTimeChangedHandler(td);            
         }
 
-        public async void Publish()
-        {
+        private async Task<bool> PublishClokiData() {
+
             /// TODO: прогресс-бар апдейта
-            List<Task<UpdatedTimeEntry> > tasks = new List<Task<UpdatedTimeEntry>>();
+            List<Task<UpdatedTimeEntry>> tasks = new List<Task<UpdatedTimeEntry>>();
             foreach (var te in TimeEntriesModel.GetChanges())
             {
                 // удаление и добавление реализовано логикой внутри вызванного метода
@@ -64,10 +61,10 @@ namespace TSApp.ViewModel
             }
 
             while (tasks.Count > 0)
-            {                
+            {
                 var ft = await Task.WhenAny(tasks);
                 if (ft.IsFaulted || ft.Result.Faulted)
-                    throw new Exception(ft.Result == null ? ft.Exception.Message : ft.Result.Description);                
+                    throw new Exception(ft.Result == null ? ft.Exception.Message : ft.Result.Description);
                 tasks.Remove(ft);
                 foreach (var te in TimeEntriesModel.Entries)
                 {
@@ -78,15 +75,39 @@ namespace TSApp.ViewModel
                         // апдейт
                         if (ft.Result.updated != null)
                         {
-                            TimeEntriesModel.Entries.Add(new TimeEntry(ft.Result.updated));                            
+                            TimeEntriesModel.Entries.Add(new TimeEntry(ft.Result.updated));
                         }
                         break;
                     }
                 }
             }
+            return true;
+        }
 
-
-
+        private async Task<bool> PublishTfsData()
+        {
+            GridEntry ge;
+            for (int i = 0; i < WorkItemsModel.GridEntries.Count; i++)
+            { 
+                ge = WorkItemsModel.GridEntries[i];
+                if (ge.IsChanged)
+                {
+                    var wi = await Connection.UpdateTFSEntry(ge.WorkItemId, ge.GetTfsUpdateData());                    
+                    if (wi != null) { 
+                        WorkItemsModel.GridEntries[i].WorkItem = wi;
+                        WorkItemsModel.GridEntries[i].IsChanged = false;
+                    }
+                    else
+                        return false;   
+                }
+            }
+            WorkItemsModel.GridEntries.ResetBindings();
+            return true;
+        }
+        public async void Publish()
+        {
+            await PublishClokiData().ConfigureAwait(true);
+            await PublishTfsData().ConfigureAwait(true);
         }
 
         public void Reload()

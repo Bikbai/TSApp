@@ -216,9 +216,8 @@
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
       <DependentUpon>Settings.settings</DependentUpon>
     </Compile>
-    <Compile Include="Utility\SummaryConverter.cs" />
-    <Compile Include="Utility\TimeSpanConverter.cs" />
-    <Compile Include="ViewModel\EntryType.cs" />
+    <Compile Include="Behaviors\SummaryConverter.cs" />
+    <Compile Include="Behaviors\TimeSpanConverter.cs" />
     <Compile Include="ViewModel\GridEntry.cs" />
     <Compile Include="Model\WorkItemTimeData.cs" />
     <Compile Include="Model\WeekData.cs" />

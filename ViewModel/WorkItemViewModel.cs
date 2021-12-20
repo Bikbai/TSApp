@@ -95,40 +95,7 @@ namespace TSApp.ViewModel
             OnTimeChanged(td);
         }
 
-
-        /// <summary>
-        /// Публикация изменений в TFS
-        /// </summary>
-        /// <returns></returns>
-        public async Task<bool> Publish()
-        {
-            List<Task> Workers = new List<Task>();
-            bool x = false;
-            var changed = GridEntries.Where(p => p.IsChanged == true);
-
-            foreach (GridEntry w in changed)
-            {
-                if  (w.IsChanged && w.Type == EntryType.workItem)
-                {
-                    try 
-                    {
-                        // асинхронно передаём в TFS
-                        Workers.Add(Connection.UpdateTFSEntry(w.WorkItemId, w.GetTfsUpdateData()));
-                    }
-                    catch (AggregateException ae) { throw ae; }                   
-                }
-            }
-            while(Workers.Count > 0)
-            {
-                var finishedTask = await Task.WhenAny(Workers);
-                OnItemPublished(false, ((Task<int>)finishedTask).Result);
-                Workers.Remove(finishedTask);                
-            }
-            OnItemPublished(true, 0);
-            return x;
-        }
-        
-        
+       
         #region events
         public delegate void ItemPublishedDelegate(bool finished, int workItemId);
         /// <summary>

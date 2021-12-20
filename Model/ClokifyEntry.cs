@@ -25,6 +25,8 @@ namespace TSApp.Model
         private DateTime end;
         [JsonProperty]
         private string comment;
+        [JsonProperty]
+        private string projectId;
         #endregion
 
         public ClokifyEntry() { }
@@ -35,6 +37,7 @@ namespace TSApp.Model
         /// <param name="te">Запись в клоки</param>
         public ClokifyEntry(TimeEntryDtoImpl te)
         {
+            ProjectId = te.ProjectId;
             id = te.Id;
             if (te.TimeInterval.End != null) {
                 workTime = (DateTimeOffset)te.TimeInterval.End - (DateTimeOffset)te.TimeInterval.Start;
@@ -83,6 +86,11 @@ namespace TSApp.Model
         /// Идентификатор записи в Клоки
         /// </summary>
         public string Id { get => id; }
+        /// <summary>
+        /// Идентификатор проекта
+        /// </summary>
+        public string ProjectId { get => projectId; set => projectId = value; }
+
         /// <summary>
         /// День недели
         /// </summary>

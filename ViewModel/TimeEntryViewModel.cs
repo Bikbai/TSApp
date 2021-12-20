@@ -58,10 +58,10 @@ namespace TSApp.ViewModel
         public async void Fill()
         {
             var x = await Connection.FindAllTimeEntriesForUser(null, DateTime.Now.AddDays(-90));
-            _entries.Clear();
+            this._BLEntries.Clear();
             foreach (var item in x)
-            { 
-                _entries.Add(new TimeEntry(item));
+            {
+                _BLEntries.Add(new TimeEntry(item));
             }
             Entries.ResetBindings();
         }
@@ -76,7 +76,12 @@ namespace TSApp.ViewModel
             var totalTE = _entries.Where(p=> p.Calday == td.Calday && p.innerCE.WorkTime != TimeSpan.Zero).ToList();
             // тупо добавляем в начало, если пусто
             if (totalTE.Count() == 0) {
-                _entries.Add(new TimeEntry(td.Calday, td.Calday.Add(td.caldayStartTime), td.Delta, td.Wi.Id, td.Wi.Title));
+                _entries.Add(new TimeEntry(td.Calday, 
+                                           td.Calday.Add(td.caldayStartTime), 
+                                           td.Delta, 
+                                           td.Wi.Id, 
+                                           td.Wi.Title,
+                                           td.Wi.ClokiProjectId));
                 Entries.ResetBindings();
                 return;
             }
@@ -85,11 +90,17 @@ namespace TSApp.ViewModel
 
             if (td.Delta > TimeSpan.Zero) {
                 // если это не по текущей задаче - создаём новый TE на дельту, цепляем к концу
-                if (lastTE.First().innerCE.WorkItemId != td.Wi.Id) {
-                    _entries.Add(new TimeEntry(td.Calday, lastTE.First().Entry.End, td.Delta, td.Wi.Id, td.Wi.Title));
+                // комментированные задачи также не увеличиваем
+                if (lastTE.First().innerCE.WorkItemId != td.Wi.Id || lastTE.First().innerCE.Comment != String.Empty) {
+                    _entries.Add(new TimeEntry(td.Calday, 
+                        lastTE.First().Entry.End, 
+                        td.Delta, 
+                        td.Wi.Id, 
+                        td.Wi.Title,
+                        td.Wi.ClokiProjectId));
                 }
                 // Если последняя задача - текущая, то увеличиваем её на дельту
-                if (lastTE.First().innerCE.WorkItemId == td.Wi.Id)
+                if (lastTE.First().innerCE.WorkItemId == td.Wi.Id && lastTE.First().innerCE.Comment == String.Empty)
                 {
                     lastTE.First().Work = (lastTE.First().Entry.WorkTime+td.Delta).ToString(@"h\:mm");
                 }
@@ -109,7 +120,7 @@ namespace TSApp.ViewModel
                     lte.Work = (lte.innerCE.WorkTime + td.Delta).ToString(@"h\:mm");
                 }                
             }
-            _entries = _entries.OrderByDescending(p => p.Calday).ThenBy(p => p.StartTime).ToList();
+            //_entries = _entries.OrderByDescending(p => p.Calday).ThenBy(p => p.StartTime).ToList();
             Entries.ResetBindings();
             return;
 
