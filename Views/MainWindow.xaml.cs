@@ -96,9 +96,11 @@ namespace TSApp
             mdl.WorkTimer.StartStop(row);
         }
 
-        private void btnPublish_Click(object sender, RoutedEventArgs e)
+        private async void btnPublish_Click(object sender, RoutedEventArgs e)
         {
             mdl.Publish();
+            TimeEntryGrid.View.Refresh();
+            this.mainGrid.View.Refresh();
         }
 
         private void TimeEntryGrid_Loaded(object sender, RoutedEventArgs e)

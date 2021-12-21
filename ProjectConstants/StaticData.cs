@@ -15,14 +15,12 @@ namespace TSApp.ProjectConstans
 
         public static TimeSpan DefaultStartTime => defaultStartTime;
 
-        public static Dictionary<string, string> Projects { get => _projects; }
+        public static Dictionary<string, string> ClokiProjectIds { get => _projects; }
         public static Dictionary<DayOfWeek, TimeSpan> weekTimeTable { get; set; }
-        public static void Init(string ProjectId, string UserId, string WorkspaceId)
+        public static void Init(string UserId, string WorkspaceId)
         {
             userId = UserId; 
             workspaceId = WorkspaceId;
-            _projects.Add(@"2022", "2022");
-            _projects.Add(@"FCOD-M", "ФЦОД-М");
         }
 
     }

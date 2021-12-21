@@ -64,7 +64,7 @@ namespace TSApp.ViewModel
             {
                 var ft = await Task.WhenAny(tasks);
                 if (ft.IsFaulted || ft.Result.Faulted)
-                    throw new Exception(ft.Result == null ? ft.Exception.Message : ft.Result.Description);
+                    throw new AggregateException (ft.Result == null ? ft.Exception.Message : ft.Result.Description);
                 tasks.Remove(ft);
                 foreach (var te in TimeEntriesModel.Entries)
                 {

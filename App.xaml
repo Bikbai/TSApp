@@ -31,7 +31,7 @@
             <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
                 <TextBlock FontWeight="Bold" Text="{Binding Path=CompletedWork}"/>
                 <TextBlock FontWeight="Bold" Text="/"/>
-                <TextBlock FontWeight="Bold" Text="{Binding Path=TotalWork, Converter={StaticResource timeSpanConverter}}"/>
+                <TextBlock FontWeight="Bold" Text="{Binding Path=TotalWork, Converter={StaticResource ResourceKey=timeSpanConverter}}"/>
             </StackPanel>
         </DataTemplate>
         <beh:RowColorConverter x:Key="converter"/>

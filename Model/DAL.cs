@@ -80,10 +80,15 @@ namespace TSApp.Model
                     var ws = await clockify.GetWorkspacesAsync();
                     if (ws != null && ws.Data != null)
                     {
-                        var prj = await clockify.FindAllProjectsOnWorkspaceAsync(ws.Data[0].Id, null, "ФЦОД-М");
+                        var prj = await clockify.FindAllProjectsOnWorkspaceAsync(ws.Data[0].Id, null, null);
                         if (prj != null && prj.Data != null)
                         {
-                            StaticData.Init(prj.Data[0].Id, uid.Data.Id, ws.Data[0].Id);
+                            foreach (var project in prj.Data)
+                            {
+                                StaticData.Init(uid.Data.Id, ws.Data[0].Id);
+                                StaticData.ClokiProjectIds.Add(project.Name, project.Id);
+                            }
+                            
                             result.Status = CONN_RESULT.OK;
                         }
                         else { result.ErrorMessage = prj.StatusDescription + " " + prj.Content; }

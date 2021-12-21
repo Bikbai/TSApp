@@ -37,7 +37,9 @@ namespace TSApp.ViewModel
                 var val = ParseInput(value, _remainingWork);
                 if (val != _remainingWork)
                     SetProperty(ref _remainingWork, val);
-                }
+                OnPropertyChanged("IsChanged");
+            }
+           
         }
         public int WorkItemId { get => _workItem.Id;}
         public string Title { get => WorkItemId.ToString() + '.' + _workItem.Title;}
@@ -77,7 +79,7 @@ namespace TSApp.ViewModel
         /// </summary>
         public TimeSpan OriginalTotalWork { get => RestTotalWork + workDaily.GetOriginalTotalWork(); }
         public bool IsChanged { 
-            get => workDaily.IsChanged; 
+            get => workDaily.IsChanged || _workItem.RemainingWork != _remainingWork ; 
             set
             {
                 if (value == false)
@@ -219,7 +221,6 @@ namespace TSApp.ViewModel
             JsonPatchDocument result = new JsonPatchDocument();
             // оригинальное учтённое по клокифай время
             TimeSpan totals = OriginalTotalWork;
-            double remnWork = _workItem.RemainingWork;
             TimeSpan delta = TimeSpan.Zero;
             foreach (var td in workDaily.WorkDataDaily)
             {
@@ -231,15 +232,14 @@ namespace TSApp.ViewModel
                     delta += td.Value.Work - td.Value.OriginalWork;
                 }
             }
-            remnWork = Math.Round(remnWork - delta.TotalHours, 2);
-            if (remnWork < 0) remnWork = 0;
 
-            result.Add(new JsonPatchOperation()
-            {
-                Operation = Operation.Replace,
-                Path = "/fields/" + WIFields.RemainingWork,
-                Value = remnWork.ToString("0.00", System.Globalization.CultureInfo.InvariantCulture)
-            });
+            if (_remainingWork != _workItem.RemainingWork)
+                result.Add(new JsonPatchOperation()
+                {
+                    Operation = Operation.Replace,
+                    Path = "/fields/" + WIFields.RemainingWork,
+                    Value = _remainingWork.ToString("0.00", System.Globalization.CultureInfo.InvariantCulture)
+                });
 
             result.Add(new JsonPatchOperation()
             {
