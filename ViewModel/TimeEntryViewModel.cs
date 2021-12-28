@@ -16,7 +16,7 @@ namespace TSApp.ViewModel
         private static string CTE = "{\r\n  \"id\": \"61afaee6be737841a55dc648\",\r\n  \"workItemId\": 11716,\r\n  \"workTime\": \"02:00:00\",\r\n  \"start\": \"2021-12-07T10:00:00\",\r\n  \"end\": \"2021-12-07T12:00:00\",\r\n  \"comment\": null\r\n}";
         private DateTime? _date = DateTime.Now.Date;
 
-        private List<TimeEntry> _entries;
+        public List<TimeEntry> _entries;
         private BindingList<TimeEntry> _BLEntries;
 
         public DateTime? Calday

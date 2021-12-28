@@ -208,16 +208,15 @@
     <Compile Include="Behaviors\LabelSizeConverter.cs" />
     <Compile Include="Behaviors\RowColorConverter.cs" />
     <Compile Include="Behaviors\TimeEntryFilter.cs" />
+    <Compile Include="Behaviors\UnboundCellStyleConverter.cs" />
+    <Compile Include="Behaviors\UnboundCellTimeSpanRenderer.cs" />
     <Compile Include="Model\DalEvents.cs" />
     <Compile Include="Model\Storage.cs" />
     <Compile Include="Model\TimeEntryRequestFabric.cs" />
-    <Compile Include="Settings.Designer.cs">
-      <AutoGen>True</AutoGen>
-      <DesignTimeSharedInput>True</DesignTimeSharedInput>
-      <DependentUpon>Settings.settings</DependentUpon>
-    </Compile>
+    <Compile Include="Model\StoredParameters.cs" />
     <Compile Include="Behaviors\SummaryConverter.cs" />
     <Compile Include="Behaviors\TimeSpanConverter.cs" />
+    <Compile Include="StaticData\Settings.cs" />
     <Compile Include="ViewModel\GridEntry.cs" />
     <Compile Include="Model\WorkItemTimeData.cs" />
     <Compile Include="Model\WeekData.cs" />
@@ -229,9 +228,8 @@
       <DependentUpon>ParameterForm.xaml</DependentUpon>
     </Compile>
     <Compile Include="Utility\Helpers.cs" />
-    <Compile Include="ProjectConstants\StaticData.cs" />
+    <Compile Include="StaticData\StaticData.cs" />
     <Compile Include="Model\DAL.cs" />
-    <Compile Include="Settings.cs" />
     <Compile Include="ViewModel\MainFormModel.cs" />
     <Compile Include="ViewModel\ParameterModel.cs" />
     <Compile Include="ViewModel\WorkItemViewModel.cs" />
@@ -276,10 +274,6 @@
     </EmbeddedResource>
     <None Include="packages.config" />
     <None Include="Properties\Settings.settings">
-      <Generator>PublicSettingsSingleFileGenerator</Generator>
-      <LastGenOutput>Settings.Designer.cs</LastGenOutput>
-    </None>
-    <None Include="Settings.settings">
       <Generator>PublicSettingsSingleFileGenerator</Generator>
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>
     </None>

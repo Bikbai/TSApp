@@ -50,9 +50,6 @@
                                  HorizontalAlignment="Stretch" 
                                  VerticalAlignment="Stretch"                                  
                                  SelectedObject="{Binding Mode=OneWay}" Margin="3,0,3,0">
-            <syncfusion:PropertyGrid.DataContext>
-                <Timesheet:Settings/>
-            </syncfusion:PropertyGrid.DataContext>
         </syncfusion:PropertyGrid>
 
         <Button x:Name="button" 

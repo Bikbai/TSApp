@@ -22,6 +22,12 @@ namespace TSApp.ViewModel
         public string BtnCnxnStatusForeColor { get => btnCnxnStatusForeColor; set => SetProperty(ref btnCnxnStatusForeColor,value); }
 
         public string LblCurrentWeek { get => "Текущая неделя: " + presentedWeekNumber.ToString(); }
+        #region Parameters
+        public string MondayStart { 
+            get => StaticData.Settings.value.DailyStart[DayOfWeek.Monday].ToString(@"h\:mm");
+            //set => StaticData.Settings.value.DailyStart[DayOfWeek.Monday] = value;
+        }
+        #endregion
 
         public MainFormModel(DAL conn)
         {
@@ -37,8 +43,7 @@ namespace TSApp.ViewModel
 
             Connection.TimeEntryCreated += WorkItemsModel.OnTimeEntryCreateHandler;
             Connection.TimeEntryDeleted += WorkItemsModel.OnTimeEntryDeleteHandler;
-            Connection.WorkItemUpdated += WorkItemsModel.OnWorkItemUpdatedHandler;
-
+            Connection.WorkItemUpdated += WorkItemsModel.OnWorkItemUpdatedHandler;            
         }
 
         /// <summary>
@@ -51,37 +56,44 @@ namespace TSApp.ViewModel
         }
 
         private async Task<bool> PublishClokiData() {
-
-            /// TODO: прогресс-бар апдейта
-            List<Task<UpdatedTimeEntry>> tasks = new List<Task<UpdatedTimeEntry>>();
-            foreach (var te in TimeEntriesModel.GetChanges())
+            try
             {
-                // удаление и добавление реализовано логикой внутри вызванного метода
-                tasks.Add(Connection.UpdateClokiEntry(te.Entry));
-            }
-
-            while (tasks.Count > 0)
-            {
-                var ft = await Task.WhenAny(tasks);
-                if (ft.IsFaulted || ft.Result.Faulted)
-                    throw new AggregateException (ft.Result == null ? ft.Exception.Message : ft.Result.Description);
-                tasks.Remove(ft);
+                Dictionary<TimeEntry, UpdatedTimeEntry> mlte = new Dictionary<TimeEntry, UpdatedTimeEntry>();
                 foreach (var te in TimeEntriesModel.Entries)
                 {
-                    if (te.Entry == ft.Result.timeEntry)
-                    {
-                        // удаляем старую запись
-                        TimeEntriesModel.Entries.Remove(te);
-                        // апдейт
-                        if (ft.Result.updated != null)
-                        {
-                            TimeEntriesModel.Entries.Add(new TimeEntry(ft.Result.updated));
-                        }
-                        break;
+                    if (!te.IsChanged)
+                        continue;
+
+                    // удаление и добавление реализовано логикой внутри вызванного метода
+                    var t = await Connection.UpdateClokiEntry(te.innerCE).ConfigureAwait(true);
+                    if (t.Faulted)
+                        return false;
+                    else
+                        mlte.Add(te, t);
+                }
+                foreach (var mt in mlte)
+                {
+                    var idx = TimeEntriesModel._entries.IndexOf(mt.Key);
+                    if (mt.Value.updated == null) // удаление
+                        TimeEntriesModel.Entries.RemoveAt(idx);
+                    else {
+                        var item = TimeEntriesModel.Entries[idx];
+                        item = new TimeEntry(mt.Value.updated);
+                        TimeEntriesModel._entries[idx] = item;
+                        //var item = TimeEntriesModel.Entries[idx];
+                        //Console.WriteLine(item.Title);
+                        //TimeEntriesModel.Entries[idx] = new TimeEntry(mt.Value.updated);
                     }
                 }
+
+                TimeEntriesModel.Entries.ResetBindings();
+                return true;
             }
-            return true;
+            catch (Exception ex)
+            {
+                var m = ex.Message;
+                return false;
+            }
         }
 
         private async Task<bool> PublishTfsData()

@@ -5,6 +5,7 @@
     xmlns:beh="clr-namespace:TSApp.Behaviors"
     xmlns:utility="clr-namespace:TSApp.Utility"
     xmlns:ts="clr-namespace:TSApp"
+    xmlns:sd="clr-namespace:TSApp.StaticData"
     xmlns:sfgrid="clr-namespace:Syncfusion.UI.Xaml.Grid;assembly=Syncfusion.SfGrid.WPF"
     xmlns:syncfusion="http://schemas.syncfusion.com/wpf"
     x:Class="TSApp.App"
@@ -14,7 +15,7 @@
         <utility:TimeSpanConverter x:Key="timeSpanConverter"/>
         <utility:SummaryConverter x:Key="summaryConverter"/>
         <DataTemplate x:Key="TopCellTemplate">
-                <TextBlock 
+            <TextBlock 
                     Width="610"
                     Text="Начало рабочего дня:"
                     TextAlignment="Right" IsEnabled="False" FontWeight="Bold" Margin="0,0,10,0"
@@ -35,7 +36,6 @@
             </StackPanel>
         </DataTemplate>
         <beh:RowColorConverter x:Key="converter"/>
-        <ts:Settings x:Key="s"/>
         <Style x:Key="RowStyle" TargetType="sfgrid:VirtualizingCellsControl">
             <Setter Property="Background" Value="{Binding Path=IsChanged, Mode=OneWay, Converter={StaticResource ResourceKey=converter}, UpdateSourceTrigger=PropertyChanged}" />
         </Style>

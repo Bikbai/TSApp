@@ -6,6 +6,7 @@ using System.ComponentModel;
 using System.Linq;
 using System.Threading.Tasks;
 using TSApp.Model;
+using TSApp.StaticData;
 
 namespace TSApp.ViewModel
 {
@@ -41,9 +42,7 @@ namespace TSApp.ViewModel
         {
             foreach (DayOfWeek i in Enum.GetValues(typeof(DayOfWeek)))
             {
-                if (Settings.Default.defaultWorkDayStart == null)
-                    throw new NotSupportedException("Settings.Default.defaultWorkDayStart is null");
-                _defaultWorkdayStart[i] = Settings.Default.defaultWorkDayStart;
+                _defaultWorkdayStart[i] = Settings.value.DailyStart[i];
             }
         }
 

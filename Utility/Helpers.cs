@@ -115,5 +115,41 @@ namespace TSApp
                 Value = value
             });
         }
+
+        /// <summary>
+        /// Разбираемые форматы ввода: 
+        /// h:mm
+        /// hmm, hhmm, mm
+        /// </summary>
+        /// <param name="value"></param>
+        /// <param name="tsValue"></param>
+        /// <returns></returns>
+        public static bool ParseTimeEntry(string value, out TimeSpan tsValue)
+        {
+            tsValue = TimeSpan.Zero;
+            // проверяем на число
+            if (int.TryParse(value, out int intValue))
+            {
+                if (intValue < 0)
+                    return false;
+                // числа из двух знаков - это минуты
+                if (intValue < 100)
+                {
+                    tsValue = TimeSpan.FromMinutes(intValue);
+                    return true;
+                }
+                // числа из трех знаков - часы и минуты (2399)
+                if (intValue < 2399)
+                {
+                    tsValue = new TimeSpan(intValue / 100, intValue - intValue / 100 * 100, 0);
+                    return true;
+                }
+            }
+
+            return TimeSpan.TryParseExact(value, @"h\:mm", CultureInfo.InvariantCulture, out tsValue);
+        }
+
+
+
     }
 }

@@ -16,8 +16,7 @@ namespace TSApp.ViewModel
     public class TimeEntry : ObservableObject
     {
         #region private fields
-        private enum FT { StartTime, EndTime , Work }
-        private string _comment;        
+        private enum FT { StartTime, EndTime , Work }    
         private ClokifyEntry _clone;
         #endregion
         public readonly ClokifyEntry innerCE;
@@ -42,18 +41,19 @@ namespace TSApp.ViewModel
             set => innerCE.Description = value;
         }
         public string Comment {
-            get => _comment;
+            get => innerCE.Comment;
             set
             {
                 IsChanged = true;
-                SetProperty(ref _comment, value);
+                innerCE.Comment = value;
+                OnPropertyChanged("Comment");
             }
         }
         public string StartTime { 
             get => innerCE.Start.TimeOfDay.ToString(@"h\:mm");
             set
             {
-                if (!ParseTimeEntry(value, out TimeSpan newvalue))
+                if (!Helpers.ParseTimeEntry(value, out TimeSpan newvalue))
                     return;
                 IsChanged = true;
                 if (newvalue > innerCE.End.TimeOfDay)
@@ -67,7 +67,7 @@ namespace TSApp.ViewModel
             get => innerCE.End.TimeOfDay.ToString(@"h\:mm"); 
             set 
             {
-                if (!ParseTimeEntry(value, out TimeSpan newvalue))
+                if (!Helpers.ParseTimeEntry(value, out TimeSpan newvalue))
                     return;
                 IsChanged = true;
                 if (newvalue < innerCE.Start.TimeOfDay)
@@ -81,7 +81,7 @@ namespace TSApp.ViewModel
             get => innerCE.WorkTime.ToString(@"h\:mm");
             set
             {
-                if (!ParseTimeEntry(value, out TimeSpan newvalue))
+                if (!Helpers.ParseTimeEntry(value, out TimeSpan newvalue))
                     return;
                 IsChanged = true;
                 if (newvalue > TimeSpan.FromHours(12) )
@@ -97,39 +97,6 @@ namespace TSApp.ViewModel
 
         public ClokifyEntry Entry { get => innerCE; }
         #endregion
-        /// <summary>
-        /// Разбираемые форматы ввода: 
-        /// h:mm
-        /// hmm, hhmm, mm
-        /// </summary>
-        /// <param name="value"></param>
-        /// <param name="tsValue"></param>
-        /// <returns></returns>
-        private bool ParseTimeEntry(string value, out TimeSpan tsValue)
-        {
-            tsValue = TimeSpan.Zero;
-            // проверяем на число
-            if (int.TryParse(value, out int intValue))
-            {
-                if (intValue < 0)
-                    return false;
-                // числа из двух знаков - это минуты
-                if (intValue < 100)
-                {
-                    tsValue = TimeSpan.FromMinutes(intValue);
-                    return true;
-                }
-                // числа из трех знаков - часы и минуты (2399)
-                if (intValue < 2399)
-                {
-                    tsValue = new TimeSpan(intValue/100, intValue - intValue/100*100, 0);
-                    return true;
-                }
-            }
-
-            return TimeSpan.TryParseExact(value, @"h\:mm", CultureInfo.InvariantCulture, out tsValue);         
-        }
-
         private void RecalcFields(FT type)
         {
             switch (type)
@@ -154,7 +121,6 @@ namespace TSApp.ViewModel
         /// <param name="ce"></param>
         public TimeEntry(ClokifyEntry ce)
         {
-            _comment = ce.Comment;
             innerCE = ce;
         }
         public TimeEntry(DateTime calday, DateTime start, TimeSpan work, int workItemId, string title, string projectId)

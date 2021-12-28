@@ -12,7 +12,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using TSApp.Model;
-using TSApp.ProjectConstans;
+using TSApp.StaticData;
 using TSApp.ViewModel;
 
 namespace TSApp.Model
@@ -21,28 +21,14 @@ namespace TSApp.Model
     {
         private bool clockifyReady = false;
         private bool tfsReady = false;
-        public string APIkey = Settings.Default.ApiKey;
         public ClockifyClient clockify;
         public VssConnection tfsConnection;
-
-        private string collectionUri = Settings.Default.CollectionURI;
-        private string teamProjectName = Settings.Default.teamProjectName;
 
         public bool ClockifyReady { get => clockifyReady; set => SetProperty(ref clockifyReady, value); }
         public bool TfsReady { get => tfsReady; set => SetProperty(ref tfsReady,value); }
 
-        public DAL(Settings s)
+        public DAL()
         {
-            APIkey = Settings.Default.ApiKey;
-
-            Settings.Default.SettingsLoaded += SettingsLoadedHandler;
-            if (s == null)
-                OnInitCompleted(CONN_RESULT.ERROR, "Не настроены параметры подключения.");
-        }
-
-        private async void SettingsLoadedHandler(object sender, System.Configuration.SettingsLoadedEventArgs e)
-        {
-            await this.Init();
         }
 
         /// <summary>
@@ -53,7 +39,7 @@ namespace TSApp.Model
             ConnectResult result = new ConnectResult(CONN_RESULT.OK, "");
             try
             {
-                tfsConnection = new VssConnection(new Uri(Settings.Default.CollectionURI), new VssCredentials());
+                tfsConnection = new VssConnection(new Uri(Settings.value.CollectionURI), new VssCredentials());
                 await tfsConnection.ConnectAsync(VssConnectMode.Automatic);
                 result.Status = CONN_RESULT.OK;
             }
@@ -85,8 +71,8 @@ namespace TSApp.Model
                         {
                             foreach (var project in prj.Data)
                             {
-                                StaticData.Init(uid.Data.Id, ws.Data[0].Id);
-                                StaticData.ClokiProjectIds.Add(project.Name, project.Id);
+                                StaticData.StaticData.Init(uid.Data.Id, ws.Data[0].Id);
+                                StaticData.StaticData.ClokiProjectIds.Add(project.Name, project.Id);
                             }
                             
                             result.Status = CONN_RESULT.OK;
@@ -108,7 +94,7 @@ namespace TSApp.Model
         public async Task<bool> Init()
         {
             OnInitCompleted(CONN_RESULT.CONNECTING, "");
-            clockify = new ClockifyClient(Settings.Default.ApiKey);
+            clockify = new ClockifyClient(Settings.value.ApiKey);
             Console.WriteLine("Init clokify connection .. ");
             var cr = await PerformClokiConnect();
             Console.WriteLine("Done.");          
@@ -136,7 +122,7 @@ namespace TSApp.Model
         {
             List<ClokifyEntry> result = new List<ClokifyEntry>();
             string query = TFSworkItemId == null ? null : TFSworkItemId.ToString();
-            var ret = await clockify.FindAllTimeEntriesForUserAsync(StaticData.WorkspaceId, StaticData.UserId,
+            var ret = await clockify.FindAllTimeEntriesForUserAsync(StaticData.StaticData.WorkspaceId, StaticData.StaticData.UserId,
                                                            query,
                                                            queryFrom, null,
                                                            null, null, null, null, null, null, null, 1, 5000);
@@ -171,7 +157,7 @@ namespace TSApp.Model
 
             if (entry.WorkTime == TimeSpan.Zero )
             {
-                r = await clockify.DeleteTimeEntryAsync(StaticData.WorkspaceId, entry.Id);                
+                r = await clockify.DeleteTimeEntryAsync(StaticData.StaticData.WorkspaceId, entry.Id);                
                 if (!r.IsSuccessful)
                 {
                     retval.Faulted = true;
@@ -179,23 +165,23 @@ namespace TSApp.Model
                 }
                 return retval;
             }
-            bool updateMode = entry.Id == string.Empty ? false : true;
+            bool updateMode = entry.Id != string.Empty && entry.Id != "" && entry.Id != null;
             
             IRestResponse<TimeEntryDtoImpl> result;
-            if (updateMode)
+            if (!updateMode)
             {
                 var rq = TimeEntryRequestFabric.GetCreateRequest(entry);
-                result = await clockify.CreateTimeEntryAsync(StaticData.WorkspaceId, rq);
+                result = await clockify.CreateTimeEntryAsync(StaticData.StaticData.WorkspaceId, rq);
             }
             else
             {
                 var rq = TimeEntryRequestFabric.GetUpdateRequest(entry);
-                result = await clockify.UpdateTimeEntryAsync(StaticData.WorkspaceId, StaticData.WorkspaceId, rq);
+                result = await clockify.UpdateTimeEntryAsync(StaticData.StaticData.WorkspaceId, entry.Id, rq);
             }
             if (!result.IsSuccessful)
             {
                 retval.Faulted = true;
-                retval.Description = result.ErrorMessage;
+                retval.Description = result.ErrorMessage == null ? result.Content : result.ErrorMessage;
                 return retval;
             }
             retval.updated = new ClokifyEntry(result.Data);
@@ -216,7 +202,7 @@ namespace TSApp.Model
             }
             catch (AggregateException ex)
             {
-                Console.WriteLine("Error updating workitem: {0}", ex.InnerException.Message);
+                Console.WriteLine($"Error updating workitem: {ex.InnerException.Message}");
             }
             return null;
         }
@@ -231,7 +217,7 @@ namespace TSApp.Model
             WorkItemTrackingHttpClient witClient = tfsConnection.GetClient<WorkItemTrackingHttpClient>();
 
             // Get 2 levels of query hierarchy items
-            List<QueryHierarchyItem> queryHierarchyItems = await witClient.GetQueriesAsync(teamProjectName, depth: 2);
+            List<QueryHierarchyItem> queryHierarchyItems = await witClient.GetQueriesAsync(Settings.value.TeamProjectName, depth: 2);
 
             List<WorkItem> workItems = new List<WorkItem>();
 
@@ -259,7 +245,7 @@ namespace TSApp.Model
                                 "[System.AssignedTo] = @Me",
                         IsFolder = false
                     };
-                    myTasksQuery = witClient.CreateQueryAsync(myTasksQuery, teamProjectName, myQueriesFolder.Name).Result;
+                    myTasksQuery = witClient.CreateQueryAsync(myTasksQuery, Settings.value.TeamProjectName, myQueriesFolder.Name).Result;
                 }
 
                 WorkItemQueryResult result = witClient.QueryByIdAsync(myTasksQuery.Id).Result;

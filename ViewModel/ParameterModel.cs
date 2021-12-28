@@ -1,6 +1,7 @@
 ﻿using Microsoft.Toolkit.Mvvm.ComponentModel;
 using System;
 using TSApp.Model;
+using TSApp.StaticData;
 
 namespace TSApp.ViewModel
 {
@@ -49,9 +50,7 @@ namespace TSApp.ViewModel
         {
             try
             {
-                Settings.Default.Save();
-                Settings.Default.Upgrade();
-                Settings.Default.Reload();
+                Settings.Save();
             }
             catch (Exception e)
             {

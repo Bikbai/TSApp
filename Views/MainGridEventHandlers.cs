@@ -15,7 +15,7 @@ namespace TSApp
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        private void PaintUnbindedRows(object sender, GridUnBoundRowEventsArgs e)
+        private void QueryUnboundRow(object sender, GridUnBoundRowEventsArgs e)
         {
 
             int index = e.RowColumnIndex.ColumnIndex;
@@ -29,9 +29,9 @@ namespace TSApp
                         e.CellTemplate = App.Current.Resources["TopCellTemplate"] as DataTemplate;
                         e.Handled = true;
                     }
-                    // суббота и воскресенье - нерабочие дни =)
                     else if (index >= weekColumnId && index < weekColumnId + 7)
                     {
+                        e.CellType = "TimeSpanColumn";
                         e.Value = mdl.WorkItemsModel.GetWorkDayStart(Helpers.DayOfWeekFromRus(index - weekColumnId)).ToString(@"hh\:mm");
                         e.Handled = true;
                     }
@@ -40,7 +40,7 @@ namespace TSApp
                 {
                     if (index == 2)
                     {
-                        e.CellTemplate = App.Current.Resources["BottomCellTemplate"] as DataTemplate;
+                        e.CellTemplate = App.Current.Resources["BottomCellTemplate"] as DataTemplate;                        
                         e.Handled = true;
                     }
                     else if (index >= weekColumnId && index < weekColumnId + 7)
@@ -52,7 +52,17 @@ namespace TSApp
             }
             if (e.UnBoundAction == UnBoundActions.CommitData)
             {
-                var editedValue = e.Value;
+                int dayNum = e.RowColumnIndex.ColumnIndex - weekColumnId;
+                if (dayNum >= 0 && dayNum <= 6)
+                {
+                    TimeSpan tsValue;
+                    if (Helpers.ParseTimeEntry((string)e.Value, out tsValue))
+                    {
+                        mdl.WorkItemsModel.SetWorkDayStart(Helpers.DayOfWeekFromRus(dayNum), tsValue);
+                        e.Value = tsValue.ToString(@"h\:mm");
+                    }
+                }
+                e.Handled = true;
             }
 
         }
@@ -95,17 +105,17 @@ namespace TSApp
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        private void SuppressRowEdit(object sender, CurrentCellBeginEditEventArgs e)
+        private void DenyTotalsEdit(object sender, CurrentCellBeginEditEventArgs e)
         {
             var unboundRow = mainGrid.GetUnBoundRow(e.RowColumnIndex.RowIndex);
 
             if (unboundRow == null)
                 return;
             // последняя строка - не редактируется
-            if (e.RowColumnIndex.RowIndex > 1 && unboundRow != null)
+            if (e.RowColumnIndex.RowIndex > 1)
             {
                 e.Cancel = true;
-            }            
+            }
         }
 
     }

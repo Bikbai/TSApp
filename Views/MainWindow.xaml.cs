@@ -10,7 +10,7 @@ using System.Windows.Input;
 using System.Windows.Threading;
 using TSApp.Model;
 using TSApp.Behaviors;
-using TSApp.ProjectConstans;
+using TSApp.StaticData;
 using TSApp.ViewModel;
 using Newtonsoft.Json;
 using Syncfusion.Windows.Shared;
@@ -32,24 +32,34 @@ namespace TSApp
             InitSettings();
             InitializeComponent();
             // инициализируем подключение
-            connection = new DAL(Settings.Default);            
+            connection = new DAL();            
             mdl = new MainFormModel(connection);
             var connectionTask = connection.Init();
             DataContext = mdl;
             connection.InitCompleted += Connection_OnInitComplete;
 
-            mainGrid.QueryUnBoundRow += PaintUnbindedRows;
+            mainGrid.QueryUnBoundRow += QueryUnboundRow;
             mainGrid.CurrentCellRequestNavigate += OpenWorkItemLink;
-            mainGrid.CurrentCellBeginEdit += SuppressRowEdit;
+            mainGrid.CurrentCellBeginEdit += DenyTotalsEdit;
 
 
             mainGrid.SortComparers.Add(new SortComparer() { Comparer = new CustomStateComparer(), PropertyName = "State" });
-            mainGrid.DataContext = mdl.WorkItemsModel.GridEntries;
+            mainGrid.DataContext = mdl;
             mainGrid.ItemsSource = mdl.WorkItemsModel.GridEntries;
+            mainGrid.UnBoundRowCellRenderers.Add("TimeSpanColumn", new UnboundCellTimeSpanRenderer());
 
+            TimeEntryGrid.DataContext = mdl.TimeEntriesModel;
+            TimeEntryGrid.ItemsSource = mdl.TimeEntriesModel.Entries;
+
+            TimeEntryGrid.RecordDeleted += TimeEntryGrid_RecordDeleted;
             
             //            btnTimer.DataContext = mdl.workTimer;
             //            lblTimer.DataContext = mdl.workTimer;
+        }
+
+        private void TimeEntryGrid_RecordDeleted(object sender, RecordDeletedEventArgs e)
+        {
+            e.SelectedIndex = -1;
         }
 
         private void Connection_OnInitComplete(OnInitCompleteEventArgs args)
@@ -76,18 +86,26 @@ namespace TSApp
 
         private async void button3_Click(object sender, RoutedEventArgs e)
         {
-            var ix = mainGrid.SelectedIndex;
-            var row = mainGrid.CurrentItem as GridEntry;
-            mdl.WorkItemsModel.GridEntries.ResetBindings();
+            
+            TimeEntryGrid.ItemsSource = null;
+            TimeEntryGrid.ItemsSource = mdl.TimeEntriesModel.Entries;
+            TimeEntryGrid.View.Refresh();
+            TimeEntryGrid.View.RefreshFilter();
         }
 
         private void InitSettings()
         {
-            if (StaticData.weekTimeTable == null)
-                StaticData.weekTimeTable = new System.Collections.Generic.Dictionary<DayOfWeek, TimeSpan>();
-            foreach (var d in Enum.GetValues(typeof(DayOfWeek)))
-                StaticData.weekTimeTable.Add((DayOfWeek)d, TimeSpan.FromHours(10));
+            Settings.value.MustInit += Settings_MustInit;
+            Settings.Load();
             // TODO сделать сохранение и загрузку рабочего графика
+        }
+
+        private void Settings_MustInit(string message)
+        {
+            MessageBox.Show(message);
+            if (parameterForm == null)
+                parameterForm = new ParameterForm();
+            parameterForm = null;
         }
 
         private void btnTimer_Click(object sender, RoutedEventArgs e)
@@ -106,6 +124,11 @@ namespace TSApp
         private void TimeEntryGrid_Loaded(object sender, RoutedEventArgs e)
         {
             TimeEntryGrid.View.Filter = this.filter.FilterRecords;
+        }
+
+        private void window_Closed(object sender, EventArgs e)
+        {
+            Settings.Save();
         }
     }
 }

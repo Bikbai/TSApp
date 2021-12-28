@@ -1,5 +1,6 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 using TSApp.ViewModel;
+using TSApp.StaticData;
 using TSApp.Model;
 using System;
 using Newtonsoft.Json;
@@ -85,9 +86,8 @@ namespace TSAppUnitTest
         [TestMethod]
         public void PublishTest()
         {
-            TSApp.Settings settings = new TSApp.Settings();
             ce.Description = "11716.Test record, to delete";
-            DAL dal = new DAL(settings);
+            DAL dal = new DAL();
             var a3 = dal.Init().Result;
             var a1 = dal.PerformClokiConnect().Result;
             var a2 = dal.UpdateClokiEntry(ce).Result;

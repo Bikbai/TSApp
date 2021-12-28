@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace TSApp.ProjectConstans
+namespace TSApp.StaticData
 {
     public static class StaticData
     {
@@ -13,10 +13,7 @@ namespace TSApp.ProjectConstans
         public static string UserId => userId;
         public static string WorkspaceId => workspaceId;
 
-        public static TimeSpan DefaultStartTime => defaultStartTime;
-
         public static Dictionary<string, string> ClokiProjectIds { get => _projects; }
-        public static Dictionary<DayOfWeek, TimeSpan> weekTimeTable { get; set; }
         public static void Init(string UserId, string WorkspaceId)
         {
             userId = UserId; 

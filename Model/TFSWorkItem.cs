@@ -3,7 +3,7 @@ using Microsoft.Toolkit.Mvvm.ComponentModel;
 using System;
 using System.Collections.Generic;
 using Newtonsoft.Json;
-using TSApp.ProjectConstans;
+using TSApp.StaticData;
 
 namespace TSApp.Model
 {
@@ -22,7 +22,7 @@ namespace TSApp.Model
         public string ClokiProjectId { get
             {
                 string[] s = AreaPath.Split(new string[] { @"\" }, StringSplitOptions.RemoveEmptyEntries);
-                if (s.Length > 2 && StaticData.ClokiProjectIds.TryGetValue(s[1], out var projectId)) {
+                if (s.Length > 2 && StaticData.StaticData.ClokiProjectIds.TryGetValue(s[1], out var projectId)) {
                     return projectId;
                 }
                 throw new ArgumentException("ProjectId returns null");
