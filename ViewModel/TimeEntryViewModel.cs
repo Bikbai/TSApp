@@ -57,7 +57,7 @@ namespace TSApp.ViewModel
         /// </summary>
         public async void Fill()
         {
-            var x = await Connection.FindAllTimeEntriesForUser(null, DateTime.Now.AddDays(-90));
+            var x = await Connection.FindAllTimeEntriesForUser(null, DateTime.Now.AddDays(-30));
             this._BLEntries.Clear();
             foreach (var item in x)
             {

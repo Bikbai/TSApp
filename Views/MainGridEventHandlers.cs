@@ -26,7 +26,7 @@ namespace TSApp
                 {
                     if (index == 2)
                     {
-                        e.CellTemplate = App.Current.Resources["TopCellTemplate"] as DataTemplate;
+                        e.CellTemplate = this.Resources["TopCellTemplate"] as DataTemplate;
                         e.Handled = true;
                     }
                     else if (index >= weekColumnId && index < weekColumnId + 7)
@@ -40,7 +40,7 @@ namespace TSApp
                 {
                     if (index == 2)
                     {
-                        e.CellTemplate = App.Current.Resources["BottomCellTemplate"] as DataTemplate;                        
+                        e.CellTemplate = this.Resources["BottomCellTemplate"] as DataTemplate;                        
                         e.Handled = true;
                     }
                     else if (index >= weekColumnId && index < weekColumnId + 7)

@@ -122,10 +122,12 @@ namespace TSApp.Model
         {
             List<ClokifyEntry> result = new List<ClokifyEntry>();
             string query = TFSworkItemId == null ? null : TFSworkItemId.ToString();
-            var ret = await clockify.FindAllTimeEntriesForUserAsync(StaticData.StaticData.WorkspaceId, StaticData.StaticData.UserId,
-                                                           query,
-                                                           queryFrom, null,
-                                                           null, null, null, null, null, null, null, 1, 5000);
+            var ret = await clockify.FindAllTimeEntriesForUserAsync(workspaceId: StaticData.StaticData.WorkspaceId, 
+                                                                    userId: StaticData.StaticData.UserId,
+                                                                    description: query,
+                                                                    start: queryFrom, 
+                                                                    page: 1, 
+                                                                    pageSize: 5000);
             if (ret == null || ret.Data == null)
                 return result;
             

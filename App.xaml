@@ -11,33 +11,4 @@
     x:Class="TSApp.App"
     xmlns:ViewModel="clr-namespace:TSApp.ViewModel"
     StartupUri="./Views/MainWindow.xaml">
-    <Application.Resources>
-        <utility:TimeSpanConverter x:Key="timeSpanConverter"/>
-        <utility:SummaryConverter x:Key="summaryConverter"/>
-        <DataTemplate x:Key="TopCellTemplate">
-            <TextBlock 
-                    Width="610"
-                    Text="Начало рабочего дня:"
-                    TextAlignment="Right" IsEnabled="False" FontWeight="Bold" Margin="0,0,10,0"
-                   />
-        </DataTemplate>
-        <DataTemplate x:Key="BottomCellTemplate">
-            <TextBlock
-                    Width="620"
-                    Text="Итого рабочего времени, с учётом закрытых задач:"
-                    TextAlignment="Right" IsEnabled="False" FontWeight="Bold" 
-                   />
-        </DataTemplate>
-        <DataTemplate x:Key="totalWork">
-            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
-                <TextBlock FontWeight="Bold" Text="{Binding Path=CompletedWork}"/>
-                <TextBlock FontWeight="Bold" Text="/"/>
-                <TextBlock FontWeight="Bold" Text="{Binding Path=TotalWork, Converter={StaticResource ResourceKey=timeSpanConverter}}"/>
-            </StackPanel>
-        </DataTemplate>
-        <beh:RowColorConverter x:Key="converter"/>
-        <Style x:Key="RowStyle" TargetType="sfgrid:VirtualizingCellsControl">
-            <Setter Property="Background" Value="{Binding Path=IsChanged, Mode=OneWay, Converter={StaticResource ResourceKey=converter}, UpdateSourceTrigger=PropertyChanged}" />
-        </Style>
-    </Application.Resources>
 </Application>

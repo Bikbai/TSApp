@@ -16,7 +16,6 @@ namespace TSApp.Behaviors
             var cell = value as GridUnBoundRowCell;            
             if (cell == null) return null;
             return "C-TEST";
-            return new SolidColorBrush(Colors.Red);
         }
 
         public object ConvertBack(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)

@@ -18,8 +18,8 @@ namespace TSApp.Utility
             if (data != null)
             {
                 SfDataGridExt dataGrid = (SfDataGridExt)parameter;
-                var unitPrice = SummaryCreator.GetSummaryDisplayValue(data, "WorkDbl", "Sum");                
-                return "Суммарные трудозатраты: " + unitPrice.ToString();
+                double totalWork = (double)SummaryCreator.GetSummaryDisplayValue(data, "WorkDbl", "Sum");                
+                return "Суммарные трудозатраты: " + totalWork.ToString("F2");
             }
 
             return null;

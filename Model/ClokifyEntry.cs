@@ -55,10 +55,10 @@ namespace TSApp.Model
             if (idx < 1)
                 Description = te.Description;
             else
-            if (idx > 10)
+            if (idx > 10 && idx < te.Description.Length)
             {
                 Description = te.Description.Substring(0, idx);
-                Comment = te.Description.Substring(idx + 3);
+                Comment = te.Description.Substring(idx + 3 > te.Description.Length? te.Description.Length : idx + 3);
             }
         }
         /// <summary>

@@ -4,7 +4,9 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:listCollection="clr-namespace:System.Collections;assembly=mscorlib"
+    xmlns:sfgrid="clr-namespace:Syncfusion.UI.Xaml.Grid;assembly=Syncfusion.SfGrid.WPF"    
     xmlns:p="clr-namespace:TSApp.Properties"
+    xmlns:utility="clr-namespace:TSApp.Utility"
     xmlns:local="clr-namespace:TSApp" 
     xmlns:beh="clr-namespace:TSApp.Behaviors"
     xmlns:syncfusion="http://schemas.syncfusion.com/wpf" 
@@ -19,6 +21,33 @@
     d:DesignWidth="1562.333" 
     Width="1300" Closed="window_Closed">
     <Window.Resources>
+        <utility:TimeSpanConverter x:Key="timeSpanConverter"/>
+        <utility:SummaryConverter x:Key="summaryConverter"/>
+        <DataTemplate x:Key="TopCellTemplate">
+            <TextBlock 
+                    Width="610"
+                    Text="Начало рабочего дня:"
+                    TextAlignment="Right" IsEnabled="False" FontWeight="Bold" Margin="0,0,10,0"
+                   />
+        </DataTemplate>
+        <DataTemplate x:Key="BottomCellTemplate">
+            <TextBlock
+                    Width="620"
+                    Text="Итого рабочего времени, с учётом закрытых задач:"
+                    TextAlignment="Right" IsEnabled="False" FontWeight="Bold" 
+                   />
+        </DataTemplate>
+        <DataTemplate x:Key="totalWork">
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                <TextBlock FontWeight="Bold" Text="{Binding Path=CompletedWork}"/>
+                <TextBlock FontWeight="Bold" Text="/"/>
+                <TextBlock FontWeight="Bold" Text="{Binding Path=TotalWork, Converter={StaticResource ResourceKey=timeSpanConverter}}"/>
+            </StackPanel>
+        </DataTemplate>
+        <beh:RowColorConverter x:Key="converter"/>
+        <Style x:Key="RowStyle" TargetType="sfgrid:VirtualizingCellsControl">
+            <Setter Property="Background" Value="{Binding Path=IsChanged, Mode=OneWay, Converter={StaticResource ResourceKey=converter}, UpdateSourceTrigger=PropertyChanged}" />
+        </Style>
         <beh:LabelSizeConverter x:Key="LabelSizeConverter"/>
         <DataTemplate x:Key="TimeSpanTemplate">
             <TextBlock Width="Auto"
@@ -140,7 +169,7 @@
                                     AllowEditing="True" Width="60" TextAlignment="Right"/>
 
                     <syncfusion:GridTemplateColumn HeaderText="Суммарно"
-                                    AllowEditing="False" Width="120" TextAlignment="Right" CellTemplate="{DynamicResource totalWork}"/>
+                                    AllowEditing="False" Width="120" TextAlignment="Right" CellTemplate="{Binding Mode=OneWay, Source={StaticResource totalWork}}" />
                 </local:SfDataGridExt.Columns>
 
             </local:SfDataGridExt>
@@ -185,7 +214,7 @@
                             <DataTemplate>
                                 <TextBlock HorizontalAlignment="Right"
                                            Width="Auto"
-                                           Text="{Binding Converter={StaticResource summaryConverter}, ConverterParameter= {x:Reference Name= TimeEntryGrid}}" 
+                                           Text="{Binding Converter={StaticResource summaryConverter}, ConverterParameter= {x:Reference Name=TimeEntryGrid}}" 
                                            FontWeight="Bold"
                                            FontSize="16"></TextBlock>
                             </DataTemplate>
