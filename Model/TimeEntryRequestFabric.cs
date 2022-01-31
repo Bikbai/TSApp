@@ -16,7 +16,9 @@ namespace TSApp.Model
             var rq = new UpdateTimeEntryRequest();
             rq.Start = ce.Start.ToUniversalTime();
             rq.Billable = true;
-            rq.Description = ce.Description + "// " + ce.Comment;
+            if (String.IsNullOrEmpty(ce.Comment))
+                rq.Description = ce.Description;
+            else rq.Description = ce.Description + "// " + ce.Comment;
             rq.End = ce.End.ToUniversalTime();
             rq.ProjectId = ce.ProjectId;            
             return rq;
@@ -26,7 +28,7 @@ namespace TSApp.Model
             var rq = GetRequest();
             rq.ID = ce.Id;
             rq.Start = ce.Start.ToUniversalTime();
-            if (ce.Comment == String.Empty)
+            if (String.IsNullOrEmpty(ce.Comment))
                 rq.Description = ce.Description;
             else rq.Description = ce.Description + "// " + ce.Comment;
             rq.End = ce.End.ToUniversalTime();
