@@ -5,7 +5,7 @@ using TSApp.StaticData;
 
 namespace TSApp.ViewModel
 {
-    public class ParameterModel : ObservableObject
+    public class ParameterView : ObservableObject
     {
         private DAL connectionInfo;
 
@@ -36,7 +36,7 @@ namespace TSApp.ViewModel
             }
         }
 
-        public ParameterModel()
+        public ParameterView()
         {
 
         }

@@ -20,11 +20,11 @@ namespace TSApp
     /// </summary>
     public partial class ParameterForm : Window
     {
-        private ParameterModel model;
+        private ParameterView model;
         public ParameterForm()
         {
             InitializeComponent();
-            model = new ParameterModel();
+            model = new ParameterView();
             this.DataContext = model;
             this.ShowDialog();
         }

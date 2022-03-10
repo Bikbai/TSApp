@@ -74,8 +74,6 @@
             <Button x:Name="btnPublish"
                     Content="Publish" Width="75" Canvas.Left="114" Canvas.Top="10" 
                     Height="Auto" VerticalAlignment="Center" HorizontalAlignment="Center" Click="btnPublish_Click"/>
-            <Button x:Name="button3"
-                    Content="Button" Width="93" Click="button3_Click" HorizontalAlignment="Center" Margin="5,0,5,0" Height="Auto" VerticalAlignment="Center"/>
             <Grid Width="500">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="400"/>
@@ -130,7 +128,7 @@
                 AutoGenerateRelations="False"
                 HideEmptyGridViewDefinition="True"
                 ScrollViewer.VerticalScrollBarVisibility="Disabled"
-                CurrentCellActivated="mainGrid_CurrentCellActivated"
+                CurrentCellActivated="mainGrid_CurrentCellActivated" DataContext="{Binding WorkItemsModel}" ItemsSource="{Binding GridEntries, Mode=OneWay}"
                 >
                 <local:SfDataGridExt.UnBoundRows>
                     <syncfusion:GridUnBoundRow Position="Top" x:Name="WorkHours"/>
@@ -190,13 +188,13 @@
                                  SelectionUnit="Row"
                         AutoGenerateColumns="False" 
                         Margin="1,0,1,0" 
-                        ItemsSource="{Binding TimeEntriesModel.Entries}" 
+                        ItemsSource="{Binding Entries, Mode=OneWay}" 
                         FontSize="16"
                         NewItemPlaceholderPosition="AtBeginning"
                         AutoExpandGroups="True"
                         ShowColumnWhenGrouped="False"
                         LiveDataUpdateMode ="AllowDataShaping" Loaded="TimeEntryGrid_Loaded" 
-                        RowHeight="30"
+                        RowHeight="30" DataContext="{Binding TimeEntriesModel}"
                         >
                 <syncfusion:SfDataGrid.TableSummaryRows>
                     <syncfusion:GridTableSummaryRow ShowSummaryInRow="True"

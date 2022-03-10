@@ -230,8 +230,8 @@
     <Compile Include="Utility\Helpers.cs" />
     <Compile Include="StaticData\StaticData.cs" />
     <Compile Include="Model\DAL.cs" />
-    <Compile Include="ViewModel\MainFormModel.cs" />
-    <Compile Include="ViewModel\ParameterModel.cs" />
+    <Compile Include="ViewModel\MainFormView.cs" />
+    <Compile Include="ViewModel\ParameterView.cs" />
     <Compile Include="ViewModel\WorkItemViewModel.cs" />
     <Compile Include="Views\SfDataGridExt.cs" />
     <Page Include="Views\MainWindow.xaml">

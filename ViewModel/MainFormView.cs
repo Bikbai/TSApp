@@ -7,7 +7,7 @@ using System.Threading;
 
 namespace TSApp.ViewModel
 {
-    public class MainFormModel : ObservableObject
+    public class MainFormView : ObservableObject
     {
         public DAL Connection { get; set; }
         private string btnCnxnStatusText = "";
@@ -17,6 +17,8 @@ namespace TSApp.ViewModel
         public WorkItemViewModel WorkItemsModel { get; set; }
         public TimeEntryViewModel TimeEntriesModel { get; set; }
         public WorkTimer WorkTimer { get; set; }
+
+        public ParameterView Parameters { get; set; }
         public int WeekNumber { get => presentedWeekNumber;}
         public string BtnCnxnStatusText { get => btnCnxnStatusText; set => SetProperty(ref btnCnxnStatusText, value); }
         public string BtnCnxnStatusForeColor { get => btnCnxnStatusForeColor; set => SetProperty(ref btnCnxnStatusForeColor,value); }
@@ -29,7 +31,7 @@ namespace TSApp.ViewModel
         }
         #endregion
 
-        public MainFormModel(DAL conn)
+        public MainFormView(DAL conn)
         {
             Connection = conn;
             this.WorkTimer = new WorkTimer();            
@@ -38,8 +40,9 @@ namespace TSApp.ViewModel
             TimeEntriesModel = new TimeEntryViewModel(Connection);
             TimeEntriesModel.CurrentWeekNumber = presentedWeekNumber;
             WorkItemsModel = new WorkItemViewModel(null, Connection);
-            WorkItemsModel.TimeChanged += WorkItemsModel_TimeChanged; ;
+            WorkItemsModel.TimeChanged += WorkItemsModel_TimeChanged;
 
+            Parameters = new ParameterView();
 
             Connection.TimeEntryCreated += WorkItemsModel.OnTimeEntryCreateHandler;
             Connection.TimeEntryDeleted += WorkItemsModel.OnTimeEntryDeleteHandler;

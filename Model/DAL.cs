@@ -1,5 +1,6 @@
 ﻿using Clockify.Net;
 using Clockify.Net.Models.TimeEntries;
+using Microsoft.TeamFoundation.Core.WebApi;
 using Microsoft.TeamFoundation.WorkItemTracking.WebApi;
 using Microsoft.TeamFoundation.WorkItemTracking.WebApi.Models;
 using Microsoft.Toolkit.Mvvm.ComponentModel;
@@ -23,6 +24,8 @@ namespace TSApp.Model
         private bool tfsReady = false;
         public ClockifyClient clockify;
         public VssConnection tfsConnection;
+
+        public Guid ProjectId { get; set; }
 
         public bool ClockifyReady { get => clockifyReady; set => SetProperty(ref clockifyReady, value); }
         public bool TfsReady { get => tfsReady; set => SetProperty(ref tfsReady,value); }
@@ -194,7 +197,7 @@ namespace TSApp.Model
             WorkItemTrackingHttpClient witClient = tfsConnection.GetClient<WorkItemTrackingHttpClient>();
             try
             {
-                WorkItem result = await witClient.UpdateWorkItemAsync(patch, id);
+                WorkItem result = await witClient.UpdateWorkItemAsync(document: patch, project: ProjectId, id: id);
                 // кидаем событие для перезагрузки содержимого GridEntry                
                 if (result != null)
                     return new TFSWorkItem(result);
@@ -215,11 +218,14 @@ namespace TSApp.Model
         /// </summary>
         public async Task<List<WorkItem>> QueryTfsTasks()
         {
+            ProjectHttpClient pc = tfsConnection.GetClient<ProjectHttpClient>();
+            ProjectId = (await pc.GetProject(Settings.value.TeamProjectName)).Id;
+
             // Create instance of WorkItemTrackingHttpClient using VssConnection
             WorkItemTrackingHttpClient witClient = tfsConnection.GetClient<WorkItemTrackingHttpClient>();
 
             // Get 2 levels of query hierarchy items
-            List<QueryHierarchyItem> queryHierarchyItems = await witClient.GetQueriesAsync(Settings.value.TeamProjectName, depth: 2);
+            List<QueryHierarchyItem> queryHierarchyItems = await witClient.GetQueriesAsync(project: ProjectId, depth: 2) ;
 
             List<WorkItem> workItems = new List<WorkItem>();
 
@@ -243,14 +249,14 @@ namespace TSApp.Model
                         Wiql = "SELECT [System.Id],[System.WorkItemType],[System.Title],[System.AssignedTo],[System.State] " +
                                 "FROM WorkItems WHERE " +
                                 "[System.WorkItemType] = 'Task' AND " +
-                                //"[System.State] <> 'Closed' AND " +
+                                "[System.State] <> 'Closed' AND " +
                                 "[System.AssignedTo] = @Me",
                         IsFolder = false
                     };
-                    myTasksQuery = witClient.CreateQueryAsync(myTasksQuery, Settings.value.TeamProjectName, myQueriesFolder.Name).Result;
+                    myTasksQuery = witClient.CreateQueryAsync(postedQuery: myTasksQuery, project: ProjectId, query: myQueriesFolder.Name).Result;
                 }
 
-                WorkItemQueryResult result = witClient.QueryByIdAsync(myTasksQuery.Id).Result;
+                WorkItemQueryResult result = witClient.QueryByIdAsync(project: ProjectId, id:myTasksQuery.Id).Result;
 
                 if (result.WorkItems.Any())
                 {
@@ -263,7 +269,7 @@ namespace TSApp.Model
                         if (workItemRefs.Any())
                         {
                             // get details for each work item in the batch
-                            workItems = witClient.GetWorkItemsAsync(workItemRefs.Select(wir => wir.Id)).Result;
+                            workItems = witClient.GetWorkItemsAsync(project: ProjectId, ids:workItemRefs.Select(wir => wir.Id)).Result;
                         }
                         skip += batchSize;
                     }
